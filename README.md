@@ -6,7 +6,7 @@ Copyright (c) John Holdsworth 2012
 The source code is provided on the understanding it will not be redistributed in whole
 or part for payment and can only be redistributed with it's licensing code left in.
 License is hereby granted to evaluate this software for two weeks after which if you are 
-finding it useful I would prefer that you made a payment of $10 (or $25 dollars in a 
+finding it useful I would prefer that you made a payment of $10 (or $25 in a 
 commercial environment) as suggested by the licensing code included in the software
 in order to continue using it.
 
