@@ -20,15 +20,15 @@ to load patch bundles. Select an implementation source file and use menu item
 
 The three projects in the source tree are related as follows:
 
-ObjCpp: A type of Foundation++ set of C++ classes prviding operatiors on foundation objects/
+__ObjCpp:__ A type of Foundation++ set of C++ classes prviding operatiors on foundation objects/
 
-Injection: The original application which worked alongside Xcode as submitted to Apple
+__Injection:__ The original application which worked alongside Xcode as submitted to Apple
 
-InjectionPlugin: The Xcode plugin source packaging the application for use inside Xcode
+__InjectionPlugin:__ The Xcode plugin source packaging the application for use inside Xcode
 
-InjectionInstallerIII: an installer application for the Xcode plugin.
+__InjectionInstallerIII:__ an installer application for the Xcode plugin.
 
-If you find (m)any issues in the code get in contact using the email injection@johnholdsworth.com
+If you find (m)any issues in the code, get in contact using the email injection@johnholdsworth.com
 
 ## Source Files/Roles:
 
