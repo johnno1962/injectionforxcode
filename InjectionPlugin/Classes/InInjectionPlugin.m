@@ -443,7 +443,7 @@ static const NSString *kInstalled = @"INInstalled", *kLicensed = @"INLicensed2.x
     if ( aWebView == webView ) {
         OOString url = request.URL.absoluteString;
         [urlLabel setStringValue:url];
-        if ( !!url[@"^macappstore:|\\.dmg"] ) {
+        if ( !!url[@"^macappstore:|\\.(dmg|zip)"] ) {
             [[NSWorkspace sharedWorkspace] openURL:request.URL];
             [listener ignore];
         }
