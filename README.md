@@ -4,7 +4,7 @@ Injection for Xcode Source
 Copyright (c) John Holdsworth 2012
 
 The source code is provided on the understanding it will not be redistributed in whole
-or part for payment and can only be redistributed with the licensing code left in.
+or part for payment and can only be redistributed with it's licensing code left in.
 License is hereby granted to evaluate this software for two weeks after which if you are 
 finding it useful I would prefer that you made a payment of $10 (or $25 dollars in a 
 commercial environment) as suggested by the licensing code included in the software
@@ -20,7 +20,7 @@ to load patch bundles. Select an implementation source file and use menu item
 
 The three projects in the source tree are related as follows:
 
-__ObjCpp:__ A type of Foundation++ set of C++ classes prviding operatiors on foundation objects/
+__ObjCpp:__ A type of Foundation++ set of C++ classes providing operatiors on foundation objects.
 
 __Injection:__ The original application which worked alongside Xcode as submitted to Apple
 
@@ -28,14 +28,14 @@ __InjectionPlugin:__ The Xcode plugin source packaging the application for use i
 
 __InjectionInstallerIII:__ an installer application for the Xcode plugin.
 
-If you find (m)any issues in the code, get in contact using the email injection@johnholdsworth.com
+If you find (m)any issues in the code, get in contact using the email injection (at) johnholdsworth.com
 
 ## Source Files/Roles:
 
 __InjectionPlugin/Classes/InInjectionPlugin.m__
 
 Singleton subclass of original InAppDelegate class responding to Xcode Menu events.
-Also responsible for running up TCP server process on port 31442 receiving connections
+Superclass responsible for running up TCP server process on port 31442 receiving connections
 from applications with their main.m patched for injection. When an incoming connection
 arrives is opens an instance of InPluginDocument associated with the project of the 
 application.
@@ -43,8 +43,8 @@ application.
 __InjectionPlugin/Classes/InPluginDocument.m__
 
 An instance is created of this INDocument(NSDocument) subclass for each project being
-injected. Runs a series of Perl scripts in response to menu events to patch projects
-or code for injection.
+injected. Superclass runs a series of Perl scripts in response to menu events to patch
+projects or code for injection.
 
 __Injection/Injection/InAppDelegate.m__
 
@@ -88,11 +88,13 @@ Opens special URLs used by injection to patch/un-patch specific files.
 
 __Injection/Injection/prepareBundle.pl__
 
-The script called when you inject a source file
+The script called when you inject a source file to patch the source class into a category,
+build the injection bundle project and signal the client application to load the resulting
+bundle to apply the code changes.
 
 __Injection/Injection/revertProject.pl__
 
-Un-patches main.m and the project's .pch file when you are finished injection
+Un-patches main.m and the project's .pch file when you have finished using injection.
 
 __Injection/Injection/common.pm__
 
