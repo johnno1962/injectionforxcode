@@ -11,7 +11,7 @@ commercial environment) as suggested by the licensing code included in the softw
 in order to continue using it.
 
 To use injection open the InjectionPlugin project, build it and restart Xcode.
-Open a simple example project such as UICatalogue or GLEssentials from Apple
+Open a simple example project such as UICatalog or GLEssentials from Apple
 and use the "Product/<ProjectName>Patch Project for Injection" menu item to 
 prepare the project and rebuild it. When you run the project it should connect
 to Xcode which will display a red badge showing the application is prepared
@@ -98,7 +98,7 @@ __Injection/Injection/common.pm__
 
 Code shared across the above scripts including the code that patches classes into categories.
 
-Please note:
+## Please note:
 
 The above copyright notice and this permission notice shall be
 included in all copies or substantial portions of the Software.
