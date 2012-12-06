@@ -1,0 +1,26 @@
+<pkmkdoc spec="1.12"><properties><title>Injection Plugin for Xcode</title><build>/Users/johnholdsworth/Developer/InjectionInstallerIII/Apple/InjectionPluginV2.5.pkg</build><certificate>Developer ID Installer: John Holdsworth</certificate><organization>com.injectionforxcode</organization><userSees ui="easy"/><min-target os="3"/><domain system="true"/></properties><distribution><versions min-spec="1.000000"/><scripts></scripts></distribution><contents><choice title="Injection Plugin" id="choice0" starts_selected="true" starts_enabled="true" starts_hidden="false"><pkgref id="com.injectionforxcode.injectionPluginForXcode.InjectionPlugin.pkg"/></choice></contents><resources bg-scale="tofit" bg-align="center"><locale lang="en"><resource mod="true" type="background">/Users/johnholdsworth/Developer/InjectionIII/Apple/Syringe_xxx.png</resource><resource mime-type="text/rtf" kind="embedded" type="license"><![CDATA[{\rtf1\ansi\ansicpg1252\cocoartf1187\cocoasubrtf340
+{\fonttbl\f0\fswiss\fcharset0 Optima-Regular;}
+{\colortbl;\red255\green255\blue255;}
+\deftab560
+\pard\tx560\pardeftab560\pardirnatural
+
+\f0\i\fs24 \cf0 \CocoaLigature0 \
+
+\b This application is licensed for evaluation for a period of two weeks after which you will be invited to buy the application for $9.99 for an individual license or $25.00 for a "commercial" license per host (where you expect more than one user on your office intranet.) Please consult the application help or splash panel for more information and support.\
+\
+Please note:\
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,  BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.}]]></resource><resource mime-type="text/rtf" kind="embedded" type="welcome"><![CDATA[{\rtf1\ansi\ansicpg1252\cocoartf1187\cocoasubrtf340
+{\fonttbl\f0\fnil\fcharset0 LucidaGrande;}
+{\colortbl;\red255\green255\blue255;\red128\green128\blue128;\red57\green57\blue57;}
+\pard\tx0\tx0\ri1300\sb80\pardirnatural
+
+\f0\fs10 \cf2 \
+\pard\tx860\tx1160\ri1300\sb80\pardirnatural
+
+\fs26 \cf3 You will be guided through the steps necessary to install the Injection Plugin for Xcode V2.5.\
+}]]></resource><resource mime-type="text/rtf" kind="embedded" type="conclusion"><![CDATA[{\rtf1\ansi\ansicpg1252\cocoartf1187\cocoasubrtf340
+{\fonttbl\f0\fnil\fcharset0 LucidaGrande;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs26 \cf0 Restart Xcode to start using Injection. Use the "Injection Plugin" application to remove or reinstall the plugin or for additional help and documentation.}]]></resource></locale></resources><flags/><item type="file">01injection.xml</item><mod>properties.title</mod><mod>properties.anywhereDomain</mod><mod>properties.systemDomain</mod></pkmkdoc>

@@ -1,0 +1,119 @@
+<html><head><title>Injection</title>
+<meta http-equiv='Content-Type' content='Type=text/html; charset=utf-8'>
+<style>
+    body { font: 10pt Arial; margin: 15pt; margin-top: 10pt; }
+    table { font: 9pt Arial; }
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 56.0px Arial}
+    p.p2 {margin: 0.0px 0.0px 13.0px 0.0px; font: 13.0px Arial}
+    p.p3 {margin: 0.0px 0.0px 13.0px 0.0px; font: 18.0px Arial}
+    p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Arial}
+    p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Arial; min-height: 15.0px}
+    p.p6 {margin: 0.0px 0.0px 0.0px 0.0px; font: 11.0px Menlo; color: #bb2ca2}
+    p.p7 {margin: 0.0px 0.0px 13.0px 0.0px; font: 13.0px Arial; min-height: 15.0px}
+    p.p8 {margin: 0.0px 0.0px 0.0px 0.0px; font: 11.0px Menlo}
+    p.p9 {margin: 0.0px 0.0px 0.0px 0.0px; font: 11.0px Menlo; color: #008400}
+    p.p10 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p11 {margin: 0.0px 0.0px 0.0px 0.0px; text-align: center; font: 12.0px Arial}
+    p.p12 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Arial}
+    p.p13 {margin: 0.0px 0.0px 13.0px 0.0px; font: 24.0px Arial}
+    p.p14 {margin: 0.0px 0.0px 0.0px 0.0px; font: 11.0px Menlo; color: #d12f1b}
+    span.s1 {color: #000000}
+    span.s2 {color: #78492a}
+    span.s3 {font: 12.0px Helvetica}
+    span.s4 {color: #703daa}
+    span.s5 {color: #d12f1b}
+    span.s6 {text-decoration: underline ; color: #042eee}
+    span.Apple-tab-span {white-space:pre}
+</style>
+</head><body>
+<b style='font: bold 42pt Arial;'>Injection Overview <img width=48 height=48 src='injection.png'> </b><p>
+Injection allows you to inject code changes into an application while it is running for development and debugging. It is intended as an alternative to the "Fix and Continue" functionality which was removed in Xcode® 4. By using a set of simple preprocessor macros, it allows your classes to be recompiled selectively as class categories which can be loaded at runtime by placing them in a bundle and having your application load it. The Objective-C runtime will always use the category version of method implementations in preference to the version the application was originally compiled with so your changes take effect. This process is completely automated by the Injection application which runs along side Xcode looking for source code changes and preparing a bundle and loading it using a socket connection. The process can be repeated indefinitely, works for OS X and iOS applications and on iOS devices when the bundle is code-signed as it is copied onto the device.<p>
+
+The first time it runs, Injection will have opened two example projects showing the fundamentals of how a class is prepared for injection. Press the <b>"Open App Project"</b> button for the InjectionDemo application to build and run it. Injection shows a set of sliders which can be used to affect the appearance of the "rose" displayed in the simulator by updating parameters available in a set of global variables in real time. You can also make changes to the <b>"InRoseView.m"</b> implementation, save them and see them take effect immediately in the running application. This gives an idea of how injection works.<p>
+
+<h3>Using Injection</h3>
+
+The work flow to make one of your own projects "injectable" is as follows: Open the application project using the <b>"File/Open Project"</b> menu item. This will make minor changes to the program's <b>main.m</b> and <b>&lt;Project&gt;-Prefix.pch</b> to have the program connect to the Injection application when it runs and make available a set of preprocessor macros to all sources which are used to convert your classes to categories. More about this later. It also creates an Xcode bundle sub-project which can be used to build a loadable bundle of any classes which have changed.<p>
+
+When a project is open, the <b>"Build"</b> button includes an indicator showing the following status colours:<p>
+
+<table style='font: 10pt Arial;'>
+<tr><td><img width=16 height=16 src='grey.png'><td>Client application is not connected to Injection.
+<tr><td><img width=16 height=16 src='green.png'><td>Client application connected waiting for code changes.
+<tr><td><img width=16 height=16 src='amber.png'><td>A script is running to open the project or build and load bundle.
+<tr><td><img width=16 height=16 src='red.png'><td>A bundle compilation or load error has occurred.
+<tr><td><img width=16 height=16 src='blue.png'><td>Automatic build is turned off and source files have changed.
+</table><p>
+
+Once the project is open in Injection press the "Control Panels" button twice to view a list of implementation files in the project and click on the "convert" link for the files you wish to work on. Run the application and it should connect to Injection changing the "Build" button indicator to green. You should then be able save any of the files converted and have them load into the running application. If the file is not writable you will see an "unlock" link to perform the conversion. You can customise the command used for this (e.g. to check out of source control) in the Injection application's preferences.<p>
+
+If the bundle is unable to build or load it is likely to be a linkage error which you can resolve by opening the bundle subproject and adding any additional frameworks or header include paths until it builds. As an alternative to get started you can use one of Apple's example projects to get up and running by following the steps in the <a href='#quickstart'>"Quick-start guide"</a> at the end of this document.
+
+<h3>How it works</h3>
+
+The basic trick to allow classes to load at run time is to have them recompile as categories for loading into a bundle. In order to do this the Injection application modifies the class' <b>@implementation</b> statement from:<p>
+
+<p class="p6">@implementation<span class="s1"> INRoseView</span></p><p>
+
+is converted to:<p>
+
+<p class="p6">@implementation<span class="s1"> </span><span class="s2">_injectable</span><span class="s1">(INRoseView)</span></p><p>
+
+<span class="s2">_injectable()</span> is one of the pre-processor macros included in the project's <b>&lt;Project&gt;-Prefix.pch</b> header which is normally just a passthrough but when the class is recompiled for use in a bundle converts the declaration into that of a category with an incrementing category name. Some other changes are required as well, for example global variables need to be converted into <b>"extern"</b> statements in a bundle with any initialisers removed. In order to do this the statement:<p>
+
+<p class="p8"><span class="s4">NSString</span> *aGlobalVariable = <span class="s5">@"initialiser"</span>;</p><p>
+
+is converted to:<p>
+
+<p class="p8"><span class="s2">_inglobal</span> <span class="s4">NSString</span> *aGlobalVariable <span class="s2">_inval</span>( <span class="s5">@"initialiser"</span> );</p><p>
+
+The <span class="s2">_inglobal</span> macro expands to an "<span class="s4">extern</span>" when the class is compiled as a category and to avoid warnings <span class="s2">_inval()</span> becomes a no-op. "<span class="s4">static</span>" variables are converted into globals to not have the class loose it's state and treated in the same way as globals. If a <span class="s4">static</span> variable is not seen to be messaged or assigned to it will become an <span class="s2">_inprivate</span> variable which will be an actual static.<p>
+
+The full list of macros used and their declarations for the main projects compile and when they are compiled for use in a bundle is below.<p>
+
+<table border=1 cellspacing=0>
+<tr bgcolor='#e0e0e0'><th>Pre-Processor Macro<th>Building Project<th>Definition while building bundle
+<tr><td><span class="s2">_injectable(_className)<td><span class="s2">_className<td><span class="s2">_className(INJECTION_BUNDLE)
+<tr><td><span class="s2">_injectable_category(_className,_category)<td><span class="s2">_className(_category)<td><span class="s2">_className(INJECTION_BUNDLE##_##_category)
+<tr><td><span class="s2">_inglobal<td><p class="p9">/* */<td><p class="p6">extern
+<tr><td><span class="s2">_instatic<td><p class="p9">/* */<td><p class="p6">extern
+<tr><td><span class="s2">_inprivate<td><p class="p6">static<td><p class="p6">static
+<tr><td><span class="s2">_inval(_value...)<td>= <span class="s2">_value<td><p class="p9">/* _value */
+</table><p>
+
+One final change Injection performs while converting a class is to parse any <span class="s4">@properties</span> declarations it finds in the class and any "extensions" to explicitly declare these as ivars the old fashioned way in the class header if they are not already defined. This is required if any reference it made to the ivars directly in the source rather than through the <span class="s4">self.ivar</span> syntax. This is unfortunate but a necessary evil for a category to be able link against these ivars. The ivar declaration is conditional so the application will not be released in this configuration in fact all of injection can only take effect while the <span class="s2">DEBUG</span> symbol is declared and the <span class="s2">INJECTION_ENABLED</span> directive declared as a result in the project .pch file.<p>
+
+This process of automatically inserting the above macros is robust but can likely always be improved. If you have any particular examples of code which is patched incorrectly or any other problem using or suggestion to improve "Injection", do please contact the developer so I can rectify it using the email address <a href='mailto:support@injectionforxcode.com?subject=Injection%20Issue'>here</a>. These instructions will close automatically when you open a project but you can always view the again by using the "File/Introduction" or "Help" menu items.<p>
+
+<h3>Tunable Run-time Parameters</h3>
+
+While an application is connected to Injection, 5 tunable parameter values and 5 Color Wells are available to the application through the global arrays <span class="s4">INParameters[]</span> and <span class="s4">INColors[]</span>. These can be used in to tune your code during development and modified in real time using the sliders in the "Parameters" pop-down panel. Object oriented access to these parameters is available using the +[NSObject inParameter:tag] method. You can also set a delegate using +[NSObject setDelegate:delegate forInParameter:tag] and receive -[delegate inParameter:tag hasChanged:value] notifications as the sliders are moved. There is also an image well which can inject an image into your appplication through the <span class="s4">INImageTarget</span> variable. For more information see the <b>BundleInterface.h</b> and <b>BundleInjection.h</b> headers in the Injection Application bundle which contain the full application-side implementation.<p>
+
+<b>OS X, iOS and Xcode are trademarks of Apple Inc.</b><p>
+
+<a name='quickstart'><h3>QuickStart Guide</h3></a><p>
+
+To get started using Injection, follow these steps:
+
+<li> Launch Injection!<p>
+
+<li> Open <a href='http://injectionforxcode.com/welcome.html#quickstart'>this guide</a> in a web browser (as it will close automatically when you open a project.)<p>
+
+<li> Download the <a target=_blank href='https://developer.apple.com/library/ios/#samplecode/UICatalog/Introduction/Intro.html%23//apple_ref/doc/uid/DTS40007710'>UICatalog</a> or <a target=_blank href='https://developer.apple.com/library/ios/#samplecode/GLEssentials/Introduction/Intro.html%23//apple_ref/doc/uid/DTS40010104'>GLEssentials</a> example project and unzip it.<p>
+
+<li> Drag the UICatalog/UICatalog.xcodeproj or GLEssentials/XXXGLEssentials.xcodeproj file onto the Injection Icon to open and convert it for run-tine loading.<p>
+
+<li> Click <b>Open App Project</b> button to open the project in Xcode and <b>edit the .pch file</b> for the project to remove the <span class="s2">#ifdef DEBUG</span> to ensure injection is enabled.<p>
+
+<li> Build and run the application in the iOS Simulator. When the application starts it will connect to Injection and the "Build" button status will go green.<p>
+
+<li> Make a change to a file and save it. Injection will pick up the change, roll the class changed into a bundle and message the application to load it, applying the changes made.<p>
+
+<li> If linking errors are displayed in the Injection window make sure the main bundle project does not have the 'Symbols Hidden by Default' build option set. If so rebuild and launch the application. Other linking errors can be caused by missing frameworks or using the incorrect architecture, compiler or memory model in the bundle project created to inject the code. Click the <b>Open Bundle Project</b> button to edit the sub-project and make any changes required until it builds. Any problems actually loading the bundle will be displayed in the debug console of the client application itself.<p>
+
+<li> To inject code into an application running on an iOS device an additional manual step is required. Add the following as a "Run Script" step in the target "Build Phases" tab:<p>
+
+<code><span class="s2">echo "$CODESIGNING_FOLDER_PATH" >/tmp/"$PROJECT_NAME.$USER" && echo "$CODE_SIGN_IDENTITY" >>/tmp/"$PROJECT_NAME.$USER" && exit;
+</code>
+
+<p> This script allows Injection to know the build location of the app before it is copied to the device and the code signing identity being used. Rebuild the application and you can then use Injection as before on an actual device. 

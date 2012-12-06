@@ -1,0 +1,400 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		7F2EB89C145057F200E97A87 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F2EB899145057EA00E97A87 /* AppKit.framework */; };
+		BB25BD5916702D07001F603C /* BundleInjection.h in Resources */ = {isa = PBXBuildFile; fileRef = BBC08C941609E6EA00F005CF /* BundleInjection.h */; };
+		BB25BD5B16702D0A001F603C /* BundleInterface.h in Resources */ = {isa = PBXBuildFile; fileRef = BBC08C951609E6EA00F005CF /* BundleInterface.h */; };
+		BB44AE2F160EA7040007086D /* openShadow.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB80E362160EA4F4005EA5F4 /* openShadow.pl */; };
+		BB5251FA160A2F1700276EB3 /* openProject.pl in Resources */ = {isa = PBXBuildFile; fileRef = BBC08C981609E72500F005CF /* openProject.pl */; };
+		BB5251FB160A2F1700276EB3 /* prepareBundle.pl in Resources */ = {isa = PBXBuildFile; fileRef = BBC08C991609E72500F005CF /* prepareBundle.pl */; };
+		BB5251FC160A2F1700276EB3 /* openBundle.pl in Resources */ = {isa = PBXBuildFile; fileRef = BBC08C9A1609E72500F005CF /* openBundle.pl */; };
+		BB5251FD160A2F1700276EB3 /* revertProject.pl in Resources */ = {isa = PBXBuildFile; fileRef = BBC08C9B1609E72500F005CF /* revertProject.pl */; };
+		BB5251FE160A2F1700276EB3 /* testProject.pl in Resources */ = {isa = PBXBuildFile; fileRef = BBC08C9C1609E72500F005CF /* testProject.pl */; };
+		BB5251FF160A2F1700276EB3 /* listDevice.pl in Resources */ = {isa = PBXBuildFile; fileRef = BBC08C9D1609E72500F005CF /* listDevice.pl */; };
+		BB525200160A2F1700276EB3 /* openURL.pl in Resources */ = {isa = PBXBuildFile; fileRef = BBC08C9E1609E72500F005CF /* openURL.pl */; };
+		BB525201160A2F2300276EB3 /* iOSBundleTemplate in Resources */ = {isa = PBXBuildFile; fileRef = BB5251F5160A2EB700276EB3 /* iOSBundleTemplate */; };
+		BB525202160A2F2600276EB3 /* OSXBundleTemplate in Resources */ = {isa = PBXBuildFile; fileRef = BB5251F6160A2EB700276EB3 /* OSXBundleTemplate */; };
+		BB63E0FA160CA89800E95F5D /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB63E0F7160CA89800E95F5D /* Security.framework */; };
+		BB63E0FB160CA89800E95F5D /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB63E0F8160CA89800E95F5D /* IOKit.framework */; };
+		BB75885516705141002F8269 /* clunk.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = BB75885416705141002F8269 /* clunk.mp3 */; };
+		BB908F26160D3EE500176A0A /* injection.png in Resources */ = {isa = PBXBuildFile; fileRef = BB908F25160D3EE500176A0A /* injection.png */; };
+		BB9BBDEA160E62B7001D4140 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BB9BBDE9160E62B7001D4140 /* libcrypto.dylib */; };
+		BBA3E69A1609F88500E197BD /* InInjectionPlugin.xib in Sources */ = {isa = PBXBuildFile; fileRef = BBA3C3151609F0F600BE117D /* InInjectionPlugin.xib */; };
+		BBBEA6441609EF2B001CED57 /* InPluginDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = BBBEA6421609EF2B001CED57 /* InPluginDocument.m */; };
+		BBC08C901609E6C500F005CF /* InAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = BBC08C891609E6C500F005CF /* InAppDelegate.m */; };
+		BBC08C911609E6C500F005CF /* InDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = BBC08C8B1609E6C500F005CF /* InDocument.m */; };
+		BBC08C921609E6C500F005CF /* InDirectory.m in Sources */ = {isa = PBXBuildFile; fileRef = BBC08C8D1609E6C500F005CF /* InDirectory.m */; };
+		BBC08C931609E6C500F005CF /* InImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = BBC08C8F1609E6C500F005CF /* InImageView.m */; };
+		BBEEAF8616703ED800FFA4C4 /* common.pm in Resources */ = {isa = PBXBuildFile; fileRef = BBEEAF8516703ED800FFA4C4 /* common.pm */; };
+		DA1B5D020E64686800921439 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 089C1672FE841209C02AAC07 /* Foundation.framework */; };
+		DA37E2DC0E6291C8001BDFEF /* InInjectionPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = DA37E2DB0E6291C8001BDFEF /* InInjectionPlugin.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		089C1672FE841209C02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		7F2B355F15FA59D000DB3249 /* InInjectionPlugin.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InInjectionPlugin.h; sourceTree = "<group>"; };
+		7F2EB899145057EA00E97A87 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		8D5B49B6048680CD000E48DA /* InjectionPlugin.xcplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = InjectionPlugin.xcplugin; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BB5251F5160A2EB700276EB3 /* iOSBundleTemplate */ = {isa = PBXFileReference; lastKnownFileType = folder; name = iOSBundleTemplate; path = ../Injection/iOSBundleTemplate; sourceTree = "<group>"; };
+		BB5251F6160A2EB700276EB3 /* OSXBundleTemplate */ = {isa = PBXFileReference; lastKnownFileType = folder; name = OSXBundleTemplate; path = ../Injection/OSXBundleTemplate; sourceTree = "<group>"; };
+		BB5F4FDF160D29ED00C9B5AD /* InjectionPlugin.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = InjectionPlugin.entitlements; sourceTree = "<group>"; };
+		BB63E0F7160CA89800E95F5D /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		BB63E0F8160CA89800E95F5D /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		BB75885416705141002F8269 /* clunk.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = clunk.mp3; path = ../Injection/Injection/clunk.mp3; sourceTree = "<group>"; };
+		BB80E362160EA4F4005EA5F4 /* openShadow.pl */ = {isa = PBXFileReference; lastKnownFileType = text.script.perl; path = openShadow.pl; sourceTree = "<group>"; };
+		BB908F25160D3EE500176A0A /* injection.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = injection.png; path = ../Injection/Injection/injection.png; sourceTree = "<group>"; };
+		BB9BBDE9160E62B7001D4140 /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = usr/lib/libcrypto.dylib; sourceTree = SDKROOT; };
+		BBA3C3151609F0F600BE117D /* InInjectionPlugin.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = InInjectionPlugin.xib; sourceTree = "<group>"; };
+		BBBEA6411609EF2B001CED57 /* InPluginDocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InPluginDocument.h; sourceTree = "<group>"; };
+		BBBEA6421609EF2B001CED57 /* InPluginDocument.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = InPluginDocument.m; sourceTree = "<group>"; };
+		BBC08C881609E6C500F005CF /* InAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InAppDelegate.h; path = ../../Injection/Injection/InAppDelegate.h; sourceTree = "<group>"; };
+		BBC08C891609E6C500F005CF /* InAppDelegate.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = InAppDelegate.m; path = ../../Injection/Injection/InAppDelegate.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		BBC08C8A1609E6C500F005CF /* InDocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InDocument.h; path = ../../Injection/Injection/InDocument.h; sourceTree = "<group>"; };
+		BBC08C8B1609E6C500F005CF /* InDocument.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = InDocument.m; path = ../../Injection/Injection/InDocument.m; sourceTree = "<group>"; };
+		BBC08C8C1609E6C500F005CF /* InDirectory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InDirectory.h; path = ../../Injection/Injection/InDirectory.h; sourceTree = "<group>"; };
+		BBC08C8D1609E6C500F005CF /* InDirectory.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = InDirectory.m; path = ../../Injection/Injection/InDirectory.m; sourceTree = "<group>"; };
+		BBC08C8E1609E6C500F005CF /* InImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InImageView.h; path = ../../Injection/Injection/InImageView.h; sourceTree = "<group>"; };
+		BBC08C8F1609E6C500F005CF /* InImageView.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = InImageView.m; path = ../../Injection/Injection/InImageView.m; sourceTree = "<group>"; };
+		BBC08C941609E6EA00F005CF /* BundleInjection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BundleInjection.h; path = ../../Injection/Injection/BundleInjection.h; sourceTree = "<group>"; };
+		BBC08C951609E6EA00F005CF /* BundleInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BundleInterface.h; path = ../../Injection/Injection/BundleInterface.h; sourceTree = "<group>"; };
+		BBC08C981609E72500F005CF /* openProject.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; name = openProject.pl; path = ../Injection/Injection/openProject.pl; sourceTree = "<group>"; };
+		BBC08C991609E72500F005CF /* prepareBundle.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; name = prepareBundle.pl; path = ../Injection/Injection/prepareBundle.pl; sourceTree = "<group>"; };
+		BBC08C9A1609E72500F005CF /* openBundle.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; name = openBundle.pl; path = ../Injection/Injection/openBundle.pl; sourceTree = "<group>"; };
+		BBC08C9B1609E72500F005CF /* revertProject.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; name = revertProject.pl; path = ../Injection/Injection/revertProject.pl; sourceTree = "<group>"; };
+		BBC08C9C1609E72500F005CF /* testProject.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; name = testProject.pl; path = ../Injection/Injection/testProject.pl; sourceTree = "<group>"; };
+		BBC08C9D1609E72500F005CF /* listDevice.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; name = listDevice.pl; path = ../Injection/Injection/listDevice.pl; sourceTree = "<group>"; };
+		BBC08C9E1609E72500F005CF /* openURL.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; name = openURL.pl; path = ../Injection/Injection/openURL.pl; sourceTree = "<group>"; };
+		BBEEAF8516703ED800FFA4C4 /* common.pm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; name = common.pm; path = ../Injection/Injection/common.pm; sourceTree = "<group>"; };
+		DA37E2DB0E6291C8001BDFEF /* InInjectionPlugin.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = InInjectionPlugin.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8D5B49B3048680CD000E48DA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB9BBDEA160E62B7001D4140 /* libcrypto.dylib in Frameworks */,
+				DA1B5D020E64686800921439 /* Foundation.framework in Frameworks */,
+				7F2EB89C145057F200E97A87 /* AppKit.framework in Frameworks */,
+				BB63E0FA160CA89800E95F5D /* Security.framework in Frameworks */,
+				BB63E0FB160CA89800E95F5D /* IOKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		089C166AFE841209C02AAC07 /* QuietXcode */ = {
+			isa = PBXGroup;
+			children = (
+				7F411B0C15FABAC6002F77B6 /* Classes */,
+				089C167CFE841241C02AAC07 /* Resources */,
+				BB26EB8D160DE85B00A62DFC /* Perl */,
+				BB5251F5160A2EB700276EB3 /* iOSBundleTemplate */,
+				BB5251F6160A2EB700276EB3 /* OSXBundleTemplate */,
+				089C1671FE841209C02AAC07 /* Frameworks and Libraries */,
+				19C28FB8FE9D52D311CA2CBB /* Products */,
+			);
+			name = QuietXcode;
+			sourceTree = "<group>";
+		};
+		089C1671FE841209C02AAC07 /* Frameworks and Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				BB9BBDE9160E62B7001D4140 /* libcrypto.dylib */,
+				BB63E0F7160CA89800E95F5D /* Security.framework */,
+				BB63E0F8160CA89800E95F5D /* IOKit.framework */,
+				7F2EB899145057EA00E97A87 /* AppKit.framework */,
+				089C1672FE841209C02AAC07 /* Foundation.framework */,
+			);
+			name = "Frameworks and Libraries";
+			sourceTree = "<group>";
+		};
+		089C167CFE841241C02AAC07 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				BB5F4FDF160D29ED00C9B5AD /* InjectionPlugin.entitlements */,
+				BB908F25160D3EE500176A0A /* injection.png */,
+				BB75885416705141002F8269 /* clunk.mp3 */,
+				8D5B49B7048680CD000E48DA /* Info.plist */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		19C28FB8FE9D52D311CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8D5B49B6048680CD000E48DA /* InjectionPlugin.xcplugin */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7F411B0C15FABAC6002F77B6 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				BBC08C941609E6EA00F005CF /* BundleInjection.h */,
+				BBC08C951609E6EA00F005CF /* BundleInterface.h */,
+				7F2B355F15FA59D000DB3249 /* InInjectionPlugin.h */,
+				DA37E2DB0E6291C8001BDFEF /* InInjectionPlugin.m */,
+				BBA3C3151609F0F600BE117D /* InInjectionPlugin.xib */,
+				BBBEA6411609EF2B001CED57 /* InPluginDocument.h */,
+				BBBEA6421609EF2B001CED57 /* InPluginDocument.m */,
+				BBC08C881609E6C500F005CF /* InAppDelegate.h */,
+				BBC08C891609E6C500F005CF /* InAppDelegate.m */,
+				BBC08C8A1609E6C500F005CF /* InDocument.h */,
+				BBC08C8B1609E6C500F005CF /* InDocument.m */,
+				BBC08C8C1609E6C500F005CF /* InDirectory.h */,
+				BBC08C8D1609E6C500F005CF /* InDirectory.m */,
+				BBC08C8E1609E6C500F005CF /* InImageView.h */,
+				BBC08C8F1609E6C500F005CF /* InImageView.m */,
+			);
+			path = Classes;
+			sourceTree = "<group>";
+		};
+		BB26EB8D160DE85B00A62DFC /* Perl */ = {
+			isa = PBXGroup;
+			children = (
+				BBEEAF8516703ED800FFA4C4 /* common.pm */,
+				BBC08C9B1609E72500F005CF /* revertProject.pl */,
+				BBC08C9C1609E72500F005CF /* testProject.pl */,
+				BBC08C9D1609E72500F005CF /* listDevice.pl */,
+				BBC08C9E1609E72500F005CF /* openURL.pl */,
+				BBC08C981609E72500F005CF /* openProject.pl */,
+				BBC08C991609E72500F005CF /* prepareBundle.pl */,
+				BBC08C9A1609E72500F005CF /* openBundle.pl */,
+				BB80E362160EA4F4005EA5F4 /* openShadow.pl */,
+			);
+			name = Perl;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8D5B49AC048680CD000E48DA /* InjectionPlugin */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB913A08733D840010E9CD /* Build configuration list for PBXNativeTarget "InjectionPlugin" */;
+			buildPhases = (
+				BB39B0C61614954300ED9240 /* ShellScript */,
+				8D5B49B1048680CD000E48DA /* Sources */,
+				8D5B49B3048680CD000E48DA /* Frameworks */,
+				BB5251F8160A2EF700276EB3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = InjectionPlugin;
+			productInstallPath = "$(HOME)/Library/Bundles";
+			productName = QuietXcode;
+			productReference = 8D5B49B6048680CD000E48DA /* InjectionPlugin.xcplugin */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		089C1669FE841209C02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0440;
+			};
+			buildConfigurationList = 1DEB913E08733D840010E9CD /* Build configuration list for PBXProject "InjectionPlugin" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+				en,
+			);
+			mainGroup = 089C166AFE841209C02AAC07 /* QuietXcode */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8D5B49AC048680CD000E48DA /* InjectionPlugin */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BB5251F8160A2EF700276EB3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB25BD5B16702D0A001F603C /* BundleInterface.h in Resources */,
+				BB25BD5916702D07001F603C /* BundleInjection.h in Resources */,
+				BB44AE2F160EA7040007086D /* openShadow.pl in Resources */,
+				BB5251FA160A2F1700276EB3 /* openProject.pl in Resources */,
+				BB5251FB160A2F1700276EB3 /* prepareBundle.pl in Resources */,
+				BB5251FC160A2F1700276EB3 /* openBundle.pl in Resources */,
+				BB5251FD160A2F1700276EB3 /* revertProject.pl in Resources */,
+				BB5251FE160A2F1700276EB3 /* testProject.pl in Resources */,
+				BB5251FF160A2F1700276EB3 /* listDevice.pl in Resources */,
+				BB525200160A2F1700276EB3 /* openURL.pl in Resources */,
+				BB525201160A2F2300276EB3 /* iOSBundleTemplate in Resources */,
+				BB525202160A2F2600276EB3 /* OSXBundleTemplate in Resources */,
+				BB908F26160D3EE500176A0A /* injection.png in Resources */,
+				BBEEAF8616703ED800FFA4C4 /* common.pm in Resources */,
+				BB75885516705141002F8269 /* clunk.mp3 in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		BB39B0C61614954300ED9240 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = "/usr/bin/perl -w";
+			shellScript = "use Compress::Zlib;\nuse MIME::Base64;\nuse IO::File;\n\nmy $common = join '', IO::File->new( \"< ../Injection/Injection/common.pm\" )->getlines();\n\nIO::File->new( \"> Classes/common.c\")->print( <<CODE );\n\nstatic char common_pm[] = \"@{['Pq88+'.encode_base64('{a#'.compress(\"# line 1 \\\"common.pm\\\"\\n\".$common),'')]}\";\n\nCODE\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8D5B49B1048680CD000E48DA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BBA3E69A1609F88500E197BD /* InInjectionPlugin.xib in Sources */,
+				DA37E2DC0E6291C8001BDFEF /* InInjectionPlugin.m in Sources */,
+				BBC08C901609E6C500F005CF /* InAppDelegate.m in Sources */,
+				BBC08C911609E6C500F005CF /* InDocument.m in Sources */,
+				BBC08C921609E6C500F005CF /* InDirectory.m in Sources */,
+				BBC08C931609E6C500F005CF /* InImageView.m in Sources */,
+				BBBEA6441609EF2B001CED57 /* InPluginDocument.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB913B08733D840010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_ENTITLEMENTS = InjectionPlugin.entitlements;
+				CODE_SIGN_IDENTITY = "3rd Party Mac Developer Application";
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEPLOYMENT_LOCATION = YES;
+				DEPLOYMENT_POSTPROCESSING = YES;
+				DSTROOT = "$(HOME)";
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_GC = supported;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
+				LD_RUNPATH_SEARCH_PATHS = /Developer;
+				PRODUCT_NAME = InjectionPlugin;
+				PROVISIONING_PROFILE = "";
+				STRIP_INSTALLED_PRODUCT = NO;
+				WRAPPER_EXTENSION = xcplugin;
+			};
+			name = Debug;
+		};
+		1DEB913F08733D840010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CURRENT_PROJECT_VERSION = 1.0.1;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					FOR_PLUGIN,
+					OPEN_APP_STORE,
+				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INSTALL_PATH = "$(HOME)/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		BBE29E6E16169C3700F7B1CC /* Debug Web */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CURRENT_PROJECT_VERSION = 1.0.1;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					FOR_PLUGIN,
+					OPEN_APP_STORE,
+					WEB_PLUGIN,
+				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INSTALL_PATH = "$(HOME)/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				SDKROOT = macosx;
+			};
+			name = "Debug Web";
+		};
+		BBE29E6F16169C3700F7B1CC /* Debug Web */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_ENTITLEMENTS = InjectionPlugin.entitlements;
+				CODE_SIGN_IDENTITY = "3rd Party Mac Developer Application";
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEPLOYMENT_LOCATION = YES;
+				DEPLOYMENT_POSTPROCESSING = YES;
+				DSTROOT = "$(HOME)";
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_GC = supported;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
+				LD_RUNPATH_SEARCH_PATHS = /Developer;
+				PRODUCT_NAME = InjectionPlugin;
+				PROVISIONING_PROFILE = "";
+				STRIP_INSTALLED_PRODUCT = NO;
+				WRAPPER_EXTENSION = xcplugin;
+			};
+			name = "Debug Web";
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB913A08733D840010E9CD /* Build configuration list for PBXNativeTarget "InjectionPlugin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB913B08733D840010E9CD /* Debug */,
+				BBE29E6F16169C3700F7B1CC /* Debug Web */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		1DEB913E08733D840010E9CD /* Build configuration list for PBXProject "InjectionPlugin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB913F08733D840010E9CD /* Debug */,
+				BBE29E6E16169C3700F7B1CC /* Debug Web */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 089C1669FE841209C02AAC07 /* Project object */;
+}
