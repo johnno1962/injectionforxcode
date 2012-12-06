@@ -32,56 +32,70 @@ If you find (m)any issues in the code get in contact using the email injection@j
 
 ## Source Files/Roles:
 
-InjectionPlugin/Classes/InInjectionPlugin.m
+__InjectionPlugin/Classes/InInjectionPlugin.m__
+
 Singleton subclass of original InAppDelegate class responding to Xcode Menu events.
 Also responsible for running up TCP server process on port 31442 receiving connections
 from applications with their main.m patched for injection. When an incoming connection
 arrives is opens an instance of InPluginDocument associated with the project of the 
 application.
 
-InjectionPlugin/Classes/InPluginDocument.m
+__InjectionPlugin/Classes/InPluginDocument.m__
+
 An instance is created of this INDocument(NSDocument) subclass for each project being
 injected. Runs a series of Perl scripts in response to menu events to patch projects
 or code for injection.
 
-Injection/Injection/InAppDelegate.m
+__Injection/Injection/InAppDelegate.m__
+
 The original standalone application delegate running the injection service and managing
 licensing.
 
-Injection/Injection/InDirectory.m
+__Injection/Injection/InDirectory.m__
+
 A utility class for OS X 10.6 where FS events can not be selected down to the file level.
 
-Injection/Injection/InDocument.m
+__Injection/Injection/InDocument.m__
+
 The subclass responsible for running the scripts used by injection to patch projects 
 and classes.
 
-Injection/Injection/InImageView.m
+__Injection/Injection/InImageView.m__
+
 NSImageView subclass that knows the path of the file dragged onto it.
 
-Injection/Injection/validatereceipt.m
+__Injection/Injection/validatereceipt.m__
+
 copy protection formerly used for App Store
 
 ## Perl scripts:
 
 __Injection/Injection/listDevice.pl__
+
 Lists the files in the sandbox on an iOS device.
 
-Injection/Injection/openBundle.pl
+__Injection/Injection/openBundle.pl__
+
 Opens the bundle project containing the class categories used for injection.
 
-Injection/Injection/openProject.pl
+__Injection/Injection/openProject.pl__
+
 Run when a project is first used for injection to patch main.m and the ".pch" file
 
-Injection/Injection/openURL.pl
+__Injection/Injection/openURL.pl__
+
 Opens special URLs used by injection to patch/un-patch specific files.
 
-Injection/Injection/prepareBundle.pl
+__Injection/Injection/prepareBundle.pl__
+
 The script called when you inject a source file
 
-Injection/Injection/revertProject.pl
+__Injection/Injection/revertProject.pl__
+
 Un-patches main.m and the project's .pch file when you are finished injection
 
-Injection/Injection/common.pm
+__Injection/Injection/common.pm__
+
 Code shared across the above scripts including the code that patches classes into categories.
 
 Please note:
