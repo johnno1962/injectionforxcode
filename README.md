@@ -30,7 +30,7 @@ InjectionInstallerIII: an installer application for the Xcode plugin.
 
 If you find (m)any issues in the code get in contact using the email injection@johnholdsworth.com
 
-Source Files/Roles:
+## Source Files/Roles:
 
 InjectionPlugin/Classes/InInjectionPlugin.m
 Singleton subclass of original InAppDelegate class responding to Xcode Menu events.
@@ -61,9 +61,9 @@ NSImageView subclass that knows the path of the file dragged onto it.
 Injection/Injection/validatereceipt.m
 copy protection formerly used for App Store
 
-Perl scripts:
+## Perl scripts:
 
-Injection/Injection/listDevice.pl
+__Injection/Injection/listDevice.pl__
 Lists the files in the sandbox on an iOS device.
 
 Injection/Injection/openBundle.pl
