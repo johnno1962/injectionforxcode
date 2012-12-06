@@ -10,7 +10,7 @@ application connects to a server running inside Xcode during testing to receive 
 load bundles containing the code changes you make. For changes to a class to be applied 
 the class is converted into a category for inclusion into these bundles.
 
-A quick demonstration of Injection in action is here:
+A quick demonstration video of Injection in action is available here:
 
 https://vimeo.com/50137444
 
