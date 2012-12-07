@@ -111,6 +111,36 @@ __Injection/Injection/common.pm__
 
 Code shared across the above scripts including the code that patches classes into categories.
 
+## Script output line prefix conventions used in scripts:
+
+__#/__ directory to be monitored for individual file changes (n/a in plugin version)
+
+__#!__ directory to be added to array for FSEvents (n/a for plugin version)
+
+__##__ Start FSEvent stream and use the regexp given for file filter.
+
+__>__ open local file for write
+
+__<__ read from local file (and send to local file or to application)
+
+__!>__ open file on device/simulator for write
+
+__!<__ open file on device/simulator for read (can be directory)
+
+__!/__ load bundle at remote path into application
+
+__!:__ set local "key file" variable (main.m and .pch locations)
+
+__%!__ evaluate javascript in main HTML window
+
+__%2__ load line of HTML in main source status window
+
+__%1__ append line as HTML in console NSTextView
+
+__?__ display alert to user with message
+
+Otherwise line is appended as rich text to the console NSTextView.
+
 ## Please note:
 
 The above copyright notice and this permission notice shall be
