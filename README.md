@@ -111,7 +111,7 @@ __Injection/Injection/common.pm__
 
 Code shared across the above scripts including the code that patches classes into categories.
 
-## Script output line prefix conventions used in scripts:
+## Script line prefix conventions:
 
 __#/__ directory to be monitored for individual file changes (n/a in plugin version)
 
