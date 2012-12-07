@@ -5,23 +5,24 @@ Copyright (c) John Holdsworth 2012
 
 Injection is a plugin for Xcode that allows you to "inject" Objective-C code changes into a
 running application without having to restart it during development and testing. After making
-a couple of minor changes to the applications "main.m" and pre-compilation header your
-application connects to a server running inside Xcode during testing to receive commands to
+a couple of minor changes to your application's "main.m" and pre-compilation header it
+will connect to a server running inside Xcode during testing to receive commands to
 load bundles containing the code changes you make. For changes to a class to be applied, 
 the class is converted into a category for inclusion into these bundles.
 
-A quick demonstration video of Injection in action is available here:
+A quick demonstration video/tutorial of Injection in action is available here:
 
 https://vimeo.com/50137444
 
 The source code is provided on the understanding it will not be redistributed in whole
 or part for payment and can only be redistributed with it's licensing code left in.
-License is hereby granted to evaluate this software for two weeks after which if you are 
-finding it useful I would prefer you made a payment of $10 (or $25 in a 
+License is hereby granted to evaluate this software for two weeks after which if you
+are finding it useful I would prefer you made a payment of $10 (or $25 in a 
 commercial environment) as suggested by the licensing code included in the software
 in order to continue using it.
 
 To use injection, open the InjectionPlugin project, build it and restart Xcode.
+This should add a submenu and an "Inject Source" item to Xcode's "Product" menu.
 Open a simple example project such as UICatalog or GLEssentials from Apple
 and use the "Product/<ProjectName>Patch Project for Injection" menu item to 
 prepare the project and rebuild it. When you run the project it should connect
@@ -111,7 +112,7 @@ __Injection/Injection/common.pm__
 
 Code shared across the above scripts including the code that patches classes into categories.
 
-## Script output line-prefix conventions -[InDocument monitorScript]:
+## Script output line-prefix conventions from -[InDocument monitorScript]:
 
 __#/__ directory to be monitored for individual file changes (n/a in plugin version)
 
@@ -127,7 +128,7 @@ __!>__ open file on device/simulator for write
 
 __!<__ open file on device/simulator for read (can be directory)
 
-__!/__ load bundle at remote path into application
+__!/__ load bundle at remote path into client application
 
 __!:__ set local "key file" variable (main.m and .pch locations)
 
@@ -135,7 +136,7 @@ __%!__ evaluate javascript in source status window
 
 __%2__ load line as HTML into source status window
 
-__%1__ append line as HTML in console NSTextView
+__%1__ append line as HTML to console NSTextView
 
 __?__ display alert to user with message
 
@@ -155,23 +156,23 @@ __$projectFile__ Path to "<ProjectName>.xcodeproj" for current project document
 
 __$executablePath__ Path to application binary connected to plugin for this project
 
-__$patchNumber__ Incrementing counter for sequentially naming bundles.
+__$patchNumber__ Incrementing counter for sequentially naming bundles
 
-__$unlockCommand__ Command to be used to make writable files from "app parameters" window
+__$unlockCommand__ Command to be used to make files writable from "app parameters" panel
 
 __$flags__ As defined below...
 
 __$spare1, $spare2, $spare3, $spare4__ reserved for future use..
 
-__@extra__ Arguments to script for example file(s) to inject.
+__@extra__ Arguments to script for example: file(s) to inject
 
 ## Bitfields of $flags argument passed to scripts
 
 __1<<0__ Project is a "demo" application i.e. /UICatalog|(iOS|OSX)GLEssentials/
 
-__1<<1__ All files for which the implementation is writable should be pre-converted.
+__1<<1__ All classes for which the implementation is writable should be pre-converted
 
-__1<<2__ Class source should be patched "in-place" rather than copying to temporary file.
+__1<<2__ Class source should be patched "in-place" rather than copying to a temporary file
 
 ## Please note:
 
