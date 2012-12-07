@@ -7,7 +7,7 @@ Injection is a plugin for Xcode that allows you to "inject" Objective-C code cha
 running application without having to restart it during development and testing. After making
 a couple of minor changes to the applications "main.m" and pre-compilation header the
 application connects to a server running inside Xcode during testing to receive commands to
-load bundles containing the code changes you make. For changes to a class to be applied 
+load bundles containing the code changes you make. For changes to a class to be applied, 
 the class is converted into a category for inclusion into these bundles.
 
 A quick demonstration video of Injection in action is available here:
@@ -21,7 +21,7 @@ finding it useful I would prefer that you made a payment of $10 (or $25 in a
 commercial environment) as suggested by the licensing code included in the software
 in order to continue using it.
 
-To use injection open the InjectionPlugin project, build it and restart Xcode.
+To use injection, open the InjectionPlugin project, build it and restart Xcode.
 Open a simple example project such as UICatalog or GLEssentials from Apple
 and use the "Product/<ProjectName>Patch Project for Injection" menu item to 
 prepare the project and rebuild it. When you run the project it should connect
