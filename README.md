@@ -18,6 +18,8 @@ A quick demonstration video/tutorial of Injection in action is available here:
 
 https://vimeo.com/50137444
 
+Announcements of major commits to the repo will be made on twitter [@Injection4Xcode](https://twitter.com/#!/@Injection4Xcode).
+
 The source code is provided on the understanding it will not be redistributed in whole
 or part for payment and can only be redistributed with it's licensing code left in.
 License is hereby granted to evaluate this software for two weeks after which if you
