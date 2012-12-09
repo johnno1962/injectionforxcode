@@ -11,7 +11,7 @@
 
 BEGIN { 
     use vars qw($_common_pm);
-    $Id = '$Id: //depot/Injection/Injection/prepareBundle.pl#32 $';
+    $Id = '$Id: //depot/Injection/Injection/prepareBundle.pl#33 $';
     eval "use common;" if !$_common_pm; die $@ if $@;
 }
 
@@ -24,8 +24,6 @@ foreach my $file ( unique( @extra ) ) {
 }
 
 print "Preparing @sourcesToInject to load changed classes.\n";
-
-my @toInclude = prepareSources( 0, @sourcesToInject );
 
 if ( !$executablePath ) {
     print "Appliction is not connected.\n";
@@ -92,6 +90,7 @@ foreach my $xib (@nibs) {
 ############################################################################
 
 my $changesFile = "$InjectionBundle/InjectionBundle/BundleContents.m";
+my @classes = map {$_ =~ /(\w+)\.m/} @sourcesToInject;
 
 my $changesSource = IO::File->new( "> $changesFile" )
     or error "Could not open changes source file as: $!";
@@ -104,35 +103,17 @@ $changesSource->print( <<CODE );
 #define INJECTION_NOIMPL
 #define INJECTION_BUNDLE $productName
 
-#undef _injectable
-#define _injectable( _className ) _className(INJECTION_BUNDLE)
-#undef _injectable_category
-#define _injectable_category( _className, _category ) _className($productName##_##_category)
-
-#undef _INCLASS
-#define _INCLASS( _className ) _className(INJECTION_BUNDLE)
-#undef _INCATEGORY
-#define _INCATEGORY( _className, _category ) _className($productName##_##_category)
-
-#undef _instatic
-#define _instatic extern
-
-#undef _inglobal
-#define _inglobal extern
-
-#undef _inval
-#define _inval( _val... ) /* = _val */
-
 #import "${injectionResources}BundleInjection.h"
 
-@{[join "", map "#import \"$_\"\n\n", @toInclude]}
+@{[join "", map "#import \"$_\"\n\n", @sourcesToInject]}
 
 \@interface $productName : NSObject {}
 \@end
 \@implementation $productName
 
 + (void)load {
-@{[join '', map "    [BundleInjection mapNib:@\"$_\" toPath:@\"$nibMap{$_}\"];\n", keys %nibMap]}    [BundleInjection loaded];
+@{[join '', map "    [BundleInjection mapNib:@\"$_\" toPath:@\"$nibMap{$_}\"];\n", keys %nibMap]}
+@{[join '', map "    [BundleInjection loadedClass:[$_ class]];\n", @classes]}    [BundleInjection loaded];
 }
 
 \@end

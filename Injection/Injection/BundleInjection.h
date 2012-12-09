@@ -32,6 +32,7 @@ struct _in_header { int pathLength, dataLength; };
 + (BOOL)readHeader:(struct _in_header *)header forPath:(char *)path from:(int)fdin;
 + (BOOL)writeBytes:(off_t)bytes withPath:(const char *)path from:(int)fdin to:(int)fdout;
 #ifdef INJECTION_BUNDLE
++ (void)loadedClass:(Class)newClass;
 + (void)loaded;
 #endif
 @end
@@ -375,6 +376,25 @@ static int status;
     else
         INLog( @"Injecting Bundle: %s", path );
     [bundle load];
+}
+
+#import <objc/runtime.h>
+
++ (void)swizzle:(Class)oldClass to:(Class)newClass {
+    unsigned int i = 0, mc = 0;
+    Method *methods = class_copyMethodList(newClass, &mc);
+    for( i = 0; i < mc; i++ )
+        class_replaceMethod(oldClass, method_getName(methods[i]),
+                            method_getImplementation(methods[i]),
+                            method_getTypeEncoding(methods[i]));
+}
+
++ (void)loadedClass:(Class)newClass {
+    const char *className = class_getName(newClass);
+    Class oldClass = objc_getClass(className);
+    [self swizzle:oldClass to:newClass];
+    [self swizzle:object_getClass(oldClass) to:object_getClass(newClass)];
+    NSLog( @"Swizzled: %s", className );
 }
 
 + (void)loaded {

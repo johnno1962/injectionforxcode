@@ -1461,6 +1461,7 @@ wGw</bytes>
 					</object>
 					<object class="NSMenuItem" id="906449684">
 						<reference key="NSMenu" ref="389460137"/>
+						<bool key="NSIsHidden">YES</bool>
 						<string key="NSTitle">Project Source Status</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
@@ -1495,6 +1496,7 @@ wGw</bytes>
 					</object>
 					<object class="NSMenuItem" id="526472787">
 						<reference key="NSMenu" ref="389460137"/>
+						<bool key="NSIsHidden">YES</bool>
 						<string key="NSTitle">View Category Source</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
@@ -3509,7 +3511,7 @@ wGw</bytes>
 			<nil key="activeLocalization"/>
 			<dictionary class="NSMutableDictionary" key="localizations"/>
 			<nil key="sourceID"/>
-			<int key="maxID">457</int>
+			<int key="maxID">458</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<array class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -3713,15 +3715,10 @@ wGw</bytes>
 						<string key="imageChanged:">InImageView</string>
 						<string key="inject:">id</string>
 						<string key="inplaceChanged:">NSButton</string>
-						<string key="intro:">id</string>
-						<string key="listDevice:">id</string>
-						<string key="main:">id</string>
 						<string key="maxd:">NSTextField</string>
-						<string key="pch:">id</string>
 						<string key="revert:">id</string>
 						<string key="shadow:">id</string>
 						<string key="slid:">NSSlider</string>
-						<string key="status:">id</string>
 						<string key="unlockChanged:">NSTextField</string>
 					</dictionary>
 					<dictionary class="NSMutableDictionary" key="actionInfosByName">
@@ -3753,25 +3750,9 @@ wGw</bytes>
 							<string key="name">inplaceChanged:</string>
 							<string key="candidateClassName">NSButton</string>
 						</object>
-						<object class="IBActionInfo" key="intro:">
-							<string key="name">intro:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-						<object class="IBActionInfo" key="listDevice:">
-							<string key="name">listDevice:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-						<object class="IBActionInfo" key="main:">
-							<string key="name">main:</string>
-							<string key="candidateClassName">id</string>
-						</object>
 						<object class="IBActionInfo" key="maxd:">
 							<string key="name">maxd:</string>
 							<string key="candidateClassName">NSTextField</string>
-						</object>
-						<object class="IBActionInfo" key="pch:">
-							<string key="name">pch:</string>
-							<string key="candidateClassName">id</string>
 						</object>
 						<object class="IBActionInfo" key="revert:">
 							<string key="name">revert:</string>
@@ -3784,10 +3765,6 @@ wGw</bytes>
 						<object class="IBActionInfo" key="slid:">
 							<string key="name">slid:</string>
 							<string key="candidateClassName">NSSlider</string>
-						</object>
-						<object class="IBActionInfo" key="status:">
-							<string key="name">status:</string>
-							<string key="candidateClassName">id</string>
 						</object>
 						<object class="IBActionInfo" key="unlockChanged:">
 							<string key="name">unlockChanged:</string>

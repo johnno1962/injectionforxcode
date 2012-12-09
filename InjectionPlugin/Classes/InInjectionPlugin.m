@@ -216,7 +216,7 @@ CFDataRef copy_mac_address(void)
         INLog( @"%@ %@ %@ %@ %@", [textView window], [NSApp keyWindow],
               projectPath, *projects[projectPath], *projects );
         return
-            //!!OOString(self.lastSelected.fileURL.path)[@"\\.mm?$"] &&
+            !!OOString(self.lastSelected.fileURL.path)[@"\\.mm?$"] &&
             [projects[projectPath] connected];
     }
     else if ( [menuItem tag] == 3 )

@@ -11,7 +11,7 @@
 
 BEGIN {
     use vars qw($_common_pm);
-    $Id = '$Id: //depot/Injection/Injection/openProject.pl#39 $';
+    $Id = '$Id: //depot/Injection/Injection/openProject.pl#40 $';
     eval "use common;" if !$_common_pm; die $@ if $@;
 }
 
@@ -149,7 +149,7 @@ my @sources = excludeInjectionBundle( findOldest( $fileFilter ) );
 my @classes = grep $_ =~ /\.mm?$/, @sources;
 
 # convert all obj-c sources which are writable to categories
-prepareSources( 1, grep -w $_ && !-l $_, @classes ) if $flags & 1<<1;
+#prepareSources( 1, grep -w $_ && !-l $_, @classes ) if $flags & 1<<1;
 
 #print "Determining header include path.\n";
 my @dirs = map {($_ =~ m@^(.*)/[^/]*$@)[0]} @sources;

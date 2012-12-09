@@ -7,8 +7,12 @@ Injection is a plugin for Xcode that allows you to "inject" Objective-C code cha
 running application without having to restart it during development and testing. After making
 a couple of minor changes to your application's "main.m" and pre-compilation header it
 will connect to a server running inside Xcode during testing to receive commands to
-load bundles containing the code changes you make. For changes to a class to be applied, 
-the class is converted into a category for inclusion into these bundles.
+load bundles containing the code changes you make. 
+
+Stop Press: Injection no longer has to convert your classes into categories so no changes are made
+to your source code in order for it to work. It works for OS X and iOS projects in the
+simulator and on the device (if you add an extra "run script" build phase as instructed.)
+The time taken to inject is the amount of time it takes to recompile the class modified.
 
 A quick demonstration video/tutorial of Injection in action is available here:
 
@@ -30,7 +34,7 @@ to Xcode which will display a red badge showing the application is prepared to
 load patch bundles. Select text in an implementation source file and use menu item
 "Product/Inject Source" to inject any changes you may have made into the app.
 
-The three projects in the source tree are related as follows:
+The four projects in the source tree are related as follows:
 
 __ObjCpp:__ A type of "Foundation++" set of C++ classes I use for operators on common objects.
 
