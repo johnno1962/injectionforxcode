@@ -11,7 +11,7 @@
 
 BEGIN {
     use vars qw($_common_pm);
-    $Id = '$Id: //depot/Injection/Injection/openProject.pl#40 $';
+    $Id = '$Id$';
     eval "use common;" if !$_common_pm; die $@ if $@;
 }
 
@@ -50,7 +50,7 @@ static const char *_inIPAddresses[] = {@{[join ', ', map "\"$_\"", @ip4Addresses
 #endif
 CODE
 
-print "${RED}main.m has been changed for this application.\\line*** Please build and re-run your application ***\n\n" 
+print "${RED} *** Please build and re-run your application ***\n" 
     if saveFile( $projectMain, $mainSource );
 
 print "!:MAIN=$projRoot$projectMain\n";
@@ -187,7 +187,6 @@ print "##$fileFilter\$\n";
 
 print "%".statusTable( "<tr bgcolor='#d0d0d0'><td>&nbsp;<b>Project Source Status</b> -- ", @classes );
 
-print "\n\\b1 Injection is ready to use, 'Open App Project' to start.\n"
-    ."Use the 'Project Status' control panel to convert classes.\n";
+print "\n\\b1 Injection is ready to use, run application to start.\n";
 
 exit 0;
