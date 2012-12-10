@@ -11,7 +11,7 @@
 
 BEGIN { 
     use vars qw($_common_pm);
-    $Id = '$Id: //depot/Injection/Injection/prepareBundle.pl#33 $';
+    $Id = '$Id$';
     eval "use common;" if !$_common_pm; die $@ if $@;
 }
 
@@ -24,6 +24,9 @@ foreach my $file ( unique( @extra ) ) {
 }
 
 print "Preparing @sourcesToInject to load changed classes.\n";
+
+# classes need no longer be patched for injection
+#my @toInclude = prepareSources( 0, @sourcesToInject );
 
 if ( !$executablePath ) {
     print "Appliction is not connected.\n";
@@ -102,6 +105,25 @@ $changesSource->print( <<CODE );
 
 #define INJECTION_NOIMPL
 #define INJECTION_BUNDLE $productName
+
+#undef _injectable
+#define _injectable( _className ) _className(INJECTION_BUNDLE)
+#undef _injectable_category
+#define _injectable_category( _className, _category ) _className($productName##_##_category)
+
+#undef _INCLASS
+#define _INCLASS( _className ) _className(INJECTION_BUNDLE)
+#undef _INCATEGORY
+#define _INCATEGORY( _className, _category ) _className($productName##_##_category)
+
+#undef _instatic
+#define _instatic extern
+
+#undef _inglobal
+#define _inglobal extern
+
+#undef _inval
+#define _inval( _val... ) /* = _val */
 
 #import "${injectionResources}BundleInjection.h"
 
