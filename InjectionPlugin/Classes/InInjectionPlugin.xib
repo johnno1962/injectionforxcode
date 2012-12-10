@@ -1221,7 +1221,6 @@ wGw</bytes>
 							<string key="NSFrame">{{227, 10}, {41, 17}}</string>
 							<reference key="NSSuperview" ref="379633312"/>
 							<reference key="NSWindow"/>
-							<reference key="NSNextKeyView"/>
 							<string key="NSReuseIdentifierKey">_NS:22</string>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="282493631">
@@ -1417,6 +1416,16 @@ wGw</bytes>
 						</object>
 						<int key="NSTag">3</int>
 					</object>
+					<object class="NSMenuItem" id="617688287">
+						<reference key="NSMenu" ref="389460137"/>
+						<bool key="NSIsDisabled">YES</bool>
+						<bool key="NSIsSeparator">YES</bool>
+						<string key="NSTitle"/>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="186738237"/>
+						<reference key="NSMixedImage" ref="609379193"/>
+					</object>
 					<object class="NSMenuItem" id="598462906">
 						<reference key="NSMenu" ref="389460137"/>
 						<string key="NSTitle">Patch Project for Injection</string>
@@ -1441,7 +1450,7 @@ wGw</bytes>
 						<reference key="NSOnImage" ref="186738237"/>
 						<reference key="NSMixedImage" ref="609379193"/>
 					</object>
-					<object class="NSMenuItem" id="617688287">
+					<object class="NSMenuItem" id="496473928">
 						<reference key="NSMenu" ref="389460137"/>
 						<bool key="NSIsDisabled">YES</bool>
 						<bool key="NSIsSeparator">YES</bool>
@@ -3109,7 +3118,6 @@ wGw</bytes>
 							<reference ref="949329365"/>
 							<reference ref="867503803"/>
 							<reference ref="231251154"/>
-							<reference ref="617688287"/>
 							<reference ref="121824661"/>
 							<reference ref="236759825"/>
 							<reference ref="526472787"/>
@@ -3119,6 +3127,8 @@ wGw</bytes>
 							<reference ref="528535005"/>
 							<reference ref="29884092"/>
 							<reference ref="233098806"/>
+							<reference ref="617688287"/>
+							<reference ref="496473928"/>
 						</array>
 						<reference key="parent" ref="0"/>
 					</object>
@@ -3368,6 +3378,11 @@ wGw</bytes>
 						<reference key="object" ref="168622319"/>
 						<reference key="parent" ref="352939335"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">459</int>
+						<reference key="object" ref="496473928"/>
+						<reference key="parent" ref="389460137"/>
+					</object>
 				</array>
 			</object>
 			<dictionary class="NSMutableDictionary" key="flattenedProperties">
@@ -3501,6 +3516,7 @@ wGw</bytes>
 				<string key="45.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="453.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="454.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="459.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="46.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="47.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="48.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -3511,7 +3527,7 @@ wGw</bytes>
 			<nil key="activeLocalization"/>
 			<dictionary class="NSMutableDictionary" key="localizations"/>
 			<nil key="sourceID"/>
-			<int key="maxID">458</int>
+			<int key="maxID">459</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<array class="NSMutableArray" key="referencedPartialClassDescriptions">

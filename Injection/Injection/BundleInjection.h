@@ -381,12 +381,13 @@ static int status;
 #import <objc/runtime.h>
 
 + (void)swizzle:(Class)oldClass to:(Class)newClass {
-    unsigned int i = 0, mc = 0;
-    Method *methods = class_copyMethodList(newClass, &mc);
-    for( i = 0; i < mc; i++ )
+    unsigned int i = 0, outCount = 0;
+    Method *methods = class_copyMethodList(newClass, &outCount);
+    for( i=0; i<outCount; i++ )
         class_replaceMethod(oldClass, method_getName(methods[i]),
                             method_getImplementation(methods[i]),
                             method_getTypeEncoding(methods[i]));
+    free(methods);
 }
 
 + (void)loadedClass:(Class)newClass {
