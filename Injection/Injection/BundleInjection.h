@@ -398,10 +398,10 @@ static int status;
     NSLog( @" ...ignore any warning, Injection has swizzled class '%s'", className );
 }
 
-+ (void)loadedNotify:(BOOL)silent {
++ (void)loadedNotify:(BOOL)notify {
     INLog( @"Bundle \"%s\" loaded successfully.", strrchr( path, '/' )+1 );
 #ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
-    if ( !silent ) {
+    if ( notify ) {
     //if( strncmp( path, "/var/mobile/", 12 ) == 0 ) {
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Bundle Loaded"
                                                         message:@"Code changes injected." delegate:nil 

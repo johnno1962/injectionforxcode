@@ -169,9 +169,15 @@ sub setBundleLoader {
 my $nolegacy = '@interface\s+(?!\w+\s*\()[^{]+?(?=^[-+@])';
 my $string = '@?"(?:[^"\\\\]*\\\\.)*[^"]*"';
 
+#
+# Since the move to no longer use categories the implementation is no longer
+# patched and much of this code will be removed when things settle down.
+# The header still needs to be patched to use explicit ivars or you
+# get obscure problems with those implicitly defined by properties.
+#
 sub prepareSources {
     my ($preProcessing, @sources) = @_;
-    my $inPlace = ($flags & 1<<2) == 0;
+    my $inPlace = 0;#($flags & 1<<2) == 0;
     my $numberConverted = 0;
     my @toInclude;
 
@@ -180,6 +186,7 @@ sub prepareSources {
         my ($fileName) = $sourcePath =~ m@([^/]+$)@;
         print "Patching $fileName\n";
 
+        if(0){
         $sourceCode =~ s/\b_INCLASS\b/_injectable/g;
         $sourceCode =~ s/\b_INCATEGORY\b/_injectable_category/g;
 
@@ -221,15 +228,17 @@ sub prepareSources {
             }
             $out; 
         @gmeos;
+        }
 
         my $savePath = $inPlace ?
             $sourcePath : "$InjectionBundle/InjectionBundle/Tmp$fileName";
-        push @toInclude, $inPlace ? $sourcePath : "Tmp$fileName";
+        push @toInclude, $inPlace||1 ? $sourcePath : "Tmp$fileName";
 
         (my $headerPath = $sourcePath) =~ s/\.mm?$/.h/;
 
         if ( (-f $headerPath || $headerPath =~ s@/Sources/@/Headers/@ && -f $headerPath) &&
-            (my $headerCode = loadFile( $headerPath )) =~ /$nolegacy|\@(private|package)/m ) {
+            (my $headerCode = loadFile( $headerPath )) ) {#=~ /$nolegacy|\@(private|package)/m ) {
+            $headerCode =~ s/#if(n)?def\s+INJECTION_ENABLED\n(.*?)#endif\n\n/$1?$2:""/seg;
 
             # explicitly define any @synthesized ivars for linking
             my %vars;
@@ -257,7 +266,7 @@ sub prepareSources {
             }
 
             # extensions
-            $sourceCode =~ s/(\@interface\s+\w+\s*\(\)\s*\{\s*\n)([^#][^}]+)(\})/
+            $sourceCode =~ s/(\@interface\s+\w+\s*\(\s*\)\s*\{\s*\n)([^#][^}]+)(\})/
                 $defs .= "\n$2";
                 "$1#ifndef INJECTION_ENABLED\n$2#endif\n$3";
             /e;
@@ -265,15 +274,15 @@ sub prepareSources {
             $headerCode =~ s/($nolegacy)/$1#ifdef INJECTION_ENABLED\n{\n$defs}\n#endif\n\n/m
                 if $defs;
 
-            $headerCode =~ s/(?<!#ifndef INJECTION_ENABLED)(\n\s*\@private.*\n)/\n#ifndef INJECTION_ENABLED$1#endif\n/g;
-            $headerCode =~ s/(?<!#ifndef INJECTION_ENABLED)(\n\s*\@package.*\n)/\n#ifndef INJECTION_ENABLED$1#else\n\@public\n#endif\n/g;
+            #$headerCode =~ s/(?<!#ifndef INJECTION_ENABLED)(\n\s*\@private.*\n)/\n#ifndef INJECTION_ENABLED$1#endif\n/g;
+            #$headerCode =~ s/(?<!#ifndef INJECTION_ENABLED)(\n\s*\@package.*\n)/\n#ifndef INJECTION_ENABLED$1#else\n\@public\n#endif\n/g;
 
             #(my $saveHeader = $savePath) =~ s/\.mm?$/.h/;
             $numberConverted++ if saveFile( $headerPath, $headerCode );
         }
 
         ##### $sourceCode = "#line 1 \"$sourcePath\"\n\n\n$sourceCode" if !$inPlace;
-        if ( $inPlace || !$preProcessing ) {
+        if ( 0 ) { #if ( $inPlace || !$preProcessing ) {
             chmod 0600, $savePath if -f $savePath && !$inPlace;
 
             $numberConverted++
@@ -283,7 +292,7 @@ sub prepareSources {
         }
     }
 
-    print "${RED}Source files have been converted for injection. \\line*** Please build and re-run your application ***\n\n" if $numberConverted > 0;
+    print "${RED}Header files have been converted for injection. \\line*** Please build and re-run your application ***\n\n" if $numberConverted > 0;
 
     return @toInclude;
 }

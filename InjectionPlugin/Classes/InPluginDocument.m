@@ -149,13 +149,12 @@ static int running;
         ~filesChanged;
     }
     else {
+        [inInjectionPlugin buildError];
         [inInjectionPlugin.console orderFront:self];
-        if ( headerChanged )
-            [inInjectionPlugin alert:@"As this is the first time you have injected this class the header file has been modifed. "
-             "You may need to re-run your application to make ivars available for injection's categories to link against."];
-        else
-            [inInjectionPlugin buildError];
     }
+    if ( headerChanged )
+        [inInjectionPlugin alert:@"As this is the first time you have injected this class the header file has been modifed. "
+         "You may need to re-run your application to make ivars available for injection."];
     headerChanged = nagged = 0;
 }
 

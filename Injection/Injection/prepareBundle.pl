@@ -11,7 +11,7 @@
 
 BEGIN { 
     use vars qw($_common_pm);
-    $Id = '$Id: //depot/Injection/Injection/prepareBundle.pl#35 $';
+    $Id = '$Id: //depot/Injection/Injection/prepareBundle.pl#36 $';
     eval "use common;" if !$_common_pm; die $@ if $@;
 }
 
@@ -24,9 +24,7 @@ foreach my $file ( unique( @extra ) ) {
 }
 
 print "Preparing @sourcesToInject to load changed classes.\n";
-
-# classes need no longer be patched for injection
-#my @toInclude = prepareSources( 0, @sourcesToInject );
+my @toInclude = prepareSources( 0, @sourcesToInject );
 
 if ( !$executablePath ) {
     print "Appliction is not connected.\n";
@@ -127,7 +125,7 @@ $changesSource->print( <<CODE );
 
 #import "${injectionResources}BundleInjection.h"
 
-@{[join "", map "#import \"$_\"\n\n", @sourcesToInject]}
+@{[join "", map "#import \"$_\"\n\n", @toInclude]}
 
 \@interface $productName : NSObject {}
 \@end
@@ -135,7 +133,7 @@ $changesSource->print( <<CODE );
 
 + (void)load {
 @{[join '', map "    [BundleInjection mapNib:@\"$_\" toPath:@\"$nibMap{$_}\"];\n", keys %nibMap]}
-@{[join '', map "    [BundleInjection loadedClass:[$_ class]];\n", @classes]}    [BundleInjection loadedNotify:@{[$flags&2]}];
+@{[join '', map "    [BundleInjection loadedClass:[$_ class]];\n", @classes]}    [BundleInjection loadedNotify:@{[$flags&1<<2]}];
 }
 
 \@end

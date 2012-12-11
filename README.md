@@ -178,6 +178,8 @@ __@extra__ Arguments to script for example: file(s) to inject
 
 __1<<0__ Project is a "demo" application i.e. /UICatalog|(iOS|OSX)GLEssentials/
 
+__1<<1__ Pre-convert headers of all writable class implementations.
+
 __1<<2__ Suppress application alert on load of changes.
 
 ## Please note:
