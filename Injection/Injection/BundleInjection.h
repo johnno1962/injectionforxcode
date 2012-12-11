@@ -33,7 +33,7 @@ struct _in_header { int pathLength, dataLength; };
 + (BOOL)writeBytes:(off_t)bytes withPath:(const char *)path from:(int)fdin to:(int)fdout;
 #ifdef INJECTION_BUNDLE
 + (void)loadedClass:(Class)newClass;
-+ (void)loaded;
++ (void)loadedNotify:(BOOL)silent;
 #endif
 @end
 
@@ -395,23 +395,24 @@ static int status;
     Class oldClass = objc_getClass(className);
     [self swizzle:oldClass to:newClass];
     [self swizzle:object_getClass(oldClass) to:object_getClass(newClass)];
-    NSLog( @" ...ignore this warning, Injection has swizzled class '%s'", className );
+    NSLog( @" ...ignore any warning, Injection has swizzled class '%s'", className );
 }
 
-+ (void)loaded {
++ (void)loadedNotify:(BOOL)silent {
     INLog( @"Bundle \"%s\" loaded successfully.", strrchr( path, '/' )+1 );
 #ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
+    if ( !silent ) {
     //if( strncmp( path, "/var/mobile/", 12 ) == 0 ) {
-    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Bundle Loaded"
-                                                    message:@"Code changes injected." delegate:nil 
-                                          cancelButtonTitle:@"OK" otherButtonTitles:nil];
-    [alert show];
-    [alert performSelector:@selector(injectionDismiss)
-                withObject:nil afterDelay:1.];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Bundle Loaded"
+                                                        message:@"Code changes injected." delegate:nil 
+                                              cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        [alert show];
+        [alert performSelector:@selector(injectionDismiss)
+                    withObject:nil afterDelay:1.];
 #ifndef INJECTION_ISARC
-    [alert release];
+        [alert release];
 #endif
-    //}
+    }
 #else
     [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
 #endif

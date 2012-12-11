@@ -42,9 +42,11 @@ __ObjCpp:__ A type of "Foundation++" set of C++ classes I use for operators on c
 
 __Injection:__ The original application which worked alongside Xcode as submitted to Apple
 
-__InjectionPlugin:__ The plugin source packaging the application for use inside Xcode
+__InjectionPlugin:__ The plugin source packaging the application for use inside Xcode __**__
 
 __InjectionInstallerIII:__ an installer application for the Xcode plugin.
+
+__**__ "InjectionPlugin" is the only project you actually need to build to use injection.
 
 If you find (m)any issues in the code, get in contact using the email injection (at) johnholdsworth.com
 
@@ -176,9 +178,7 @@ __@extra__ Arguments to script for example: file(s) to inject
 
 __1<<0__ Project is a "demo" application i.e. /UICatalog|(iOS|OSX)GLEssentials/
 
-__1<<1__ All classes for which the implementation is writable should be pre-converted
-
-__1<<2__ Class source should be patched "in-place" rather than copying to a temporary file
+__1<<2__ Suppress application alert on load of changes.
 
 ## Please note:
 

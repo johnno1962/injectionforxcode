@@ -11,7 +11,7 @@
 
 BEGIN { 
     use vars qw($_common_pm);
-    $Id = '$Id$';
+    $Id = '$Id: //depot/Injection/Injection/prepareBundle.pl#35 $';
     eval "use common;" if !$_common_pm; die $@ if $@;
 }
 
@@ -135,7 +135,7 @@ $changesSource->print( <<CODE );
 
 + (void)load {
 @{[join '', map "    [BundleInjection mapNib:@\"$_\" toPath:@\"$nibMap{$_}\"];\n", keys %nibMap]}
-@{[join '', map "    [BundleInjection loadedClass:[$_ class]];\n", @classes]}    [BundleInjection loaded];
+@{[join '', map "    [BundleInjection loadedClass:[$_ class]];\n", @classes]}    [BundleInjection loadedNotify:@{[$flags&2]}];
 }
 
 \@end
@@ -175,7 +175,7 @@ while ( my $line = <BUILD> ) {
 
     if ( $recording && $line =~ m@/usr/bin/(clang|\S*gcc)@ ) {
         chomp (my $cmd = $line);
-        $recording->print( "time $cmd &&\n" );
+        $recording->print( "time $cmd 2>&1 &&\n" );
         $recorded++;
     }
 

@@ -11,7 +11,7 @@
 
 BEGIN {
     use vars qw($_common_pm);
-    $Id = '$Id$';
+    $Id = '$Id: //depot/Injection/Injection/openProject.pl#42 $';
     eval "use common;" if !$_common_pm; die $@ if $@;
 }
 
@@ -50,7 +50,7 @@ static const char *_inIPAddresses[] = {@{[join ', ', map "\"$_\"", @ip4Addresses
 #endif
 CODE
 
-print "${RED} *** Please build and re-run your application ***\n" 
+print "{${RED}main.m has been changed for this application.\\line *** Please build and re-run your application ***}\n" 
     if saveFile( $projectMain, $mainSource );
 
 print "!:MAIN=$projRoot$projectMain\n";
