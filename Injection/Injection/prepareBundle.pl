@@ -11,7 +11,7 @@
 
 BEGIN { 
     use vars qw($_common_pm);
-    $Id = '$Id: //depot/Injection/Injection/prepareBundle.pl#36 $';
+    $Id = '$Id: //depot/Injection/Injection/prepareBundle.pl#37 $';
     eval "use common;" if !$_common_pm; die $@ if $@;
 }
 
@@ -91,7 +91,8 @@ foreach my $xib (@nibs) {
 ############################################################################
 
 my $changesFile = "$InjectionBundle/InjectionBundle/BundleContents.m";
-my @classes = map {$_ =~ /(\w+)\.m/} @sourcesToInject;
+my @classes = unique map {loadFile( $_ ) =~ /\@implementation\s+(\w+)\b/g} @sourcesToInject;
+my $notify = $flags&1<<2;
 
 my $changesSource = IO::File->new( "> $changesFile" )
     or error "Could not open changes source file as: $!";
@@ -108,11 +109,6 @@ $changesSource->print( <<CODE );
 #define _injectable( _className ) _className(INJECTION_BUNDLE)
 #undef _injectable_category
 #define _injectable_category( _className, _category ) _className($productName##_##_category)
-
-#undef _INCLASS
-#define _INCLASS( _className ) _className(INJECTION_BUNDLE)
-#undef _INCATEGORY
-#define _INCATEGORY( _className, _category ) _className($productName##_##_category)
 
 #undef _instatic
 #define _instatic extern
@@ -133,7 +129,7 @@ $changesSource->print( <<CODE );
 
 + (void)load {
 @{[join '', map "    [BundleInjection mapNib:@\"$_\" toPath:@\"$nibMap{$_}\"];\n", keys %nibMap]}
-@{[join '', map "    [BundleInjection loadedClass:[$_ class]];\n", @classes]}    [BundleInjection loadedNotify:@{[$flags&1<<2]}];
+@{[join '', map "    [BundleInjection loadedClass:[$_ class] notify:$notify];\n", @classes]}    [BundleInjection loadedNotify:$notify];
 }
 
 \@end

@@ -161,8 +161,8 @@ CFDataRef copy_mac_address(void)
     scriptRoot = appRoot; //+@"Data/";
     addresses = [self startServer];
     //[NSColor setIgnoresAlpha:NO];
-    resourcePath = installer+@"Resources/";
-    if ( !OOFile(resourcePath).exists() )
+    //resourcePath = installer+@"Resources/";
+    //if ( !OOFile(resourcePath).exists() )
         resourcePath = appRoot;
 
     if ( !!defaults[kUnlock] )

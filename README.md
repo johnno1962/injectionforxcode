@@ -14,6 +14,11 @@ to your source code in order for it to work. It works for OS X and iOS projects 
 simulator and on the device (if you add an extra "run script" build phase as instructed.)
 The time taken to inject is the amount of time it takes to recompile the class modified.
 
+Support for injecting projects using "CocoaPods" which use "workspaces" added since version 2.6.
+The plugin assumes the workspace file has the same name as the actual project ".xcodeproj".
+Classes in the project or Pods can be injected as well as categories or extensions 
+provided the original class is defined in the same file as the category.
+
 A quick demonstration video/tutorial of Injection in action is available here:
 
 https://vimeo.com/50137444

@@ -32,8 +32,8 @@ struct _in_header { int pathLength, dataLength; };
 + (BOOL)readHeader:(struct _in_header *)header forPath:(char *)path from:(int)fdin;
 + (BOOL)writeBytes:(off_t)bytes withPath:(const char *)path from:(int)fdin to:(int)fdout;
 #ifdef INJECTION_BUNDLE
-+ (void)loadedClass:(Class)newClass;
-+ (void)loadedNotify:(BOOL)silent;
++ (void)loadedClass:(Class)newClass notify:(BOOL)notify;
++ (void)loadedNotify:(BOOL)notify;
 #endif
 @end
 
@@ -390,30 +390,32 @@ static int status;
     free(methods);
 }
 
-+ (void)loadedClass:(Class)newClass {
++ (void)loadedClass:(Class)newClass notify:(BOOL)notify {
     const char *className = class_getName(newClass);
     Class oldClass = objc_getClass(className);
     [self swizzle:oldClass to:newClass];
     [self swizzle:object_getClass(oldClass) to:object_getClass(newClass)];
     //INLog( @" ...ignore any warning, Injection has swizzled class '%s'", className );
-}
-
-+ (void)loadedNotify:(BOOL)notify {
-    INLog( @"Bundle \"%s\" loaded successfully.", strrchr( path, '/' )+1 );
 #ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
     if ( notify ) {
-    //if( strncmp( path, "/var/mobile/", 12 ) == 0 ) {
+        NSString *msg = [[NSString alloc] initWithFormat:@"Class '%s' injected.", className];
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Bundle Loaded"
-                                                        message:@"Code changes injected." delegate:nil 
+                                                        message:msg delegate:nil
                                               cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [alert show];
         [alert performSelector:@selector(injectionDismiss)
                     withObject:nil afterDelay:1.];
 #ifndef INJECTION_ISARC
         [alert release];
+        [msg release];
 #endif
     }
-#else
+#endif
+}
+
++ (void)loadedNotify:(BOOL)notify {
+    INLog( @"Bundle \"%s\" loaded successfully.", strrchr( path, '/' )+1 );
+#ifndef __IPHONE_OS_VERSION_MIN_REQUIRED
     [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
 #endif
     status = YES;
