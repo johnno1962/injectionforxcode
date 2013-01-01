@@ -195,18 +195,30 @@ CFDataRef copy_mac_address(void)
     return [(id)[textView delegate] document];
 }
 
+- (NSString *)xcodeProjPath:(NSDocument *)doc {
+    OOString path = [[doc fileURL] path], ext = [path pathExtension];
+    if ( ext == @"xcodeproj" )
+        return path;
+    else if ( OO [path lastPathComponent] == @"project.xcworkspace" )
+        return [path stringByDeletingLastPathComponent];
+    else if ( ext == @"xcworkspace" ) // CocoaPods
+        return [[path stringByDeletingPathExtension] stringByAppendingString:@".xcodeproj"];
+    else
+        return nil;
+}
+
 - (NSString *)projectPath {
     id delegate = [[NSApp keyWindow] delegate];
     if ( ![delegate respondsToSelector:@selector(document)] )
         delegate = [[textView window] delegate];
     NSDocument *workspace = [delegate document];
     return [workspace isKindOfClass:IDEWorkspaceDocument] ?
-        [[[workspace fileURL] path] stringByDeletingLastPathComponent] : nil;
+        [self xcodeProjPath:workspace] : nil;
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem {
     NSString *projectPath = [self projectPath];
-    if ([menuItem action] == @selector(intro:))
+    if ([menuItem tag] == 1)
         return TRUE;
     else if ([menuItem action] == @selector(inject:)) {
         if ( projectPath )
@@ -245,7 +257,7 @@ CFDataRef copy_mac_address(void)
     OOArray<NSDocument *> docs = [[NSDocumentController sharedDocumentController] documents];
     for ( int i=0 ; i<docs ; i++ )
         if ( [docs[i] isKindOfClass:IDEWorkspaceDocument] &&
-            [[[docs[i] fileURL] path] stringByDeletingLastPathComponent] == project )
+            [self xcodeProjPath:docs[i]] == project )
             return YES;
     return NO;
 }
@@ -292,8 +304,14 @@ static const NSString *kInstalled = @"INInstalled", *kLicensed = @"INLicensed2.x
     }
 }
 
+- (IBAction)license:sender {
+    if ( !refkey )
+        [self setDelegates];
+    [super license:sender];
+}
+
 - (NSString *)webView:(WebView *)sender runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt defaultText:(NSString *)defaultText initiatedByFrame:(WebFrame *)frame {
-    INLog(@"blah blah blah... %@ %@ %d", prompt, defaultText, refkey );
+    INLog(@"License install... %@ %@ %d", prompt, defaultText, refkey );
     if ( OO"license" == prompt ) {
         [webView.window setStyleMask:webView.window.styleMask | NSClosableWindowMask];
         defaults[kLicensed] = licensed = [defaultText intValue];

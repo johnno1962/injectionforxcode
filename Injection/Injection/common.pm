@@ -34,7 +34,7 @@ $productName = "InjectionBundle$patchNumber";
 $mainProjectFile = "$projectFile/project.pbxproj";
 
 ($template, $type, $type2) =
-    loadFile( $mainProjectFile ) =~ /name = UIKit.framework;/ ?
+    loadFile( $mainProjectFile ) =~ m@System/Library/Frameworks/UIKit.framework@ ?
     ("iOSBundleTemplate", "UIKit/UIKit.h", "UIApplication") :
     ("OSXBundleTemplate", "Cocoa/Cocoa.h", "NSApplication");
 
@@ -44,7 +44,7 @@ $bundleProjectFile = "$InjectionBundle/InjectionBundle.xcodeproj/project.pbxproj
 BEGIN { $RED = "{\\colortbl;\\red0\\green0\\blue0;\\red255\\green100\\blue100;}\\cb2"; }
 
 sub error {
-    croak "${RED}@_";
+    croak "{${RED}@_}";
 }
 
 open STDERR, '>&STDOUT';
@@ -186,7 +186,7 @@ sub prepareSources {
         my ($fileName) = $sourcePath =~ m@([^/]+$)@;
         print "Patching $fileName\n";
 
-        if(0){
+    if(0) { # implementation no longer patched
         $sourceCode =~ s/\b_INCLASS\b/_injectable/g;
         $sourceCode =~ s/\b_INCATEGORY\b/_injectable_category/g;
 
@@ -228,7 +228,7 @@ sub prepareSources {
             }
             $out; 
         @gmeos;
-        }
+    }
 
         my $savePath = $inPlace ?
             $sourcePath : "$InjectionBundle/InjectionBundle/Tmp$fileName";
@@ -238,7 +238,7 @@ sub prepareSources {
 
         if ( (-f $headerPath || $headerPath =~ s@/Sources/@/Headers/@ && -f $headerPath) &&
             (my $headerCode = loadFile( $headerPath )) ) {#=~ /$nolegacy|\@(private|package)/m ) {
-            $headerCode =~ s/#if(n)?def\s+INJECTION_ENABLED\n(.*?)#endif\n\n/$1?$2:""/seg;
+            #$headerCode =~ s/#if(n)?def\s+INJECTION_ENABLED\n(.*?)#endif\n\n/$1?$2:""/seg if $preProcessing;
 
             # explicitly define any @synthesized ivars for linking
             my %vars;
@@ -255,9 +255,10 @@ sub prepareSources {
             foreach my $code (($headerCode, $sourceCode)) {
                 while ( $code =~ /\n\@property\s*(\([^)]*\)\s*)?([^*;]*)(\*\s*)?(\b\w+)\s*;/gmo ) {
                     my $unsafe = !$1 || !$3 && index( $2, "id" ) != 0 ? "" :
-                        index( $1, "assign" ) >= 0 ? "INJECTION_UNSAFE " :
-                        index( $1, "weak" ) >= 0 ? "INJECTION_WEAK " : "";
-                   $defs .= "\t$2$unsafe@{[$3||'']}@{[delete $vars{$4}||'_'.$4]};\n";
+                        index( lc $1, "assign" ) >= 0 ? "INJECTION_UNSAFE " :
+                        index( lc $1, "weak" ) >= 0 ? "INJECTION_WEAK " : "";
+                    $defs .= "\t$2 $unsafe@{[$3||'']}@{[delete $vars{$4}||'_'.$4]};\n"
+                        if $defs !~ /\b@{[$vars{$4}||'_'.$4]}\b/;
                 }
             }
 
@@ -282,7 +283,7 @@ sub prepareSources {
         }
 
         ##### $sourceCode = "#line 1 \"$sourcePath\"\n\n\n$sourceCode" if !$inPlace;
-        if ( 0 ) { #if ( $inPlace || !$preProcessing ) {
+        if (0) { #if ( $inPlace || !$preProcessing ) {
             chmod 0600, $savePath if -f $savePath && !$inPlace;
 
             $numberConverted++

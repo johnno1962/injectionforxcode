@@ -395,7 +395,7 @@ static int status;
     Class oldClass = objc_getClass(className);
     [self swizzle:oldClass to:newClass];
     [self swizzle:object_getClass(oldClass) to:object_getClass(newClass)];
-    NSLog( @" ...ignore any warning, Injection has swizzled class '%s'", className );
+    //INLog( @" ...ignore any warning, Injection has swizzled class '%s'", className );
 }
 
 + (void)loadedNotify:(BOOL)notify {
