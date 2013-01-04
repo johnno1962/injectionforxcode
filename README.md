@@ -14,23 +14,11 @@ to your source code in order for it to work. It works for OS X and iOS projects 
 simulator and on the device (if you add an extra "run script" build phase as instructed.)
 The time taken to inject is the amount of time it takes to recompile the class modified.
 
-Support for injecting projects using "CocoaPods" which use "workspaces" added since version 2.6.
-The plugin assumes the workspace file has the same name as the actual project ".xcodeproj".
-Classes in the project or Pods can be injected as well as categories or extensions 
-provided the original class is defined in the same file as the category.
-
 A quick demonstration video/tutorial of Injection in action is available here:
 
 https://vimeo.com/50137444
 
 Announcements of major commits to the repo will be made on twitter [@Injection4Xcode](https://twitter.com/#!/@Injection4Xcode).
-
-The source code is provided on the understanding it will not be redistributed in whole
-or part for payment and can only be redistributed with it's licensing code left in.
-License is hereby granted to evaluate this software for two weeks after which if you
-are finding it useful I would prefer you made a payment of $10 (or $25 in a 
-commercial environment) as suggested by the licensing code included in the software
-in order to continue using it.
 
 To use injection, open the InjectionPlugin project, build it and restart Xcode.
 This should add a submenu and an "Inject Source" item to Xcode's "Product" menu.
@@ -40,6 +28,27 @@ prepare the project and rebuild it. When you run the project it should connect
 to Xcode which will display a red badge showing the application is prepared to 
 load patch bundles. Select text in an implementation source file and use menu item
 "Product/Inject Source" to inject any changes you may have made into the app.
+
+While injection no longer has to patch your class's implementation, it does have to
+patch the class header once to make explicit ivars (the old declarative way) for
+@properties defined in the class and extension. This is required to ensure the ivars
+are created in the same order and at the same offsets in the main application and 
+bundle compile of the class. Note however, the code that does assumes there is 
+only one class defined in any injected source file.
+
+Support for injecting projects using "CocoaPods" which use "workspaces" added since version 2.6.
+The plugin assumes the workspace file has the same name as the actual project ".xcodeproj".
+Classes in the project or Pods can be injected as well as categories or extensions 
+provided the original class is defined in the same file as the category.
+
+__License.__
+
+The source code is provided on the understanding it will not be redistributed in whole
+or part for payment and can only be redistributed with it's licensing code left in.
+License is hereby granted to evaluate this software for two weeks after which if you
+are finding it useful I would prefer you made a payment of $10 (or $25 in a 
+commercial environment) as suggested by the licensing code included in the software
+in order to continue using it.
 
 The four projects in the source tree are related as follows:
 
