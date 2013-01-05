@@ -11,7 +11,7 @@
 
 BEGIN {
     use vars qw($_common_pm);
-    $Id = '$Id: //depot/Injection/Injection/openProject.pl#44 $';
+    $Id = '$Id: //depot/Injection/Injection/openProject.pl#45 $';
     eval "use common;" if !$_common_pm; die $@ if $@;
 }
 
@@ -21,7 +21,7 @@ my @ip4Addresses = grep $_ !~ /:/, @extra;
 
 print "{\\rtf1\\ansi\\def0}\n\\lline Opening project \\b1 '$projectFile'\n";
 
-my ($mainPCH, @others) = findOldest( "^$projName([_-]Prefix)?.pch", $type );
+my ($mainPCH, @others) = findOldest( "$projName([_-]Prefix)?.pch", $type );
 if ( !$mainPCH ) {
     ($mainPCH, @others) = excludeInjectionBundle( findOldest( ".pch", $type ) );
 }

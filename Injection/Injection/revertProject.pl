@@ -11,7 +11,7 @@
 
 BEGIN { 
     use vars qw($_common_pm);
-    $Id = '$Id: //depot/Injection/Injection/revertProject.pl#19 $';
+    $Id = '$Id: //depot/Injection/Injection/revertProject.pl#20 $';
     eval "use common;" if !$_common_pm; die $@ if $@;
 }
 
@@ -27,7 +27,7 @@ saveFile( $projectMain, $mainSource );
 print "Unpatching PCHs.\n";
 foreach my $pch ( excludeInjectionBundle( findOldest( ".pch", $type ) ) ) {
     my $PCH = loadFile( $pch );
-    $PCH =~ s@\n// \Q**IMPORTANT**\E.*?#import[^\n]+\n@@s;
+    $PCH =~ s@\n// \Q*IMPORTANT*\E -- .*?#import[^\n]+\n@@s;
     saveFile( $pch, $PCH );
 }
 
