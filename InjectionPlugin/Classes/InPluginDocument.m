@@ -113,7 +113,7 @@ static int running;
 
 - (void)exec:(NSMutableArray *)command {
     int length = inInjectionPlugin->consoleView.string.length;
-    if ( length > 10000 )
+    if ( length > 100000 )
         inInjectionPlugin->consoleView.string = @"";
     else
         [inInjectionPlugin->consoleView setSelectedRange:NSMakeRange(length, 0)];

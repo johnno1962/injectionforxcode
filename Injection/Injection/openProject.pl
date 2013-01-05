@@ -11,7 +11,7 @@
 
 BEGIN {
     use vars qw($_common_pm);
-    $Id = '$Id: //depot/Injection/Injection/openProject.pl#43 $';
+    $Id = '$Id: //depot/Injection/Injection/openProject.pl#44 $';
     eval "use common;" if !$_common_pm; die $@ if $@;
 }
 
@@ -89,7 +89,7 @@ if ( ! -d $InjectionBundle ) {
 
     my %appframeworks = map {$_, $_} $projectSource =~ /name = (\w+)\.framework;/g;
     my %bundleFrameworks = map {$_, $_} $bundleProject =~ /name = (\w+)\.framework;/g;
-    delete @appframeworks{keys %bundleFrameworks};
+    delete @appframeworks{('SenTestingKit', keys %bundleFrameworks)};
     print "Frameworks for bundle: @{[keys %appframeworks]}\n";
     my $ldFlags = join ' ', map "-framework $_", keys %appframeworks;
     $bundleProject =~ s/(OTHER_LDFLAGS = ")(";)/$1$ldFlags$2/g if $ldFlags;
