@@ -28,6 +28,7 @@ prepare the project and rebuild it. When you run the project it should connect
 to Xcode which will display a red badge showing the application is prepared to 
 load patch bundles. Select text in an implementation source file and use menu item
 "Product/Inject Source" to inject any changes you may have made into the app.
+Be sure to #define DEBUG.
 
 While injection no longer has to patch your class's implementation, it does have to
 patch the class header once to make explicit ivars (the old declarative way) for
