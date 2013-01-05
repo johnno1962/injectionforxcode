@@ -34,7 +34,8 @@ patch the class header once to make explicit ivars (the old declarative way) for
 @properties defined in the class and extension. This is required to ensure the ivars
 are created in the same order and at the same offsets in the main application and 
 bundle compile of the class. Note, the code that does this assumes there is 
-only one class defined in any injected source file.
+only one class defined in any injected source file and that this is only 
+applied during DEBUG builds.
 
 Support for injecting projects using "CocoaPods" which use "workspaces" added since version 2.6.
 The plugin assumes the workspace file has the same name as the actual project ".xcodeproj".
