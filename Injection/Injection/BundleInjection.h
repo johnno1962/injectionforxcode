@@ -218,7 +218,16 @@ static int status;
             while ( [self readHeader:&header forPath:path from:loaderSocket] ) {
 
                 switch ( path[0] ) {
-                    case '>':
+                    case '/': // load bundle
+                        status = NO;
+                        if ( header.dataLength == INJECTION_MAGIC )
+                            [self performSelectorOnMainThread:@selector(doLoad)
+                                                   withObject:nil waitUntilDone:YES];
+                        else
+                            NSLog( @"Synchronization error." );
+                        write( loaderSocket, &status, sizeof status );
+                        break;
+                    case '>': // open file/directory to write/create
                         if ( header.dataLength == INJECTION_NOFILE ) {
                             if ( (fdout = open( file, O_CREAT|O_TRUNC|O_WRONLY, 0755 )) < 0 )
                                 NSLog( @"Could not open \"%s\" for copy as: %s", file, strerror(errno) );
@@ -235,7 +244,7 @@ static int status;
                             fdout = 0;
                         }
                         break;
-                    case '<': {
+                    case '<': { // open file/directory to read/list
                         int fdin = open( file, O_RDONLY );
                         struct stat fdinfo;
 
@@ -282,16 +291,7 @@ static int status;
                         close( fdin );
                     }
                         break;
-                    case '/':
-                        status = NO;
-                        if ( header.dataLength == INJECTION_MAGIC )
-                            [self performSelectorOnMainThread:@selector(doLoad)
-                                                   withObject:nil waitUntilDone:YES];
-                        else
-                            NSLog( @"Synchronization error." );
-                        write( loaderSocket, &status, sizeof status );
-                        break;
-                    case '#': {
+                    case '#': { // update image
                         int len, block = 4096;
                         read( loaderSocket, &len, sizeof len );
                         char *buff = (char *)malloc( len );
@@ -311,7 +311,7 @@ static int status;
 #endif
                     }
                         break;
-                    default:
+                    default: // parameter or color value update
                         if ( isdigit(path[0]) ) {
                             int tag = path[0]-'0';
                             if ( tag < 5 ) {
@@ -380,10 +380,44 @@ static int status;
 
 #import <objc/runtime.h>
 
-+ (void)swizzle:(Class)oldClass to:(Class)newClass {
-    unsigned int i = 0, outCount = 0;
-    Method *methods = class_copyMethodList(newClass, &outCount);
-    for( i=0; i<outCount; i++ )
+// a little inside knowledge of Objective-C data structures for the new version of the class ...
+struct _in_objc_ivars { int twenty, count; struct { long *offsetPtr; char *name, *type; int align, size; } ivars[1]; };
+struct _in_objc_ronly { int z1, offsetStart; long offsetEnd, z2; char *className; void *methods; long z3; struct _in_objc_ivars *ivars; };
+struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_ronly *internal; };
+
++ (void)alignIvarsOf:(Class)newClass to:(Class)oldClass {
+    // new version of class must not have been messaged at this point
+    // i.e. the new version must not have a "+ (void)load" method
+    struct _in_objc_class *nc = (struct _in_objc_class *)newClass;
+    struct _in_objc_ivars *ivars = nc->internal->ivars;
+    [newClass class];
+
+    // align ivars in new class with original
+    for ( int i=0 ; i<ivars->count ; i++ ) {
+        Ivar ivar = class_getInstanceVariable(oldClass, ivars->ivars[i].name);
+        if ( !ivar )
+            NSLog( @"*** Please re-run your application to add ivar '%s' ***",
+                  ivars->ivars[i].name );
+        else {
+            if ( strcmp( ivar_getTypeEncoding( ivar ), ivars->ivars[i].type ) )
+                NSLog( @"*** Ivar '%s' has changed type, re-run application. ***",
+                      ivars->ivars[i].name );
+            *ivars->ivars[i].offsetPtr = ivar_getOffset(ivar);
+        }
+    }
+}
+
++ (void)dumpIvars:(Class)aClass {
+    unsigned i, ic = 0;
+    Ivar *vars = class_copyIvarList(aClass, &ic);
+    for ( i=0; i<ic ; i++ )
+        NSLog( @"%s %s %d", ivar_getName(vars[i]), ivar_getTypeEncoding(vars[i]), ivar_getOffset(vars[i]));
+}
+
++ (void)swizzle:(Class)oldClass from:(Class)newClass {
+    unsigned i, mc = 0;
+    Method *methods = class_copyMethodList(newClass, &mc);
+    for( i=0; i<mc; i++ )
         class_replaceMethod(oldClass, method_getName(methods[i]),
                             method_getImplementation(methods[i]),
                             method_getTypeEncoding(methods[i]));
@@ -393,11 +427,21 @@ static int status;
 + (void)loadedClass:(Class)newClass notify:(BOOL)notify {
     const char *className = class_getName(newClass);
     Class oldClass = objc_getClass(className);
-    [self swizzle:oldClass to:newClass];
-    [self swizzle:object_getClass(oldClass) to:object_getClass(newClass)];
-    //INLog( @" ...ignore any warning, Injection has swizzled class '%s'", className );
+
+    if  ( newClass != oldClass ) {
+        [self alignIvarsOf:newClass to:oldClass];
+
+        // replace implementations for class and instance methods
+        [self swizzle:object_getClass(oldClass) from:object_getClass(newClass)];
+        [self swizzle:oldClass from:newClass];
+    }
+
+#if 0
+    [self dumpIvars:oldClass];
+    [self dumpIvars:newClass];
+#endif
 #ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
-    if ( notify ) {
+    if ( notify & 1<<2 ) {
         NSString *msg = [[NSString alloc] initWithFormat:@"Class '%s' injected.", className];
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Bundle Loaded"
                                                         message:msg delegate:nil
@@ -410,6 +454,8 @@ static int status;
         [msg release];
 #endif
     }
+#else
+    INLog( @" ...ignore any warning, Injection has swizzled class '%s'", className );
 #endif
 }
 

@@ -11,7 +11,7 @@
 
 BEGIN { 
     use vars qw($_common_pm);
-    $Id = '$Id: //depot/Injection/Injection/prepareBundle.pl#37 $';
+    $Id = '$Id: //depot/Injection/Injection/prepareBundle.pl#39 $';
     eval "use common;" if !$_common_pm; die $@ if $@;
 }
 
@@ -121,18 +121,18 @@ $changesSource->print( <<CODE );
 
 #import "${injectionResources}BundleInjection.h"
 
-@{[join "", map "#import \"$_\"\n\n", @toInclude]}
-
-\@interface $productName : NSObject {}
+\@interface $productName : NSObject
 \@end
 \@implementation $productName
 
 + (void)load {
-@{[join '', map "    [BundleInjection mapNib:@\"$_\" toPath:@\"$nibMap{$_}\"];\n", keys %nibMap]}
-@{[join '', map "    [BundleInjection loadedClass:[$_ class] notify:$notify];\n", @classes]}    [BundleInjection loadedNotify:$notify];
+    @{[join '', map "    [BundleInjection mapNib:@\"$_\" toPath:@\"$nibMap{$_}\"];\n", keys %nibMap]}
+    @{[join '', map "    extern Class OBJC_CLASS_\$_$_;\n\t[BundleInjection loadedClass:(Class)&OBJC_CLASS_\$_$_ notify:$notify];\n", @classes]}    [BundleInjection loadedNotify:$notify];
 }
 
 \@end
+
+@{[join "", map "#import \"$_\"\n\n", @toInclude]}
 
 CODE
 $changesSource->close();

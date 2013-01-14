@@ -30,20 +30,12 @@ load patch bundles. Select text in an implementation source file and use menu it
 "Product/Inject Source" to inject any changes you may have made into the app.
 Be sure to #define DEBUG.
 
-While injection no longer has to patch your class's implementation, it does have to
-patch the class header once to make explicit ivars (the old declarative way) for
-@properties defined in the class and extension. This is required to ensure the ivars
-are created in the same order and at the same offsets in the main application and 
-bundle compile of the class. Note, the code that does this assumes there is 
-only one class defined in any injected source file and that this is only 
-applied during DEBUG builds.
-
-Support for injecting projects using "CocoaPods" which use "workspaces" added since version 2.6.
+Injection no longer need to patch your class source or headers in any way. Support
+for injecting projects using "CocoaPods" which use "workspaces" added since version 2.7.
 The plugin assumes the workspace file has the same name as the actual project ".xcodeproj".
-Classes in the project or Pods can be injected as well as categories or extensions 
-provided the original class is defined in the same file as the category.
+Classes in the project or Pods can be injected as well as categories or extensions.
 
-__License.__
+## License
 
 The source code is provided on the understanding it will not be redistributed in whole
 or part for payment and can only be redistributed with it's licensing code left in.
@@ -64,7 +56,7 @@ __InjectionInstallerIII:__ an installer application for the Xcode plugin.
 
 __**__ "InjectionPlugin" is the only project you actually need to build to use injection.
 
-If you find (m)any issues in the code, get in contact using the email injection (at) johnholdsworth.com
+If you find (m)any issues in the code, get in contact using the email: support (at) injectionforxcode.com
 
 ## Source Files/Roles:
 

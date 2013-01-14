@@ -172,11 +172,12 @@ my $string = '@?"(?:[^"\\\\]*\\\\.)*[^"]*"';
 #
 # Since the move to no longer use categories the implementation is no longer
 # patched and much of this code will be removed when things settle down.
-# The header still needs to be patched to use explicit ivars or you
-# get obscure problems with those implicitly defined by properties.
+# The header also no longer needs to be patched to use explicit ivars.
 #
 sub prepareSources {
     my ($preProcessing, @sources) = @_;
+    return @sources;
+
     my $inPlace = 0;#($flags & 1<<2) == 0;
     my $numberConverted = 0;
     my @toInclude;
