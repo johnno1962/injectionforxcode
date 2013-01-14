@@ -34,6 +34,7 @@ Injection no longer need to patch your class source or headers in any way. Suppo
 for injecting projects using "CocoaPods" which use "workspaces" added since version 2.7.
 The plugin assumes the workspace file has the same name as the actual project ".xcodeproj".
 Classes in the project or Pods can be injected as well as categories or extensions.
+The only limitation now is that the class being injected must not have a +load method.
 
 ## License
 
