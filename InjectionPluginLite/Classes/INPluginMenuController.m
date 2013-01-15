@@ -83,7 +83,6 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
     serverAddresses = [self startServer];
     webView.drawsBackground = NO;
     [self setProgress:@-1];
-    [self setupLicensing];
 }
 
 - (void)setProgress:(NSNumber *)fraction {
@@ -112,7 +111,11 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 
 - (NSString *)lastFileSaving:(BOOL)save {
     NSDocument *doc = [(id)[lastTextView delegate] document];
-    if ( save ) [doc saveDocument:self];
+    if ( save ) {
+        if ( !refkey )
+            [self setupLicensing];
+        [doc saveDocument:self];
+    }
     return [[doc fileURL] path];
 }
 
@@ -159,17 +162,17 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 - (void)openURL:(NSString *)url {
     [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:url]];
 }
-- (IBAction)support:sender{
+- (IBAction)support:sender {
     [self openURL:@"mailto:support@injectionforxcode.com?subject=Injection%20Feedback"];
 }
                   
-- (IBAction)patchMain:sender{
+- (IBAction)patchMain:sender {
     [client runScript:@"patchMain.pl" withArg:[self lastFileSaving:YES]];
 }
-- (IBAction)patchPch:sender{
+- (IBAction)patchPch:sender {
     [client runScript:@"patchPch.pl" withArg:[self lastFileSaving:YES]];
 }
-- (IBAction)openBundle:sender{
+- (IBAction)openBundle:sender {
     [client runScript:@"openBundle.pl" withArg:[self lastFileSaving:YES]];
 }
 - (IBAction)injectSource:(id)sender {
@@ -324,6 +327,7 @@ static CFDataRef copy_mac_address(void)
 
     licensed =  [defaults integerForKey:kLicensed];
     if ( licensed != refkey ) {
+        // 17 day eval period
         if ( now < installed + 17*24*60*60+60 )
             licensed = refkey = 1;
         else
