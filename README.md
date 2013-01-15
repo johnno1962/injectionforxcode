@@ -69,7 +69,8 @@ the product menu. To use tunable parameters, select the projects .pch file and
 select "Injection/Patch project .pch" to make the interface to injection
 available to all sources. This version knows nothing about project files and
 does not automatically propagate parameters into injection's bundle project
-so you may need to check things such as include path and compiler/ARC.  
+so you may need to check things such as include path and compiler/ARC using
+the menu item "Injection/Open Bundle Project" and editing it until it builds.
 
 ## Source Files/Roles:
 
