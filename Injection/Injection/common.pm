@@ -44,7 +44,7 @@ $bundleProjectFile = "$InjectionBundle/InjectionBundle.xcodeproj/project.pbxproj
 BEGIN { $RED = "{\\colortbl;\\red0\\green0\\blue0;\\red255\\green100\\blue100;}\\cb2"; }
 
 sub error {
-    croak "{${RED}@_}";
+    croak "${RED}@_";
 }
 
 open STDERR, '>&STDOUT';
