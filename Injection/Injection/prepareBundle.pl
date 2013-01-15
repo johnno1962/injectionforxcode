@@ -11,7 +11,7 @@
 
 BEGIN { 
     use vars qw($_common_pm);
-    $Id = '$Id: //depot/Injection/Injection/prepareBundle.pl#39 $';
+    $Id = '$Id$';
     eval "use common;" if !$_common_pm; die $@ if $@;
 }
 
@@ -127,7 +127,7 @@ $changesSource->print( <<CODE );
 
 + (void)load {
     @{[join '', map "    [BundleInjection mapNib:@\"$_\" toPath:@\"$nibMap{$_}\"];\n", keys %nibMap]}
-    @{[join '', map "    extern Class OBJC_CLASS_\$_$_;\n\t[BundleInjection loadedClass:(Class)&OBJC_CLASS_\$_$_ notify:$notify];\n", @classes]}    [BundleInjection loadedNotify:$notify];
+    @{[join '', map "    extern Class OBJC_CLASS_\$_$_;\n\t[BundleInjection loadedClass:INJECTION_BRIDGE(Class)(void *)&OBJC_CLASS_\$_$_ notify:$notify];\n", @classes]}    [BundleInjection loadedNotify:$notify];
 }
 
 \@end
