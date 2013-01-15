@@ -388,7 +388,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 + (void)alignIvarsOf:(Class)newClass to:(Class)oldClass {
     // new version of class must not have been messaged at this point
     // i.e. the new version must not have a "+ (void)load" method
-    struct _in_objc_class *nc = (struct _in_objc_class *)newClass;
+    struct _in_objc_class *nc = INJECTION_BRIDGE(struct _in_objc_class *)newClass;
     struct _in_objc_ivars *ivars = nc->internal->ivars;
     [newClass class];
 

@@ -105,9 +105,11 @@ extern NSString *kINNotification; // bundle loaded
 #endif
 
 #ifdef INJECTION_ISARC
+#define INJECTION_BRIDGE(_type) (__bridge _type)
 #define INJECTION_UNSAFE __unsafe_unretained
 #define INJECTION_WEAK __weak
 #else
+#define INJECTION_BRIDGE(_type) (_type)
 #define INJECTION_UNSAFE
 #define INJECTION_WEAK
 #endif
