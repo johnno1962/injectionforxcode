@@ -56,8 +56,20 @@ __InjectionPlugin:__ The plugin source packaging the application for use inside 
 __InjectionInstallerIII:__ an installer application for the Xcode plugin.
 
 __**__ "InjectionPlugin" is the only project you actually need to build to use injection.
+The build will try to codesign the plugin. If you don't have a developer id, clear the
+"Code Signing Identity" in the build settings and check that it still works.
 
 If you find (m)any issues in the code, get in contact using the email: support (at) injectionforxcode.com
+
+__InjectionPluginLite__ is a beta of a complete standalone rewrite of the Injection plugin removing
+all dead code from the long and winding road injection has taken to get to this point. This version
+works slightly differently automating less to support a wider range of workspaces.
+To use, select the project's main.m and select "Injection/Patch Project main.m" from
+the product menu. To use tunable parameters, select the projects .pch file and
+select "Injection/Patch project .pch" to make the interface to injection
+available to all sources. This version knows nothing about project files and
+does not automatically propagate parameters into injection's bundle project
+so you may need to check things such as include path and compiler/ARC.  
 
 ## Source Files/Roles:
 

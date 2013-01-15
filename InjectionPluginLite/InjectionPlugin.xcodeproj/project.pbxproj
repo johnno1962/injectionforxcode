@@ -1,0 +1,332 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		7F2EB89C145057F200E97A87 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F2EB899145057EA00E97A87 /* AppKit.framework */; };
+		BB3EFFB116A4B815001F0065 /* INPluginClientController.m in Sources */ = {isa = PBXBuildFile; fileRef = BB3EFFAD16A4B815001F0065 /* INPluginClientController.m */; };
+		BB3EFFB216A4B815001F0065 /* INPluginMenuController.m in Sources */ = {isa = PBXBuildFile; fileRef = BB3EFFAF16A4B815001F0065 /* INPluginMenuController.m */; };
+		BB3EFFBA16A53307001F0065 /* injection.png in Resources */ = {isa = PBXBuildFile; fileRef = BB3EFFB816A53307001F0065 /* injection.png */; };
+		BB3EFFCF16A535C6001F0065 /* iOSBundleTemplate in Resources */ = {isa = PBXBuildFile; fileRef = BB3EFFCD16A535C6001F0065 /* iOSBundleTemplate */; };
+		BB3EFFD016A535C6001F0065 /* OSXBundleTemplate in Resources */ = {isa = PBXBuildFile; fileRef = BB3EFFCE16A535C6001F0065 /* OSXBundleTemplate */; };
+		BB3EFFD716A541A6001F0065 /* INPluginMenuController.xib in Resources */ = {isa = PBXBuildFile; fileRef = BB3EFFB016A4B815001F0065 /* INPluginMenuController.xib */; };
+		BB3EFFDA16A541DB001F0065 /* BundleInterface.h in Resources */ = {isa = PBXBuildFile; fileRef = BB3EFFD916A541B8001F0065 /* BundleInterface.h */; };
+		BB3EFFDB16A541DB001F0065 /* BundleInjection.h in Resources */ = {isa = PBXBuildFile; fileRef = BB3EFFD816A541B8001F0065 /* BundleInjection.h */; };
+		BB5DEF9716A55D2A00E97DD4 /* common.pm in Resources */ = {isa = PBXBuildFile; fileRef = BB5DEF9616A55D2A00E97DD4 /* common.pm */; };
+		BB5DEF9C16A55E1800E97DD4 /* injectSource.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB5DEF9816A55E1800E97DD4 /* injectSource.pl */; };
+		BB5DEF9D16A55E1800E97DD4 /* openBundle.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB5DEF9916A55E1800E97DD4 /* openBundle.pl */; };
+		BB5DEF9E16A55E1800E97DD4 /* patchMain.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB5DEF9A16A55E1800E97DD4 /* patchMain.pl */; };
+		BB5DEF9F16A55E1800E97DD4 /* patchPch.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB5DEF9B16A55E1800E97DD4 /* patchPch.pl */; };
+		BB5DEFA116A5607F00E97DD4 /* InjectionPlugin.entitlements in Resources */ = {isa = PBXBuildFile; fileRef = BB5DEFA016A5607F00E97DD4 /* InjectionPlugin.entitlements */; };
+		BB63E0FB160CA89800E95F5D /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB63E0F8160CA89800E95F5D /* IOKit.framework */; };
+		DA1B5D020E64686800921439 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 089C1672FE841209C02AAC07 /* Foundation.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		089C1672FE841209C02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		7F2EB899145057EA00E97A87 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		8D5B49B6048680CD000E48DA /* InjectionPlugin.xcplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = InjectionPlugin.xcplugin; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BB3EFFAC16A4B815001F0065 /* INPluginClientController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INPluginClientController.h; sourceTree = "<group>"; };
+		BB3EFFAD16A4B815001F0065 /* INPluginClientController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = INPluginClientController.m; sourceTree = "<group>"; };
+		BB3EFFAE16A4B815001F0065 /* INPluginMenuController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INPluginMenuController.h; sourceTree = "<group>"; };
+		BB3EFFAF16A4B815001F0065 /* INPluginMenuController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = INPluginMenuController.m; sourceTree = "<group>"; };
+		BB3EFFB016A4B815001F0065 /* INPluginMenuController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = INPluginMenuController.xib; sourceTree = "<group>"; };
+		BB3EFFB816A53307001F0065 /* injection.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = injection.png; sourceTree = "<group>"; };
+		BB3EFFCD16A535C6001F0065 /* iOSBundleTemplate */ = {isa = PBXFileReference; lastKnownFileType = folder; path = iOSBundleTemplate; sourceTree = "<group>"; };
+		BB3EFFCE16A535C6001F0065 /* OSXBundleTemplate */ = {isa = PBXFileReference; lastKnownFileType = folder; path = OSXBundleTemplate; sourceTree = "<group>"; };
+		BB3EFFD816A541B8001F0065 /* BundleInjection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BundleInjection.h; sourceTree = "<group>"; };
+		BB3EFFD916A541B8001F0065 /* BundleInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BundleInterface.h; sourceTree = "<group>"; };
+		BB5DEF9616A55D2A00E97DD4 /* common.pm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = common.pm; sourceTree = "<group>"; };
+		BB5DEF9816A55E1800E97DD4 /* injectSource.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = injectSource.pl; sourceTree = "<group>"; };
+		BB5DEF9916A55E1800E97DD4 /* openBundle.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = openBundle.pl; sourceTree = "<group>"; };
+		BB5DEF9A16A55E1800E97DD4 /* patchMain.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = patchMain.pl; sourceTree = "<group>"; };
+		BB5DEF9B16A55E1800E97DD4 /* patchPch.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = patchPch.pl; sourceTree = "<group>"; };
+		BB5DEFA016A5607F00E97DD4 /* InjectionPlugin.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = InjectionPlugin.entitlements; sourceTree = "<group>"; };
+		BB63E0F8160CA89800E95F5D /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8D5B49B3048680CD000E48DA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DA1B5D020E64686800921439 /* Foundation.framework in Frameworks */,
+				7F2EB89C145057F200E97A87 /* AppKit.framework in Frameworks */,
+				BB63E0FB160CA89800E95F5D /* IOKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		089C166AFE841209C02AAC07 /* QuietXcode */ = {
+			isa = PBXGroup;
+			children = (
+				7F411B0C15FABAC6002F77B6 /* Classes */,
+				089C167CFE841241C02AAC07 /* Resources */,
+				BB26EB8D160DE85B00A62DFC /* Scripts */,
+				BB3EFFCD16A535C6001F0065 /* iOSBundleTemplate */,
+				BB3EFFCE16A535C6001F0065 /* OSXBundleTemplate */,
+				089C1671FE841209C02AAC07 /* Frameworks and Libraries */,
+				19C28FB8FE9D52D311CA2CBB /* Products */,
+			);
+			name = QuietXcode;
+			sourceTree = "<group>";
+		};
+		089C1671FE841209C02AAC07 /* Frameworks and Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				089C1672FE841209C02AAC07 /* Foundation.framework */,
+				7F2EB899145057EA00E97A87 /* AppKit.framework */,
+				BB63E0F8160CA89800E95F5D /* IOKit.framework */,
+			);
+			name = "Frameworks and Libraries";
+			sourceTree = "<group>";
+		};
+		089C167CFE841241C02AAC07 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				BB5DEFA016A5607F00E97DD4 /* InjectionPlugin.entitlements */,
+				BB3EFFB816A53307001F0065 /* injection.png */,
+				8D5B49B7048680CD000E48DA /* Info.plist */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		19C28FB8FE9D52D311CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8D5B49B6048680CD000E48DA /* InjectionPlugin.xcplugin */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7F411B0C15FABAC6002F77B6 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				BB3EFFAE16A4B815001F0065 /* INPluginMenuController.h */,
+				BB3EFFAF16A4B815001F0065 /* INPluginMenuController.m */,
+				BB3EFFB016A4B815001F0065 /* INPluginMenuController.xib */,
+				BB3EFFAC16A4B815001F0065 /* INPluginClientController.h */,
+				BB3EFFAD16A4B815001F0065 /* INPluginClientController.m */,
+				BB3EFFD916A541B8001F0065 /* BundleInterface.h */,
+				BB3EFFD816A541B8001F0065 /* BundleInjection.h */,
+			);
+			path = Classes;
+			sourceTree = "<group>";
+		};
+		BB26EB8D160DE85B00A62DFC /* Scripts */ = {
+			isa = PBXGroup;
+			children = (
+				BB5DEF9616A55D2A00E97DD4 /* common.pm */,
+				BB5DEF9A16A55E1800E97DD4 /* patchMain.pl */,
+				BB5DEF9B16A55E1800E97DD4 /* patchPch.pl */,
+				BB5DEF9916A55E1800E97DD4 /* openBundle.pl */,
+				BB5DEF9816A55E1800E97DD4 /* injectSource.pl */,
+			);
+			name = Scripts;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8D5B49AC048680CD000E48DA /* InjectionPlugin */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB913A08733D840010E9CD /* Build configuration list for PBXNativeTarget "InjectionPlugin" */;
+			buildPhases = (
+				8D5B49B1048680CD000E48DA /* Sources */,
+				8D5B49B3048680CD000E48DA /* Frameworks */,
+				BB5251F8160A2EF700276EB3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = InjectionPlugin;
+			productInstallPath = "$(HOME)/Library/Bundles";
+			productName = QuietXcode;
+			productReference = 8D5B49B6048680CD000E48DA /* InjectionPlugin.xcplugin */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		089C1669FE841209C02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0440;
+			};
+			buildConfigurationList = 1DEB913E08733D840010E9CD /* Build configuration list for PBXProject "InjectionPlugin" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+				en,
+			);
+			mainGroup = 089C166AFE841209C02AAC07 /* QuietXcode */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8D5B49AC048680CD000E48DA /* InjectionPlugin */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BB5251F8160A2EF700276EB3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB3EFFD716A541A6001F0065 /* INPluginMenuController.xib in Resources */,
+				BB3EFFDA16A541DB001F0065 /* BundleInterface.h in Resources */,
+				BB3EFFDB16A541DB001F0065 /* BundleInjection.h in Resources */,
+				BB3EFFBA16A53307001F0065 /* injection.png in Resources */,
+				BB3EFFCF16A535C6001F0065 /* iOSBundleTemplate in Resources */,
+				BB3EFFD016A535C6001F0065 /* OSXBundleTemplate in Resources */,
+				BB5DEF9716A55D2A00E97DD4 /* common.pm in Resources */,
+				BB5DEF9C16A55E1800E97DD4 /* injectSource.pl in Resources */,
+				BB5DEF9D16A55E1800E97DD4 /* openBundle.pl in Resources */,
+				BB5DEF9E16A55E1800E97DD4 /* patchMain.pl in Resources */,
+				BB5DEF9F16A55E1800E97DD4 /* patchPch.pl in Resources */,
+				BB5DEFA116A5607F00E97DD4 /* InjectionPlugin.entitlements in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8D5B49B1048680CD000E48DA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB3EFFB216A4B815001F0065 /* INPluginMenuController.m in Sources */,
+				BB3EFFB116A4B815001F0065 /* INPluginClientController.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB913B08733D840010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_ENTITLEMENTS = InjectionPlugin.entitlements;
+				CODE_SIGN_IDENTITY = "3rd Party Mac Developer Application";
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEPLOYMENT_LOCATION = YES;
+				DEPLOYMENT_POSTPROCESSING = YES;
+				DSTROOT = "$(HOME)";
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_GC = supported;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
+				LD_RUNPATH_SEARCH_PATHS = /Developer;
+				PRODUCT_NAME = InjectionPlugin;
+				PROVISIONING_PROFILE = "";
+				STRIP_INSTALLED_PRODUCT = NO;
+				WRAPPER_EXTENSION = xcplugin;
+			};
+			name = Debug;
+		};
+		1DEB913F08733D840010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CURRENT_PROJECT_VERSION = 3.0;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					FOR_PLUGIN,
+					OPEN_APP_STORE,
+				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INSTALL_PATH = "$(HOME)/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		BBE29E6E16169C3700F7B1CC /* Debug Web */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CURRENT_PROJECT_VERSION = 3.0;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					FOR_PLUGIN,
+					OPEN_APP_STORE,
+					WEB_PLUGIN,
+				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INSTALL_PATH = "$(HOME)/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				SDKROOT = macosx;
+			};
+			name = "Debug Web";
+		};
+		BBE29E6F16169C3700F7B1CC /* Debug Web */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_ENTITLEMENTS = InjectionPlugin.entitlements;
+				CODE_SIGN_IDENTITY = "3rd Party Mac Developer Application";
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEPLOYMENT_LOCATION = YES;
+				DEPLOYMENT_POSTPROCESSING = YES;
+				DSTROOT = "$(HOME)";
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_GC = supported;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
+				LD_RUNPATH_SEARCH_PATHS = /Developer;
+				PRODUCT_NAME = InjectionPlugin;
+				PROVISIONING_PROFILE = "";
+				STRIP_INSTALLED_PRODUCT = NO;
+				WRAPPER_EXTENSION = xcplugin;
+			};
+			name = "Debug Web";
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB913A08733D840010E9CD /* Build configuration list for PBXNativeTarget "InjectionPlugin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB913B08733D840010E9CD /* Debug */,
+				BBE29E6F16169C3700F7B1CC /* Debug Web */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		1DEB913E08733D840010E9CD /* Build configuration list for PBXProject "InjectionPlugin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB913F08733D840010E9CD /* Debug */,
+				BBE29E6E16169C3700F7B1CC /* Debug Web */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 089C1669FE841209C02AAC07 /* Project object */;
+}
