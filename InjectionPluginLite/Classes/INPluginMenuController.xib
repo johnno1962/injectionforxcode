@@ -98,7 +98,7 @@
 											<string key="NSFrameSize">{465, 256}</string>
 											<reference key="NSSuperview" ref="303166865"/>
 											<reference key="NSWindow"/>
-											<reference key="NSNextKeyView" ref="640256177"/>
+											<reference key="NSNextKeyView" ref="365303789"/>
 											<string key="NSReuseIdentifierKey">_NS:13</string>
 											<object class="NSTextContainer" key="NSTextContainer" id="386417726">
 												<object class="NSLayoutManager" key="NSLayoutManager">
@@ -362,7 +362,7 @@ wGw</bytes>
 							<string key="NSFrame">{{-1, 18}, {482, 258}}</string>
 							<reference key="NSSuperview" ref="937701230"/>
 							<reference key="NSWindow"/>
-							<reference key="NSNextKeyView" ref="365303789"/>
+							<reference key="NSNextKeyView" ref="303166865"/>
 							<string key="NSReuseIdentifierKey">_NS:9</string>
 							<int key="NSsFlags">133138</int>
 							<reference key="NSVScroller" ref="640256177"/>
@@ -1463,6 +1463,64 @@ wGw</bytes>
 						<object class="NSMenu" key="NSSubmenu" id="352939335">
 							<string key="NSTitle">Open Resource</string>
 							<array class="NSMutableArray" key="NSMenuItems">
+								<object class="NSMenuItem" id="436138217">
+									<reference key="NSMenu" ref="352939335"/>
+									<string key="NSTitle">Patch main.m Script</string>
+									<string key="NSKeyEquiv"/>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="186738237"/>
+									<reference key="NSMixedImage" ref="609379193"/>
+									<int key="NSTag">1</int>
+								</object>
+								<object class="NSMenuItem" id="377899626">
+									<reference key="NSMenu" ref="352939335"/>
+									<string key="NSTitle">Patch .pch Script</string>
+									<string key="NSKeyEquiv"/>
+									<int key="NSKeyEquivModMask">1048576</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="186738237"/>
+									<reference key="NSMixedImage" ref="609379193"/>
+									<int key="NSTag">1</int>
+								</object>
+								<object class="NSMenuItem" id="823743302">
+									<reference key="NSMenu" ref="352939335"/>
+									<string key="NSTitle">Open Bundle Script</string>
+									<string key="NSKeyEquiv"/>
+									<int key="NSKeyEquivModMask">1048576</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="186738237"/>
+									<reference key="NSMixedImage" ref="609379193"/>
+									<int key="NSTag">1</int>
+								</object>
+								<object class="NSMenuItem" id="897824000">
+									<reference key="NSMenu" ref="352939335"/>
+									<string key="NSTitle">Code Injection Script</string>
+									<string key="NSKeyEquiv"/>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="186738237"/>
+									<reference key="NSMixedImage" ref="609379193"/>
+									<int key="NSTag">1</int>
+								</object>
+								<object class="NSMenuItem" id="902827149">
+									<reference key="NSMenu" ref="352939335"/>
+									<string key="NSTitle">Common Script</string>
+									<string key="NSKeyEquiv"/>
+									<int key="NSKeyEquivModMask">1048576</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="186738237"/>
+									<reference key="NSMixedImage" ref="609379193"/>
+									<int key="NSTag">1</int>
+								</object>
+								<object class="NSMenuItem" id="682351799">
+									<reference key="NSMenu" ref="352939335"/>
+									<bool key="NSIsDisabled">YES</bool>
+									<bool key="NSIsSeparator">YES</bool>
+									<string key="NSTitle"/>
+									<string key="NSKeyEquiv"/>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="186738237"/>
+									<reference key="NSMixedImage" ref="609379193"/>
+								</object>
 								<object class="NSMenuItem" id="649269261">
 									<reference key="NSMenu" ref="352939335"/>
 									<string key="NSTitle">OSX Bundle Template</string>
@@ -1491,87 +1549,19 @@ wGw</bytes>
 									<reference key="NSOnImage" ref="186738237"/>
 									<reference key="NSMixedImage" ref="609379193"/>
 								</object>
-								<object class="NSMenuItem" id="436138217">
-									<reference key="NSMenu" ref="352939335"/>
-									<string key="NSTitle">Open Project Script</string>
-									<string key="NSKeyEquiv"/>
-									<int key="NSMnemonicLoc">2147483647</int>
-									<reference key="NSOnImage" ref="186738237"/>
-									<reference key="NSMixedImage" ref="609379193"/>
-									<int key="NSTag">1</int>
-								</object>
-								<object class="NSMenuItem" id="377899626">
-									<reference key="NSMenu" ref="352939335"/>
-									<string key="NSTitle">Revert Project Script</string>
-									<string key="NSKeyEquiv"/>
-									<int key="NSKeyEquivModMask">1048576</int>
-									<int key="NSMnemonicLoc">2147483647</int>
-									<reference key="NSOnImage" ref="186738237"/>
-									<reference key="NSMixedImage" ref="609379193"/>
-									<int key="NSTag">1</int>
-								</object>
-								<object class="NSMenuItem" id="897824000">
-									<reference key="NSMenu" ref="352939335"/>
-									<string key="NSTitle">Code Injection Script</string>
-									<string key="NSKeyEquiv"/>
-									<int key="NSMnemonicLoc">2147483647</int>
-									<reference key="NSOnImage" ref="186738237"/>
-									<reference key="NSMixedImage" ref="609379193"/>
-									<int key="NSTag">1</int>
-								</object>
-								<object class="NSMenuItem" id="823743302">
-									<reference key="NSMenu" ref="352939335"/>
-									<string key="NSTitle">Open Bundle Script</string>
-									<string key="NSKeyEquiv"/>
-									<int key="NSKeyEquivModMask">1048576</int>
-									<int key="NSMnemonicLoc">2147483647</int>
-									<reference key="NSOnImage" ref="186738237"/>
-									<reference key="NSMixedImage" ref="609379193"/>
-									<int key="NSTag">1</int>
-								</object>
-								<object class="NSMenuItem" id="289412879">
-									<reference key="NSMenu" ref="352939335"/>
-									<string key="NSTitle">List Device Script</string>
-									<string key="NSKeyEquiv"/>
-									<int key="NSKeyEquivModMask">1048576</int>
-									<int key="NSMnemonicLoc">2147483647</int>
-									<reference key="NSOnImage" ref="186738237"/>
-									<reference key="NSMixedImage" ref="609379193"/>
-									<int key="NSTag">1</int>
-								</object>
-								<object class="NSMenuItem" id="169578467">
-									<reference key="NSMenu" ref="352939335"/>
-									<string key="NSTitle">Open URL Script</string>
-									<string key="NSKeyEquiv"/>
-									<int key="NSKeyEquivModMask">1048576</int>
-									<int key="NSMnemonicLoc">2147483647</int>
-									<reference key="NSOnImage" ref="186738237"/>
-									<reference key="NSMixedImage" ref="609379193"/>
-									<int key="NSTag">1</int>
-								</object>
-								<object class="NSMenuItem" id="902827149">
-									<reference key="NSMenu" ref="352939335"/>
-									<string key="NSTitle">Common Script</string>
-									<string key="NSKeyEquiv"/>
-									<int key="NSKeyEquivModMask">1048576</int>
-									<int key="NSMnemonicLoc">2147483647</int>
-									<reference key="NSOnImage" ref="186738237"/>
-									<reference key="NSMixedImage" ref="609379193"/>
-									<int key="NSTag">1</int>
-								</object>
-								<object class="NSMenuItem" id="682351799">
-									<reference key="NSMenu" ref="352939335"/>
-									<bool key="NSIsDisabled">YES</bool>
-									<bool key="NSIsSeparator">YES</bool>
-									<string key="NSTitle"/>
-									<string key="NSKeyEquiv"/>
-									<int key="NSMnemonicLoc">2147483647</int>
-									<reference key="NSOnImage" ref="186738237"/>
-									<reference key="NSMixedImage" ref="609379193"/>
-								</object>
 								<object class="NSMenuItem" id="168622319">
 									<reference key="NSMenu" ref="352939335"/>
-									<string key="NSTitle">Loader Code</string>
+									<string key="NSTitle">Bundle Interface</string>
+									<string key="NSKeyEquiv"/>
+									<int key="NSKeyEquivModMask">1048576</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="186738237"/>
+									<reference key="NSMixedImage" ref="609379193"/>
+									<int key="NSTag">1</int>
+								</object>
+								<object class="NSMenuItem" id="560579148">
+									<reference key="NSMenu" ref="352939335"/>
+									<string key="NSTitle">Bundle Loader</string>
 									<string key="NSKeyEquiv"/>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
@@ -2152,6 +2142,78 @@ wGw</bytes>
 						<reference key="destination" ref="554487325"/>
 					</object>
 					<int key="connectionID">534</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">openPatchMain:</string>
+						<reference key="source" ref="599914184"/>
+						<reference key="destination" ref="436138217"/>
+					</object>
+					<int key="connectionID">539</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">openPatchPch:</string>
+						<reference key="source" ref="599914184"/>
+						<reference key="destination" ref="377899626"/>
+					</object>
+					<int key="connectionID">540</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">openOpenBundle:</string>
+						<reference key="source" ref="599914184"/>
+						<reference key="destination" ref="823743302"/>
+					</object>
+					<int key="connectionID">542</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">openInjectSource:</string>
+						<reference key="source" ref="599914184"/>
+						<reference key="destination" ref="897824000"/>
+					</object>
+					<int key="connectionID">543</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">openCommonCode:</string>
+						<reference key="source" ref="599914184"/>
+						<reference key="destination" ref="902827149"/>
+					</object>
+					<int key="connectionID">544</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">openBundleInterface:</string>
+						<reference key="source" ref="599914184"/>
+						<reference key="destination" ref="168622319"/>
+					</object>
+					<int key="connectionID">545</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">openBundleInjection:</string>
+						<reference key="source" ref="599914184"/>
+						<reference key="destination" ref="560579148"/>
+					</object>
+					<int key="connectionID">546</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">openOSXTemplate:</string>
+						<reference key="source" ref="599914184"/>
+						<reference key="destination" ref="649269261"/>
+					</object>
+					<int key="connectionID">547</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">openiOSTemplate:</string>
+						<reference key="source" ref="599914184"/>
+						<reference key="destination" ref="550322719"/>
+					</object>
+					<int key="connectionID">548</int>
 				</object>
 			</array>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -2751,18 +2813,17 @@ wGw</bytes>
 						<int key="objectID">454</int>
 						<reference key="object" ref="352939335"/>
 						<array class="NSMutableArray" key="children">
-							<reference ref="649269261"/>
-							<reference ref="550322719"/>
-							<reference ref="556855196"/>
 							<reference ref="436138217"/>
 							<reference ref="897824000"/>
-							<reference ref="823743302"/>
-							<reference ref="289412879"/>
-							<reference ref="169578467"/>
 							<reference ref="682351799"/>
 							<reference ref="377899626"/>
 							<reference ref="902827149"/>
+							<reference ref="823743302"/>
 							<reference ref="168622319"/>
+							<reference ref="560579148"/>
+							<reference ref="550322719"/>
+							<reference ref="649269261"/>
+							<reference ref="556855196"/>
 						</array>
 						<reference key="parent" ref="233098806"/>
 					</object>
@@ -2777,11 +2838,6 @@ wGw</bytes>
 						<reference key="parent" ref="352939335"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">431</int>
-						<reference key="object" ref="556855196"/>
-						<reference key="parent" ref="352939335"/>
-					</object>
-					<object class="IBObjectRecord">
 						<int key="objectID">438</int>
 						<reference key="object" ref="436138217"/>
 						<reference key="parent" ref="352939335"/>
@@ -2792,23 +2848,8 @@ wGw</bytes>
 						<reference key="parent" ref="352939335"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">434</int>
-						<reference key="object" ref="377899626"/>
-						<reference key="parent" ref="352939335"/>
-					</object>
-					<object class="IBObjectRecord">
 						<int key="objectID">436</int>
 						<reference key="object" ref="823743302"/>
-						<reference key="parent" ref="352939335"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">435</int>
-						<reference key="object" ref="289412879"/>
-						<reference key="parent" ref="352939335"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">440</int>
-						<reference key="object" ref="169578467"/>
 						<reference key="parent" ref="352939335"/>
 					</object>
 					<object class="IBObjectRecord">
@@ -2921,6 +2962,21 @@ wGw</bytes>
 						<reference key="object" ref="942076250"/>
 						<reference key="parent" ref="951425353"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">434</int>
+						<reference key="object" ref="377899626"/>
+						<reference key="parent" ref="352939335"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">537</int>
+						<reference key="object" ref="560579148"/>
+						<reference key="parent" ref="352939335"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">538</int>
+						<reference key="object" ref="556855196"/>
+						<reference key="parent" ref="352939335"/>
+					</object>
 				</array>
 			</object>
 			<dictionary class="NSMutableDictionary" key="flattenedProperties">
@@ -3018,17 +3074,14 @@ wGw</bytes>
 				<string key="42.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="43.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="430.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<string key="431.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="432.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="433.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="434.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<string key="435.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="436.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="437.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="438.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="439.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="44.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<string key="440.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="441.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="45.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="453.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -3044,19 +3097,90 @@ wGw</bytes>
 				<string key="48.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="5.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="530.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="537.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="538.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="6.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 			</dictionary>
 			<dictionary class="NSMutableDictionary" key="unlocalizedProperties"/>
 			<nil key="activeLocalization"/>
 			<dictionary class="NSMutableDictionary" key="localizations"/>
 			<nil key="sourceID"/>
-			<int key="maxID">536</int>
+			<int key="maxID">548</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<array class="NSMutableArray" key="referencedPartialClassDescriptions">
 				<object class="IBPartialClassDescription">
 					<string key="className">INPluginClientController</string>
 					<string key="superclassName">NSObject</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="colorChanged:">NSColorWell</string>
+						<string key="imageChanged:">NSImageView</string>
+						<string key="maxd:">NSTextField</string>
+						<string key="openBundleInjection:">id</string>
+						<string key="openBundleInterface:">id</string>
+						<string key="openOSXTemplate:">id</string>
+						<string key="openOpenBundle:">id</string>
+						<string key="openPatchMain:">id</string>
+						<string key="openPatchPch:">id</string>
+						<string key="openiOSTemplate:">id</string>
+						<string key="silentChanged:">NSButton</string>
+						<string key="slid:">NSSlider</string>
+						<string key="unlockChanged:">NSTextField</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="colorChanged:">
+							<string key="name">colorChanged:</string>
+							<string key="candidateClassName">NSColorWell</string>
+						</object>
+						<object class="IBActionInfo" key="imageChanged:">
+							<string key="name">imageChanged:</string>
+							<string key="candidateClassName">NSImageView</string>
+						</object>
+						<object class="IBActionInfo" key="maxd:">
+							<string key="name">maxd:</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBActionInfo" key="openBundleInjection:">
+							<string key="name">openBundleInjection:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openBundleInterface:">
+							<string key="name">openBundleInterface:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openOSXTemplate:">
+							<string key="name">openOSXTemplate:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openOpenBundle:">
+							<string key="name">openOpenBundle:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openPatchMain:">
+							<string key="name">openPatchMain:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openPatchPch:">
+							<string key="name">openPatchPch:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openiOSTemplate:">
+							<string key="name">openiOSTemplate:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="silentChanged:">
+							<string key="name">silentChanged:</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBActionInfo" key="slid:">
+							<string key="name">slid:</string>
+							<string key="candidateClassName">NSSlider</string>
+						</object>
+						<object class="IBActionInfo" key="unlockChanged:">
+							<string key="name">unlockChanged:</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+					</dictionary>
 					<dictionary class="NSMutableDictionary" key="outlets">
 						<string key="alertPanel">NSPanel</string>
 						<string key="colorLabel">NSTextField</string>
@@ -3229,28 +3353,9 @@ wGw</bytes>
 				<object class="IBPartialClassDescription">
 					<string key="className">INPluginMenuController</string>
 					<string key="superclassName">NSObject</string>
-					<dictionary class="NSMutableDictionary" key="actions">
-						<string key="openBundle:">id</string>
-						<string key="patchMain:">id</string>
-						<string key="support:">id</string>
-					</dictionary>
-					<dictionary class="NSMutableDictionary" key="actionInfosByName">
-						<object class="IBActionInfo" key="openBundle:">
-							<string key="name">openBundle:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-						<object class="IBActionInfo" key="patchMain:">
-							<string key="name">patchMain:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-						<object class="IBActionInfo" key="support:">
-							<string key="name">support:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-					</dictionary>
 					<dictionary class="NSMutableDictionary" key="outlets">
 						<string key="client">INPluginClientController</string>
-						<string key="lastSelectedTextView">NSTextView</string>
+						<string key="lastTextView">NSTextView</string>
 						<string key="progressIndicator">NSProgressIndicator</string>
 						<string key="subMenu">NSMenu</string>
 						<string key="urlLabel">NSTextField</string>
@@ -3262,8 +3367,8 @@ wGw</bytes>
 							<string key="name">client</string>
 							<string key="candidateClassName">INPluginClientController</string>
 						</object>
-						<object class="IBToOneOutletInfo" key="lastSelectedTextView">
-							<string key="name">lastSelectedTextView</string>
+						<object class="IBToOneOutletInfo" key="lastTextView">
+							<string key="name">lastTextView</string>
 							<string key="candidateClassName">NSTextView</string>
 						</object>
 						<object class="IBToOneOutletInfo" key="progressIndicator">

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  prepareBundle.pl
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#2 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -9,6 +9,8 @@
 #  These files are copyright and may not be re-distributed, whole or in part.
 #
 
+use FindBin;
+use lib $FindBin::Bin;
 use common;
 use strict;
 

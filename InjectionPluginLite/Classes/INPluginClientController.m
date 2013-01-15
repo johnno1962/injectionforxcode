@@ -184,9 +184,9 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 
 - (void)runScript:(NSString *)script withArg:(NSString *)selectedFile {
    [menuController startProgress];
-    NSString *command = [NSString stringWithFormat:@"/usr/bin/perl -w -I\"%@\" \"%@/%@\" "
+    NSString *command = [NSString stringWithFormat:@"\"%@/%@\" "
                          "\"%@\" \"%@\" \"%@\" %d %d \"%@\" \"%@\" \"%@\"",
-                         resourcePath, resourcePath, script, resourcePath,
+                         resourcePath, script, resourcePath,
                          mainFilePath ? mainFilePath : @"", executablePath ? executablePath : @"",
                          ++patchNumber, silentButton.state ? 0 : 1<<2,
                          [unlockField.stringValue stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""],
@@ -330,6 +330,38 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
         NSLog( @"Image write error: %s", strerror( errno ) );
 
     [self mapSimulator];
+}
+
+- (void)openResource:(const char *)res {
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/%s", resourcePath, res]]];
+}
+
+- (IBAction)openOSXTemplate:sender {
+    [self openResource:"OSXBundleTemplate/InjectionBundle.xcodeproj"];
+}
+- (IBAction)openiOSTemplate:sender {
+    [self openResource:"iOSBundleTemplate/InjectionBundle.xcodeproj"];
+}
+- (IBAction)openPatchMain:sender {
+    [self openResource:"patchMain.pl"];
+}
+- (IBAction)openPatchPch:sender {
+    [self openResource:"patchPch.pl"];
+}
+- (IBAction)openInjectSource:sender {
+    [self openResource:"injectSource.pl"];
+}
+- (IBAction)openOpenBundle:sender{
+    [self openResource:"openBundle.pl"];
+}
+- (IBAction)openCommonCode:sender {
+    [self openResource:"common.pm"];
+}
+- (IBAction)openBundleInjection:sender {
+    [self openResource:"BundleInjection.h"];
+}
+- (IBAction)openBundleInterface:sender {
+    [self openResource:"BundleInteface.h"];
 }
 
 @end

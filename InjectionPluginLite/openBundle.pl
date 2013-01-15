@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  openBundle.pl
+#  $Id: //depot/InjectionPluginLite/openBundle.pl#2 $
 #  Injection
 #
 #  Created by John Holdsworth on 15/01/2013.
@@ -9,6 +9,8 @@
 #  These files are copyright and may not be re-distributed, whole or in part.
 #
 
+use FindBin;
+use lib $FindBin::Bin;
 use common;
 use strict;
 
