@@ -15,6 +15,7 @@
 	IBOutlet NSPanel *consolePanel, *paramsPanel, *alertPanel, *errorPanel;
     IBOutlet NSTextField *colorLabel, *mainSourceLabel, *msgField, *unlockField;
     IBOutlet INPluginMenuController *menuController;
+    IBOutlet NSButton *silentButton, *frontButton;
     IBOutlet NSTextView *consoleTextView;
 
     IBOutlet NSTextField *val0, *val1, *val2, *val3, *val4;
@@ -22,7 +23,6 @@
     IBOutlet NSTextField *max0, *max1, *max2, *max3, *max4;
     IBOutlet NSColorWell *well0, *well1, *well2, *well3, *well4;
     IBOutlet NSImageView *imageWell;
-    IBOutlet NSButton *silentButton;
 
     NSTextField *vals[5];
     NSSlider *sliders[5];

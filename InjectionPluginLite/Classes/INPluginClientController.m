@@ -11,7 +11,8 @@
 #import "INPluginClientController.h"
 #import "INPluginMenuController.h"
 
-static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent", *colorFormat = @"%f,%f,%f,%f";
+static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent",
+    *kINOrderFront = @"INOrderFront", *colorFormat = @"%f,%f,%f,%f";
 
 @implementation INPluginClientController
 
@@ -33,6 +34,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     if ( [defaults valueForKey:kINUnlockCommand] )
         unlockField.stringValue = [defaults valueForKey:kINUnlockCommand];
     silentButton.state = [defaults boolForKey:kINSilent];
+    frontButton.state = [defaults boolForKey:kINOrderFront];
     docTile = [[NSApplication sharedApplication] dockTile];
 }
 
@@ -42,6 +44,10 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 
 - (IBAction)silentChanged:(NSButton *)sender {
     [menuController.defaults setBool:silentButton.state forKey:kINSilent];
+}
+
+- (IBAction)frontChanged:(NSButton *)sender {
+    [menuController.defaults setBool:frontButton.state forKey:kINOrderFront];
 }
 
 - (void)alert:(NSString *)msg {
@@ -80,7 +86,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 - (NSColor *)parseColor:(NSString *)info {
     if ( !info )
         return nil;
-    CGFloat r, g, b, a;
+    float r, g, b, a;
     sscanf( [info UTF8String], [colorFormat UTF8String], &r, &g, &b, &a );
     return [NSColor colorWithDeviceRed:r green:g blue:b alpha:a];
 }
@@ -180,10 +186,8 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 }
 
 - (void)mapSimulator {
-#if 0
-    if ( [executablePath rangeOfString:@"/iPhone Simulator/"].location != NSNotFound )
+    if ( frontButton.state && [executablePath rangeOfString:@"/iPhone Simulator/"].location != NSNotFound )
         [[NSWorkspace sharedWorkspace] openURL:[NSURL fileURLWithPath:@"/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Applications/iPhone Simulator.app"]];
-#endif
 }
 
 - (BOOL)connected {
@@ -198,7 +202,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
                          "\"%@\" \"%@\" \"%@\" %d %d \"%@\" \"%@\" \"%@\"",
                          resourcePath, script, resourcePath,
                          mainFilePath ? mainFilePath : @"", executablePath ? executablePath : @"",
-                         ++patchNumber, silentButton.state ? 0 : 1<<2,
+                         ++patchNumber, silentButton.state ? 0 : 1<<2 | frontButton.state ? 0 : 1<<3,
                          [unlockField.stringValue stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""],
                          [[menuController serverAddresses] componentsJoinedByString:@" "],
                          selectedFile];

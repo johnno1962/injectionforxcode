@@ -466,7 +466,8 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 + (void)loadedNotify:(BOOL)notify {
     INLog( @"Bundle \"%s\" loaded successfully.", strrchr( path, '/' )+1 );
 #ifndef __IPHONE_OS_VERSION_MIN_REQUIRED
-    [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+    if ( notify & 1<<3 )
+        [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
 #endif
     status = YES;
     [[NSNotificationCenter defaultCenter] postNotificationName:kINNotification

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#4 $
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#5 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -63,7 +63,6 @@ if ( $localBinary && $projectContents =~ s/(BUNDLE_LOADER = )([^;]+;)/$1"$localB
 
 my @classes = unique loadFile( $selectedFile ) =~ /\@implementation\s+(\w+)\b/g;
 my $changesFile = "$InjectionBundle/BundleContents.m";
-my $notify = $flags & 1<<2;
 
 my $changesSource = IO::File->new( "> $changesFile" )
     or error "Could not open changes source file as: $!";
@@ -93,7 +92,7 @@ $changesSource->print( <<CODE );
 \@implementation $productName
 
 + (void)load {
-@{[join '', map "    extern Class OBJC_CLASS_\$_$_;\n\t[BundleInjection loadedClass:INJECTION_BRIDGE(Class)(void *)&OBJC_CLASS_\$_$_ notify:$notify];\n", @classes]}    [BundleInjection loadedNotify:$notify];
+@{[join '', map "    extern Class OBJC_CLASS_\$_$_;\n\t[BundleInjection loadedClass:INJECTION_BRIDGE(Class)(void *)&OBJC_CLASS_\$_$_ notify:$flags];\n", @classes]}    [BundleInjection loadedNotify:$flags];
 }
 
 \@end
