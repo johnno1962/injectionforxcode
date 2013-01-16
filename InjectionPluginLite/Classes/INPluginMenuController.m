@@ -62,9 +62,10 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
         };
 
         for ( int i=0 ; i<sizeof items/sizeof items[0] ; i++ ) {
-            NSMenuItem *menuItem = [[[NSMenuItem alloc] initWithTitle:items[i].item
-                                                               action:items[i].action
-                                                        keyEquivalent:items[i].key] autorelease];
+            NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:items[i].item
+                                                              action:items[i].action
+                                                       keyEquivalent:items[i].key];
+            //[menuItem setKeyEquivalentModifierMask:NSControlKeyMask];
             if ( i==0 )
                 [menuItem setSubmenu:subMenu];
             else
@@ -112,9 +113,9 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 - (NSString *)lastFileSaving:(BOOL)save {
     NSDocument *doc = [(id)[lastTextView delegate] document];
     if ( save ) {
+        [doc saveDocument:self];
         if ( !refkey )
             [self setupLicensing];
-        [doc saveDocument:self];
     }
     return [[doc fileURL] path];
 }
@@ -359,6 +360,11 @@ static CFDataRef copy_mac_address(void)
     }
 
     [listener use];
+}
+
+- (void)webView:(WebView *)aWebView didReceiveTitle:(NSString *)aTitle forFrame:(WebFrame *)frame {
+    if ( frame == webView.mainFrame )
+        webPanel.title = aTitle;
 }
 
 #pragma mark -

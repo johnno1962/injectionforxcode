@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#2 $
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#4 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -9,10 +9,10 @@
 #  These files are copyright and may not be re-distributed, whole or in part.
 #
 
+use strict;
 use FindBin;
 use lib $FindBin::Bin;
 use common;
-use strict;
 
 if ( !$executable ) {
     print "Appliction is not connected.\n";
@@ -23,6 +23,21 @@ if ( ! -d $InjectionBundle ) {
     print "Copying $template into project.\n";
     0 == system "cp -r \"$resources/$template\" $InjectionBundle && chmod -R og+w $InjectionBundle"
         or error "Could not copy injection bundle.";
+
+    saveFile( "$InjectionBundle/InjectionBundle-Prefix.pch", <<CODE );
+
+/* Updated once as bundle template is copied */
+/* Keep in sync with your projects main .pch */
+
+#ifdef __OBJC__
+    #import <$header>
+#endif
+
+#ifdef DEBUG
+    #define INJECTION_ENABLED
+    #import "$resources/BundleInterface.h"
+#endif
+CODE
 }
 
 my ($localBinary, $identity) = ($executable);

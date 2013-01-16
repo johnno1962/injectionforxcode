@@ -86,8 +86,13 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 }
 
 - (NSString *)formatColor:(NSColor *)color {
-    CGFloat r, g, b, a;
-    [color getRed:&r green:&g blue:&b alpha:&a];
+    CGFloat r=1., g=1., b=1., a=1.;
+    @try {
+        [color getRed:&r green:&g blue:&b alpha:&a];
+    }
+    @catch (NSException *e) {
+        NSLog( @"Color Exception: %@", [e description] );
+    }
     return [NSString stringWithFormat:colorFormat, r, g, b, a];
 }
 
@@ -124,6 +129,11 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     [docTile
      performSelectorOnMainThread:@selector(setBadgeLabel:)
      withObject:@"1" waitUntilDone:NO];
+
+    for ( int i=0 ; i<sizeof vals/sizeof *vals ; i++ ) {
+        [self slid:sliders[i]];
+        [self colorChanged:wells[i]];
+    }
 
     [self performSelectorInBackground:@selector(connectionMonitor) withObject:nil];
 }
@@ -306,7 +316,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     [BundleInjection writeBytes:INJECTION_MAGIC withPath:[file UTF8String] from:0 to:clientSocket];
 }
 
-- (IBAction)maxd:(NSTextField *)sender {
+- (IBAction)maxChanged:(NSTextField *)sender {
     [sliders[sender.tag] setMaxValue:sender.stringValue.floatValue];
 }
 

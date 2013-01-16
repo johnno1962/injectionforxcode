@@ -1,5 +1,5 @@
 #
-#  $Id: //depot/InjectionPluginLite/common.pm#2 $
+#  $Id: //depot/InjectionPluginLite/common.pm#3 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -7,8 +7,6 @@
 #
 #  These files are copyright and may not be re-distributed, whole or in part.
 #
-
-BEGIN { $_common_pm = 1; }
 
 use IO::File;
 use strict;
