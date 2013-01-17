@@ -19,7 +19,6 @@
 		BB5DEF9716A55D2A00E97DD4 /* common.pm in Resources */ = {isa = PBXBuildFile; fileRef = BB5DEF9616A55D2A00E97DD4 /* common.pm */; };
 		BB5DEF9C16A55E1800E97DD4 /* injectSource.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB5DEF9816A55E1800E97DD4 /* injectSource.pl */; };
 		BB5DEF9D16A55E1800E97DD4 /* openBundle.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB5DEF9916A55E1800E97DD4 /* openBundle.pl */; };
-		BB5DEFA116A5607F00E97DD4 /* InjectionPlugin.entitlements in Resources */ = {isa = PBXBuildFile; fileRef = BB5DEFA016A5607F00E97DD4 /* InjectionPlugin.entitlements */; };
 		BB63E0FB160CA89800E95F5D /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB63E0F8160CA89800E95F5D /* IOKit.framework */; };
 		BBEC640216A756F700DC5E08 /* patchProject.pl in Resources */ = {isa = PBXBuildFile; fileRef = BBEC640016A756F600DC5E08 /* patchProject.pl */; };
 		BBEC640316A756F700DC5E08 /* revertProject.pl in Resources */ = {isa = PBXBuildFile; fileRef = BBEC640116A756F600DC5E08 /* revertProject.pl */; };
@@ -44,7 +43,6 @@
 		BB5DEF9616A55D2A00E97DD4 /* common.pm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = common.pm; sourceTree = "<group>"; };
 		BB5DEF9816A55E1800E97DD4 /* injectSource.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = injectSource.pl; sourceTree = "<group>"; };
 		BB5DEF9916A55E1800E97DD4 /* openBundle.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = openBundle.pl; sourceTree = "<group>"; };
-		BB5DEFA016A5607F00E97DD4 /* InjectionPlugin.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = InjectionPlugin.entitlements; sourceTree = "<group>"; };
 		BB63E0F8160CA89800E95F5D /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		BBEC640016A756F600DC5E08 /* patchProject.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = patchProject.pl; sourceTree = "<group>"; };
 		BBEC640116A756F600DC5E08 /* revertProject.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = revertProject.pl; sourceTree = "<group>"; };
@@ -91,7 +89,6 @@
 		089C167CFE841241C02AAC07 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				BB5DEFA016A5607F00E97DD4 /* InjectionPlugin.entitlements */,
 				BB3EFFB816A53307001F0065 /* injection.png */,
 				8D5B49B7048680CD000E48DA /* Info.plist */,
 			);
@@ -198,7 +195,6 @@
 				BBEC640316A756F700DC5E08 /* revertProject.pl in Resources */,
 				BB5DEF9C16A55E1800E97DD4 /* injectSource.pl in Resources */,
 				BB5DEF9D16A55E1800E97DD4 /* openBundle.pl in Resources */,
-				BB5DEFA116A5607F00E97DD4 /* InjectionPlugin.entitlements in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -237,8 +233,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CODE_SIGN_ENTITLEMENTS = InjectionPlugin.entitlements;
-				CODE_SIGN_IDENTITY = "3rd Party Mac Developer Application";
+				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEPLOYMENT_LOCATION = YES;
@@ -248,15 +244,14 @@
 				GCC_ENABLE_OBJC_GC = supported;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
 				LD_RUNPATH_SEARCH_PATHS = /Developer;
 				PRODUCT_NAME = InjectionPlugin;
-				PROVISIONING_PROFILE = "";
 				STRIP_INSTALLED_PRODUCT = NO;
 				WRAPPER_EXTENSION = xcplugin;
-			GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				};
+			};
 			name = Debug;
 		};
 		1DEB913F08733D840010E9CD /* Debug */ = {
@@ -270,13 +265,13 @@
 					FOR_PLUGIN,
 					OPEN_APP_STORE,
 				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INSTALL_PATH = "$(HOME)/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				SDKROOT = macosx;
-			GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				};
+			};
 			name = Debug;
 		};
 		BBE29E6E16169C3700F7B1CC /* Debug Web */ = {
@@ -303,8 +298,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CODE_SIGN_ENTITLEMENTS = InjectionPlugin.entitlements;
-				CODE_SIGN_IDENTITY = "3rd Party Mac Developer Application";
+				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEPLOYMENT_LOCATION = YES;
@@ -318,7 +313,6 @@
 				INSTALL_PATH = "/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
 				LD_RUNPATH_SEARCH_PATHS = /Developer;
 				PRODUCT_NAME = InjectionPlugin;
-				PROVISIONING_PROFILE = "";
 				STRIP_INSTALLED_PRODUCT = NO;
 				WRAPPER_EXTENSION = xcplugin;
 			};

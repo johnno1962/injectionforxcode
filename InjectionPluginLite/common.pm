@@ -1,5 +1,5 @@
 #
-#  $Id$
+#  $Id: //depot/InjectionPluginLite/common.pm#6 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -42,7 +42,7 @@ sub error {
 open STDERR, '>&STDOUT';
 $| = 1;
 
-($projFile, $projRoot, $projType) = $workspace =~ m@^((.*?)/[^/]+\.(xcodeproj|xcworkspace))@
+($projFile, $projRoot, $projType) = $workspace =~ m@^((.*?/)[^/]+\.(xcodeproj|xcworkspace))@
     or error "Could not parse workspace: $workspace";
 
 chdir $projRoot or error "Could not change to directory '$projRoot' as $!";

@@ -45,32 +45,23 @@ are finding it useful I would prefer you made a payment of $10 (or $25 in a
 commercial environment) as suggested by the licensing code included in the software
 in order to continue using it.
 
-The four projects in the source tree are related as follows:
+The projects in the source tree are related as follows:
+
+__InjectionPluginLite__ is a standalone, complete rewrite of the Injection plugin removing
+dead code from the long and winding road injection has taken to get to this point. This
+is now the only project you need to build. After building, restart Xcode and check for
+the new items at the end of the "Product" menu.
+
+Code for the previous version of the plugin is as follows
 
 __ObjCpp:__ A type of "Foundation++" set of C++ classes I use for operators on common objects.
 
 __Injection:__ The original application which worked alongside Xcode as submitted to Apple
 
-__InjectionPlugin:__ The plugin source packaging the application for use inside Xcode __**__
+__InjectionPlugin:__ The plugin source packaging the application for use inside Xcode
 
 __InjectionInstallerIII:__ an installer application for the Xcode plugin.
 
-__**__ "InjectionPlugin" (or the new better refactored InjectionPluginLite - see below) 
-is the only project you actually need to build to use injection.
-The build will try to codesign the plugin. If you don't have a developer id, clear the
-"Code Signing Identity" in the build settings and check that it still works.
-
-__InjectionPluginLite__ is a beta of a complete standalone rewrite of the Injection plugin removing
-all dead code from the long and winding road injection has taken to get to this point. This version
-works slightly differently automating less to support a wider range of workspaces.
-To use, select text in the project's main.m and select "Injection/Patch Project main.m" from
-the product menu. To use tunable parameters, select the projects .pch file and
-select "Injection/Patch project .pch" to make the interface to injection
-available to all sources. This version knows nothing about project files and
-does not automatically propagate parameters into injection's bundle project
-so you may need to check things such as include path and compiler/ARC using
-the menu item "Injection/Open Bundle Project" and editing it's "Build Settings"
-until it builds.
 
 If you find (m)any issues in the code, get in contact using the email: support (at) injectionforxcode.com
 
