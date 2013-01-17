@@ -1,5 +1,5 @@
 #
-#  $Id: //depot/InjectionPluginLite/common.pm#4 $
+#  $Id$
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -18,8 +18,6 @@ use vars qw($resources $workspace $mainFile $executable $patchNumber $flags
     $InjectionBundle $template $header $appClass $appPackage $RED);
 
 ($resources, $workspace, $mainFile, $executable, $patchNumber, $flags, $unlockCommand, $addresses, $selectedFile) = @ARGV;
-
-($projFile, $projRoot, $projType) = $workspace =~ m@^((.*?)/[^/]+\.(xcodeproj|xcworkspace))@;
 
 ($appPackage, $deviceRoot) = $executable =~ m@((^.*)/[^/]+)/[^/]+$@;
 
@@ -43,6 +41,9 @@ sub error {
 
 open STDERR, '>&STDOUT';
 $| = 1;
+
+($projFile, $projRoot, $projType) = $workspace =~ m@^((.*?)/[^/]+\.(xcodeproj|xcworkspace))@
+    or error "Could not parse workspace: $workspace";
 
 chdir $projRoot or error "Could not change to directory '$projRoot' as $!";
 
