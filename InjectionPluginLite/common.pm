@@ -1,5 +1,5 @@
 #
-#  $Id: //depot/InjectionPluginLite/common.pm#6 $
+#  $Id: //depot/InjectionPluginLite/common.pm#7 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -69,11 +69,14 @@ sub saveFile {
         rename $path, "$path.save" if -f $path && !-f "$path.save";
 
         if ( my $fh = IO::File->new( "> $path" ) ) {
-            my ($rest, $name) = urlprep( $path );
-            $path = "$rest\{\\field{\\*\\fldinst HYPERLINK \"$path\"}{\\fldrslt $name}}";
-            print "Saving $path ...\n" if $path !~ /\.plist/;
+            my ($rest, $name) = urlprep( my $link = $path );
+            $link = "$rest\{\\field{\\*\\fldinst HYPERLINK \"$link\"}{\\fldrslt $name}}";
+            print "Saving $link ...\n" if $path !~ /\.plist/;
             $fh->print( $data );
             $fh->close();
+            (my $diff = `/usr/bin/diff -C 5 \"$path.save\" \"$path\"`) =~ s/([\{\}\\])/\\$1/g;
+            $diff =~ s/^/ {\\colortbl;\\red0\\green0\\blue0;\\red245\\green222\\blue179;}\\cb2/gm;
+            print $diff;
             return 1;
         }
         else {

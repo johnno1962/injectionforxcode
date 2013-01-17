@@ -57,7 +57,7 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 		[productMenu addItem:[NSMenuItem separatorItem]];
 
         struct { NSString *item,  *key; SEL action; } items[] = {
-            {@"Injection...", @"", NULL},
+            {@"Injection Plugin", @"", NULL},
             {@"Inject Source", @"=", @selector(injectSource:)}
         };
 

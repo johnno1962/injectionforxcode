@@ -67,65 +67,31 @@ If you find (m)any issues in the code, get in contact using the email: support (
 
 ## Source Files/Roles:
 
-__InjectionPlugin/Classes/InInjectionPlugin.m__
+__InjectionPluginLite/Classes/INPluginMenuController.m__
 
-Singleton subclass of original InAppDelegate class responding to Xcode Menu events.
-Superclass responsible for running up TCP server process on port 31442 receiving connections
-from applications with their main.m patched for injection. When an incoming connection
-arrives it opens an instance of InPluginDocument associated with the project of the 
-application.
+Responsible for coordinating the injection menu and running up TCP server process on port 31442 receiving
+connections from applications with their main.m patched for injection. When an incoming connection
+arrives it opens sets the current connection on the associated "client" instance.
 
-__InjectionPlugin/Classes/InPluginDocument.m__
+__InjectionPluginLite/Classes/INPluginClientController.m__
 
-An instance is created of this INDocument(NSDocument) subclass to shadow each project being
-injected. Superclass runs a series of Perl scripts in response to menu events to patch
-projects or code for injection and load the resulting bundles.
-
-__Injection/Injection/InAppDelegate.m__
-
-The original standalone application delegate running the injection service and managing
-licensing.
-
-__Injection/Injection/InDirectory.m__
-
-A utility class for OS X 10.6 where FS events can not be selected down to the file level.
-
-__Injection/Injection/InDocument.m__
-
-The subclass responsible for running the scripts used by injection to patch projects 
-and classes and parsing their output for actions to perform.
-
-__Injection/Injection/InImageView.m__
-
-NSImageView subclass that knows the path of the file dragged onto it.
-
-__Injection/Injection/validatereceipt.m__
-
-copy protection formerly used for App Store
+An singleton instance to shadow a client connection which monitors connection to application
+client being injected and runs unix scripts to prepare the project/bundles as part of injection.
 
 ## Perl scripts:
 
-__Injection/Injection/listDevice.pl__
+__Injection/Injection/patchProject.pl__
 
-Lists the files in the sandbox on an iOS device.
+Run when a project is first used for injection to patch main.m and any ".pch" files.
 
 __Injection/Injection/openBundle.pl__
 
-Opens the bundle project containing the class categories used for injection.
+Opens the bundle project used by injection to inject code.
 
-__Injection/Injection/openProject.pl__
+__Injection/Injection/injectSource.pl__
 
-Run when a project is first used for injection to patch main.m and the ".pch" file
-
-__Injection/Injection/openURL.pl__
-
-Opens special URLs used by injection to patch/un-patch specific files.
-
-__Injection/Injection/prepareBundle.pl__
-
-The script called when you inject a source file to patch the source class into a category,
-build the injection bundle project and signal the client application to load the resulting
-bundle to apply the code changes.
+The script called when you inject a source file to build the injection bundle project
+and signal the client application to load the resulting bundle to apply the code changes.
 
 __Injection/Injection/revertProject.pl__
 
@@ -167,33 +133,25 @@ Otherwise the line is appended as rich text to the console NSTextView.
 
 ## Command line arguments to all scripts (in order)
 
-__$injectionResources__ Path to "Resources" directory of plugin for headers etc.
+__$resources__ Path to "Resources" directory of plugin for headers etc.
 
-__$appVersion__ Injection application version (currently "2.6")
+__$workspace__ Path to Xcode workspace document currently open.
 
-__$urlPrefix__ Prefix for URLs in links in the console view ("file://" for plugin)
+__$mainFile__ Path to main.m of application currently connected.
 
-__$appRoot__ Path to "Resources" directory of plugin again
-
-__$projectFile__ Path to "<ProjectName>.xcodeproj" for current project document
-
-__$executablePath__ Path to application binary connected to plugin for this project
+__$executable__ Path to application binary connected to plugin for this project
 
 __$patchNumber__ Incrementing counter for sequentially naming bundles
 
-__$unlockCommand__ Command to be used to make files writable from "app parameters" panel
-
 __$flags__ As defined below...
 
-__$spare1, $spare2, $spare3, $spare4__ reserved for future use..
+__$unlockCommand__ Command to be used to make files writable from "app parameters" panel
 
-__@extra__ Arguments to script for example: file(s) to inject
+__$addresses__ IP addresses injection server is running on for connecting from device.
+
+__$selectedFile__ Last source file selected in Xcode editor
 
 ## Bitfields of $flags argument passed to scripts
-
-__1<<0__ Project is a "demo" application i.e. /UICatalog|(iOS|OSX)GLEssentials/
-
-__1<<1__ Pre-convert headers of all writable class implementations.
 
 __1<<2__ Suppress application alert on load of changes.
 

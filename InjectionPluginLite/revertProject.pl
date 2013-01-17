@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/revertProject.pl#2 $
+#  $Id: //depot/InjectionPluginLite/revertProject.pl#3 $
 #  Injection
 #
 #  Created by John Holdsworth on 15/01/2013.
@@ -14,12 +14,14 @@ use FindBin;
 use lib $FindBin::Bin;
 use common;
 
+my $key = "// From here to end of fille added by Injection Plugin //";
+
 print "\\b Reverting project contained in: $projRoot\n";
 
 patchAll( "main.m", sub {
-    $_[0] =~ s/\n*#ifdef.*\n(.*\n)*?#import.*BundleInjection.h"\n#endif\n/\n/;
+    $_[0] =~ s/\n+$key.*/\n/s;
 } );
 
 patchAll( "*refix.pch", sub {
-    $_[0] =~ s/\n*#ifdef.*\n(.*\n)*?#import.*BundleInterface.h"\n#endif\n/\n/;
+    $_[0] =~ s/\n+$key.*/\n/s;
 } );
