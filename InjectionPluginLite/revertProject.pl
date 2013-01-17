@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/revertProject.pl#1 $
+#  $Id: //depot/InjectionPluginLite/revertProject.pl#2 $
 #  Injection
 #
 #  Created by John Holdsworth on 15/01/2013.
@@ -13,8 +13,6 @@ use strict;
 use FindBin;
 use lib $FindBin::Bin;
 use common;
-
-my @ip4Addresses = grep $_ !~ /:/, split " ", $addresses;
 
 print "\\b Reverting project contained in: $projRoot\n";
 

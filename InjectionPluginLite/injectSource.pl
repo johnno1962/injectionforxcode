@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id$
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#8 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -137,7 +137,7 @@ my $sdk = ($config =~ /-sdk (\w+)/)[0] || 'macosx';
 my $buildScript = "$InjectionBundle/compile_$sdk.sh";
 my ($recording, $recorded);
 
-if ( $patchNumber < 2 || (stat $bundleProjectFile)[9] > ((stat $buildScript)[9] || 0) ) {
+if ( (stat $bundleProjectFile)[9] > ((stat $buildScript)[9] || 0) ) {
     $recording = IO::File->new( "> $buildScript" )
         or die "Could not open '$buildScript' as: $!";
 }

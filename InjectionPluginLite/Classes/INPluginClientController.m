@@ -300,7 +300,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     if ( status != 0 && scriptOutput )
         [self performSelectorOnMainThread:@selector(completed:)
                                withObject:@"\n\n{\\colortbl;\\red0\\green0\\blue0;\\red255\\green100\\blue100;}\\cb2"
-         "*** Bundle build failed ***\\line" waitUntilDone:NO];
+         "*** Bundle load failed ***\\line Check Bundle project." waitUntilDone:NO];
     
     scriptOutput = NULL;
 }

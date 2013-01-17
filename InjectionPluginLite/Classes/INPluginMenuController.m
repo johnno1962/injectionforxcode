@@ -143,8 +143,8 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
     else if ( [menuItem action] == @selector(openBundle:) )
         return client.connected;
     else if ( [menuItem action] == @selector(injectSource:) )
-        return [lastFile rangeOfString:@"\\.mm?$"
-                               options:NSRegularExpressionSearch].location != NSNotFound &&
+        return lastFile && [lastFile rangeOfString:@"\\.mm?$"
+                                           options:NSRegularExpressionSearch].location != NSNotFound &&
             client.connected;
     else
         return YES;
