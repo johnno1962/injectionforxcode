@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/revertProject.pl#3 $
+#  $Id: //depot/InjectionPluginLite/revertProject.pl#4 $
 #  Injection
 #
 #  Created by John Holdsworth on 15/01/2013.
@@ -14,7 +14,7 @@ use FindBin;
 use lib $FindBin::Bin;
 use common;
 
-my $key = "// From here to end of fille added by Injection Plugin //";
+my $key = "// From here to end of file added by Injection Plugin //";
 
 print "\\b Reverting project contained in: $projRoot\n";
 

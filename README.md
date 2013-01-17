@@ -26,15 +26,24 @@ Open a simple example project such as UICatalog or GLEssentials from Apple and u
 "Product/Injection Plugin/Patch Project for Injection" menu item to prepare the project
 and rebuild it (Be sure to #define DEBUG.) When you run the project it should connect
 to Xcode which will display a red badge on it's dock icon showing the application is
-prepared to  load patch bundles. Select text in an implementation source file and use
+prepared to load patch bundles. Select text in a class source file and use
 menu item "Product/Inject Source" to inject any changes you may have made into the app.
 
-Injection no longer needs to patch your class source or headers in any way. Support
-for injecting projects using "CocoaPods" and "workspaces" has been added since version 2.7.
+## How it works
+
+A project patched for injection #imports the file "BundleInjection.h" from the resources of the 
+plugin into it's "main.m" source file. Code in this header uses a +load method to connect back
+through a socket to a server running inside Xcode and waits in a thread for commands to load bundles.
+
+To inject a source, it is #imported into "BundleContents.m" in a bundle project which is then built
+and the application messaged by Xcode through the socket connection to load the bundle. When the bundle
+loads, it has a +load method which calls the method [BundleInjection loadClass:theNewClass notify:flags].
+This method aligns the instance variables of the newly loaded class to the original (as @properties can be reordered) 
+and then swizzles the new implementations onto the original class.
+
+Support for injecting projects using "CocoaPods" and "workspaces" has been added since version 2.7.
 Classes in the project or Pods can be injected as well as categories or extensions.
-The only limitation now is that the class being injected must not have a +load method.
-Please note it is not sufficient to select a file to inject it. You need to have a
-selection/cursor inside the Xcode editor for the file to be recognised by the plugin.
+The only limitation is that the class being injected must not itself have a +load method.
 
 ## License
 
@@ -54,7 +63,7 @@ dead code from the long and winding road injection has taken to get to this poin
 is now the only project you need to build. After building, restart Xcode and check for
 the new items at the end of the "Product" menu.
 
-Code for the previous obsolete version of the plugin is as follows
+Code for the previous obsolete version of the plugin is as follows:
 
 __ObjCpp:__ A type of "Foundation++" set of C++ classes I use for operators on common objects.
 
@@ -71,22 +80,22 @@ __InjectionPluginLite/Classes/INPluginMenuController.m__
 
 Responsible for coordinating the injection menu and running up TCP server process on port 31442 receiving
 connections from applications with their main.m patched for injection. When an incoming connection
-arrives it opens sets the current connection on the associated "client" instance.
+arrives it opens sets the current connection on the associated "client" controller instance.
 
 __InjectionPluginLite/Classes/INPluginClientController.m__
 
-An singleton instance to shadow a client connection which monitors connection to application
-client being injected and runs unix scripts to prepare the project/bundles as part of injection.
+An singleton instance to shadow a client connection from an application. It runs unix scripts to
+prepare the project and bundles used as part of injection and monitors for successful loading of the bundle.
 
 ## Perl scripts:
 
 __InjectionPluginLite/patchProject.pl__
 
-Run when a project is first used for injection to patch main.m and any ".pch" files.
+Patches all main.m and ".pch" files to include headers for use with injection.
 
 __InjectionPluginLite/openBundle.pl__
 
-Opens the bundle project used by injection to inject code.
+Opens the Xcode project used by injection to build a loadable bundle.
 
 __InjectionPluginLite/injectSource.pl__
 

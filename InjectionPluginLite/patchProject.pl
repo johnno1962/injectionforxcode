@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/patchProject.pl#2 $
+#  $Id$
 #  Injection
 #
 #  Created by John Holdsworth on 15/01/2013.
@@ -16,7 +16,9 @@ use common;
 
 my @ip4Addresses = grep $_ !~ /:/, split " ", $addresses;
 
-my $key = "// From here to end of fille added by Injection Plugin //";
+my $key = "// From here to end of file added by Injection Plugin //";
+my $idef = $projName =~ /UICatalog|(iOS|OSX)GLEssentials/ ?
+    "__OBJC__ // would normally be DEBUG" : "DEBUG";
 
 print "\\b Patching project contained in: $projRoot\n";
 
@@ -26,7 +28,7 @@ patchAll( "main.m", sub {
     
 $key
 
-#ifdef DEBUG
+#ifdef $idef
 static char _inMainFilePath[] = __FILE__;
 static const char *_inIPAddresses[] = {@{[join ', ', map "\"$_\"", @ip4Addresses]}, NULL};
 
@@ -42,7 +44,7 @@ patchAll( "*refix.pch", sub {
 
 $key
 
-#ifdef DEBUG
+#ifdef $idef
 #define INJECTION_ENABLED
 #import "$resources/BundleInterface.h"
 #endif

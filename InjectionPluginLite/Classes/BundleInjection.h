@@ -412,7 +412,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
     Ivar *vars = class_copyIvarList(aClass, &ic);
     NSLog( @"0x%p[%u]", vars, ic );
     for ( i=0; i<ic ; i++ )
-        NSLog( @"%s %s %d", ivar_getName(vars[i]), ivar_getTypeEncoding(vars[i]), ivar_getOffset(vars[i]));
+        NSLog( @"%s %s %d", ivar_getName(vars[i]), ivar_getTypeEncoding(vars[i]), (int)ivar_getOffset(vars[i]));
 }
 
 + (void)swizzle:(Class)oldClass from:(Class)newClass {

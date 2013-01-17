@@ -1,5 +1,5 @@
 #
-#  $Id: //depot/InjectionPluginLite/common.pm#7 $
+#  $Id: //depot/InjectionPluginLite/common.pm#9 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -14,7 +14,7 @@ use Carp;
 
 use vars qw($resources $workspace $mainFile $executable $patchNumber $flags
     $unlockCommand $addresses $selectedFile $isDevice $isSimulator $isIOS
-    $productName $appPackage $deviceRoot $projFile $projRoot $projType
+    $productName $appPackage $deviceRoot $projFile $projRoot $projName $projType
     $InjectionBundle $template $header $appClass $appPackage $RED);
 
 ($resources, $workspace, $mainFile, $executable, $patchNumber, $flags, $unlockCommand, $addresses, $selectedFile) = @ARGV;
@@ -42,7 +42,7 @@ sub error {
 open STDERR, '>&STDOUT';
 $| = 1;
 
-($projFile, $projRoot, $projType) = $workspace =~ m@^((.*?/)[^/]+\.(xcodeproj|xcworkspace))@
+($projFile, $projRoot, $projName, $projType) = $workspace =~ m@^((.*?/)([^/]+)\.(xcodeproj|xcworkspace))@
     or error "Could not parse workspace: $workspace";
 
 chdir $projRoot or error "Could not change to directory '$projRoot' as $!";
@@ -71,12 +71,14 @@ sub saveFile {
         if ( my $fh = IO::File->new( "> $path" ) ) {
             my ($rest, $name) = urlprep( my $link = $path );
             $link = "$rest\{\\field{\\*\\fldinst HYPERLINK \"$link\"}{\\fldrslt $name}}";
-            print "Saving $link ...\n" if $path !~ /\.plist/;
             $fh->print( $data );
             $fh->close();
-            (my $diff = `/usr/bin/diff -C 5 \"$path.save\" \"$path\"`) =~ s/([\{\}\\])/\\$1/g;
-            $diff =~ s/^/ {\\colortbl;\\red0\\green0\\blue0;\\red245\\green222\\blue179;}\\cb2/gm;
-            print $diff;
+            if ( $path !~ /\.plist$/ ) {
+                print "Modified $link ...\n";
+                (my $diff = `/usr/bin/diff -C 5 \"$path.save\" \"$path\"`) =~ s/([\{\}\\])/\\$1/g;
+                $diff =~ s/\n/\\line/g;
+                print " {\\colortbl;\\red0\\green0\\blue0;\\red245\\green222\\blue179;}\\cb2$diff\n";
+            }
             return 1;
         }
         else {
