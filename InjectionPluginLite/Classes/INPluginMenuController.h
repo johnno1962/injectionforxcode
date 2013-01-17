@@ -39,6 +39,8 @@
 
 - (NSUserDefaults *)defaults;
 - (NSArray *)serverAddresses;
+- (NSString *)workspacePath;
+
 - (void)error:(NSString *)format, ...;
 - (void)setProgress:(NSNumber *)fraction;
 - (void)startProgress;

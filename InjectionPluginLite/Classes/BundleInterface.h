@@ -27,6 +27,7 @@
 #define _inval( _val... ) = _val
 
 #ifdef INJECTION_ENABLED
+#import <Foundation/Foundation.h>
 
 // global variable interface to control panel
 

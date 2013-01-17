@@ -393,7 +393,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
     [newClass class];
 
     // align ivars in new class with original
-    for ( int i=0 ; i<ivars->count ; i++ ) {
+    for ( int i=0 ; ivars && i<ivars->count ; i++ ) {
         Ivar ivar = class_getInstanceVariable(oldClass, ivars->ivars[i].name);
         if ( !ivar )
             NSLog( @"*** Please re-run your application to add ivar '%s' ***",

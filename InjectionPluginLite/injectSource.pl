@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#5 $
+#  $Id$
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -14,8 +14,10 @@ use FindBin;
 use lib $FindBin::Bin;
 use common;
 
+my $bundleProjectFile = "$InjectionBundle/InjectionBundle.xcodeproj/project.pbxproj";
+
 if ( !$executable ) {
-    print "Appliction is not connected.\n";
+    print "Application is not connected.\n";
     exit 0;
 }
 
@@ -38,6 +40,25 @@ if ( ! -d $InjectionBundle ) {
     #import "$resources/BundleInterface.h"
 #endif
 CODE
+
+    if ( $projFile =~ /\.xcodeproj$/ ) {
+        print "Migrating project parameters to bundle..\n";
+
+        my $projectSource = loadFile( "$projFile/project.pbxproj" );
+        my $bundleProjectSource = loadFile( $bundleProjectFile );
+
+        # FRAMEWORK_SEARCH_PATHS HEADER_SEARCH_PATHS USER_HEADER_SEARCH_PATHS
+        foreach my $parm (qw(ARCHS VALID_ARCHS SDKROOT MACOSX_DEPLOYMENT_TARGET
+                GCC_VERSION GCC_PREPROCESSOR_DEFINITIONS GCC_ENABLE_OBJC_GC
+                GCC_ENABLE_OBJC_EXCEPTIONS CLANG_ENABLE_OBJC_ARC)) {
+            if ( my ($val) = $projectSource =~ /(\b$parm = [^;]*;)/ ) {
+                print "Inported setting $val\n";
+                $bundleProjectSource =~ s/\b$parm = [^;]*;/$val/g;
+            }
+        }
+
+        saveFile( $bundleProjectFile, $bundleProjectSource );
+    }
 }
 
 my ($localBinary, $identity) = ($executable);
@@ -61,8 +82,8 @@ if ( $localBinary && $projectContents =~ s/(BUNDLE_LOADER = )([^;]+;)/$1"$localB
 
 ############################################################################
 
-my @classes = unique loadFile( $selectedFile ) =~ /\@implementation\s+(\w+)\b/g;
 my $changesFile = "$InjectionBundle/BundleContents.m";
+my @classes = unique loadFile( $selectedFile ) =~ /\@implementation\s+(\w+)\b/g;
 
 my $changesSource = IO::File->new( "> $changesFile" )
     or error "Could not open changes source file as: $!";
@@ -150,7 +171,7 @@ while ( my $line = <BUILD> ) {
     if ( $line =~ /\b(error|warning|note):/ ) {
         $line =~ s@^(.*?/)([^/:]+):@
             my ($p, $n) = ($1, $2);
-            (my $f = $p) =~ s!^(\.\.?/)!$mainDir/$InjectionBundle/$1!;
+            (my $f = $p) =~ s!^(\.\.?/)!$projRoot/$InjectionBundle/$1!;
             "$p\{\\field{\\*\\fldinst HYPERLINK \"file://$f$n\"}{\\fldrslt $n}}:";
         @ge;
         $line = "{\\colortbl;\\red0\\green0\\blue0;\\red255\\green255\\blue130;}\\cb2$line"
@@ -189,6 +210,8 @@ if ( $recording ) {
 }
 
 ############################################################################
+
+print "Renaming bundle..\n";
 
 my ($bundleRoot, $bundleName) = $bundlePath =~ m@^(.*)/([^/]*)$@;
 my $newBundle = $isIOS ? "$bundleRoot/$productName.bundle" : "$appPackage/$productName.bundle";
@@ -234,6 +257,7 @@ if ( $isDevice ) {
         print "<$bundlePath/$file\n";
         print "!>$remoteBundle/$file\n";
     }
+
     $bundlePath = $remoteBundle;
 }
 

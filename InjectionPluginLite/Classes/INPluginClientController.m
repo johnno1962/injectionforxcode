@@ -16,18 +16,8 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 
 @implementation INPluginClientController
 
-- (id)valueForkey:(NSString *)key index:(int)index {
-    return [self valueForKey:[NSString stringWithFormat:@"%@%d", key, index]];
-}
-
 - (void)awakeFromNib {
     resourcePath = [[NSBundle bundleForClass:[self class]] resourcePath];
-    for ( int i=0 ; i<sizeof vals/sizeof *vals ; i++ ) {
-        vals[i]    = [self valueForkey:@"val"   index:i];
-        sliders[i] = [self valueForkey:@"slide" index:i];
-        maxs[i]    = [self valueForkey:@"max"   index:i];
-        wells[i]   = [self valueForkey:@"well"  index:i];
-    }
     [self logRTF:@"{\\rtf1\\ansi\\def0}\n"];
 
     NSUserDefaults *defaults = menuController.defaults;
@@ -136,10 +126,10 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
      performSelectorOnMainThread:@selector(setBadgeLabel:)
      withObject:@"1" waitUntilDone:NO];
 
-    for ( int i=0 ; i<sizeof vals/sizeof *vals ; i++ ) {
-        [self slid:sliders[i]];
-        [self colorChanged:wells[i]];
-    }
+    for ( NSSlider *slider in [sliders subviews] )
+        [self slid:slider];
+    for ( NSColorWell *well in [wells subviews] )
+        [self colorChanged:well];
 
     [self performSelectorInBackground:@selector(connectionMonitor) withObject:nil];
 }
@@ -150,7 +140,9 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     while( read( clientSocket, &loaded, sizeof loaded ) == sizeof loaded )
         if ( !fdout )
             [self performSelectorOnMainThread:@selector(completed:)
-                                   withObject:loaded ? self : nil waitUntilDone:NO];
+                                   withObject:loaded ? nil :
+             @"\n\n{\\colortbl;\\red0\\green0\\blue0;\\red255\\green100\\blue100;}\\cb2"
+             "*** Bundle load failed ***\\line Consult the Xcode console." waitUntilDone:NO];
         else {
             [BundleInjection writeBytes:loaded withPath:NULL from:clientSocket to:fdout];
             close( fdout );
@@ -170,18 +162,17 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
      withObject:nil waitUntilDone:NO];
 }
 
-- (void)completed:success {
-    if ( success ) {
+- (void)completed:error {
+    if ( error ) {
+        [self logRTF:error];
+        [consolePanel orderFront:self];
+        [errorPanel orderFront:self];
+    }
+    else {
         [self logRTF:@"\\line Bundle loaded successfully.\\line"];
         [consolePanel orderOut:self];
         [errorPanel orderOut:self];
         [self mapSimulator];
-    }
-    else {
-        [self logRTF:@"\n\n{\\colortbl;\\red0\\green0\\blue0;\\red255\\green100\\blue100;}\\cb2"
-         "*** Bundle load failed ***\\line Consult the Xcode console."];
-        [consolePanel orderFront:self];
-        [errorPanel orderFront:self];
     }
 }
 
@@ -197,12 +188,14 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 #pragma mark - Run script
 
 - (void)runScript:(NSString *)script withArg:(NSString *)selectedFile {
-   [menuController startProgress];
+    [menuController startProgress];
+    if ( !selectedFile )
+        [consolePanel orderFront:self];
     NSString *command = [NSString stringWithFormat:@"\"%@/%@\" "
-                         "\"%@\" \"%@\" \"%@\" %d %d \"%@\" \"%@\" \"%@\"",
-                         resourcePath, script, resourcePath,
+                         "\"%@\" \"%@\" \"%@\" \"%@\" %d %d \"%@\" \"%@\" \"%@\" 2>&1",
+                         resourcePath, script, resourcePath, menuController.workspacePath,
                          mainFilePath ? mainFilePath : @"", executablePath ? executablePath : @"",
-                         ++patchNumber, silentButton.state ? 0 : 1<<2 | frontButton.state ? 0 : 1<<3,
+                         ++patchNumber, (silentButton.state ? 0 : 1<<2) | (frontButton.state ? 1<<3 : 0),
                          [unlockField.stringValue stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""],
                          [[menuController serverAddresses] componentsJoinedByString:@" "],
                          selectedFile];
@@ -305,7 +298,9 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     //[NSThread sleepForTimeInterval:.5];
 
     if ( status != 0 && scriptOutput )
-        [self performSelectorOnMainThread:@selector(completed:) withObject:nil waitUntilDone:NO];
+        [self performSelectorOnMainThread:@selector(completed:)
+                               withObject:@"\n\n{\\colortbl;\\red0\\green0\\blue0;\\red255\\green100\\blue100;}\\cb2"
+         "*** Bundle build failed ***\\line" waitUntilDone:NO];
     
     scriptOutput = NULL;
 }
@@ -315,13 +310,14 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 - (IBAction)slid:(NSSlider *)sender {
     if ( !clientSocket ) return;
     int tag = [sender tag];
-    [vals[tag] setStringValue:[NSString stringWithFormat:@"%.3f", sender.floatValue]];
-    NSString *file = [NSString stringWithFormat:@"%d%@", tag, vals[tag].stringValue];
+    NSTextField *val = [vals viewWithTag:tag];
+    [val setStringValue:[NSString stringWithFormat:@"%.3f", sender.floatValue]];
+    NSString *file = [NSString stringWithFormat:@"%d%@", tag, [val stringValue]];
     [BundleInjection writeBytes:INJECTION_MAGIC withPath:[file UTF8String] from:0 to:clientSocket];
 }
 
 - (IBAction)maxChanged:(NSTextField *)sender {
-    [sliders[sender.tag] setMaxValue:sender.stringValue.floatValue];
+    [[sliders viewWithTag:sender.tag] setMaxValue:sender.stringValue.floatValue];
 }
 
 - (IBAction)colorChanged:(NSColorWell *)sender {
@@ -356,11 +352,11 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 - (IBAction)openiOSTemplate:sender {
     [self openResource:"iOSBundleTemplate/InjectionBundle.xcodeproj"];
 }
-- (IBAction)openPatchMain:sender {
-    [self openResource:"patchMain.pl"];
+- (IBAction)openPatchProject:sender {
+    [self openResource:"patchProject.pl"];
 }
-- (IBAction)openPatchPch:sender {
-    [self openResource:"patchPch.pl"];
+- (IBAction)openRevertProject:sender {
+    [self openResource:"revertProject.pl"];
 }
 - (IBAction)openInjectSource:sender {
     [self openResource:"injectSource.pl"];
@@ -375,7 +371,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     [self openResource:"BundleInjection.h"];
 }
 - (IBAction)openBundleInterface:sender {
-    [self openResource:"BundleInteface.h"];
+    [self openResource:"BundleInterface.h"];
 }
 
 @end

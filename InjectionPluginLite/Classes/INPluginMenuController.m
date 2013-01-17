@@ -21,7 +21,7 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 	static dispatch_once_t onceToken;
 	dispatch_once(&onceToken, ^{
 		injectionPlugin = [[self alloc] init];
-        NSLog( @"Loading InInjectionPlugin: %@", injectionPlugin );
+        NSLog( @"Preparing Injection: %@", injectionPlugin );
         [[NSNotificationCenter defaultCenter] addObserver:injectionPlugin
                                                  selector:@selector(applicationDidFinishLaunching:)
                                                      name:NSApplicationDidFinishLaunchingNotification object:nil];
@@ -126,23 +126,20 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
     return [source rangeOfString:string].location != NSNotFound;
 }
 
+- (NSString *)workspacePath {
+    id delegate = [[NSApp keyWindow] delegate];
+    if ( ![delegate respondsToSelector:@selector(document)] )
+        delegate = [[lastTextView window] delegate];
+    NSDocument *workspace = [delegate document];
+    return [workspace isKindOfClass:IDEWorkspaceDocument] ?
+        [[workspace fileURL] path] : nil;
+}
+
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem {
     NSString *lastFile = [self lastFileSaving:NO];
     SEL action = [menuItem action];
-    if ( action == @selector(patchMain:) ) {
-        BOOL isMain = [[lastFile lastPathComponent] isEqualToString:@"main.m"];
-        if ( isMain )
-            menuItem.title = [self lastFileContains:@"BundleInjection.h"] ?
-                @"Unpatch project main.m" : @"Patch project main.m";
-        return isMain;
-    }
-    else if ( action == @selector(patchPch:) ) {
-        BOOL isPch = [[lastFile pathExtension] isEqualToString:@"pch"];
-        if ( isPch )
-            menuItem.title = [self lastFileContains:@"BundleInterface.h"] ?
-                @"Unpatch project .pch" : @"Patch project .pch";
-        return isPch;
-    }
+    if ( action == @selector(patchProject:) || action == @selector(revertProject:) )
+        return [self workspacePath] != nil;
     else if ( [menuItem action] == @selector(openBundle:) )
         return client.connected;
     else if ( [menuItem action] == @selector(injectSource:) )
@@ -168,10 +165,10 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 }
                   
 - (IBAction)patchMain:sender {
-    [client runScript:@"patchMain.pl" withArg:[self lastFileSaving:YES]];
+    [client runScript:@"patchProject.pl" withArg:nil];
 }
 - (IBAction)patchPch:sender {
-    [client runScript:@"patchPch.pl" withArg:[self lastFileSaving:YES]];
+    [client runScript:@"revertProject.pl" withArg:nil];
 }
 - (IBAction)openBundle:sender {
     [client runScript:@"openBundle.pl" withArg:[self lastFileSaving:YES]];
@@ -239,6 +236,8 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
         int appConnection = accept( serverSocket, (struct sockaddr *)&clientAddr, &addrLen );
         if ( appConnection > 0 )
             [client setConnection:appConnection];
+        else
+            [NSThread sleepForTimeInterval:.5];
     }
 }
 

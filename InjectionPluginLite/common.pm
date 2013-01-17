@@ -1,5 +1,5 @@
 #
-#  $Id: //depot/InjectionPluginLite/common.pm#3 $
+#  $Id: //depot/InjectionPluginLite/common.pm#4 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -12,17 +12,18 @@ use IO::File;
 use strict;
 use Carp;
 
-use vars qw($resources $mainFile $executable $patchNumber $flags
+use vars qw($resources $workspace $mainFile $executable $patchNumber $flags
     $unlockCommand $addresses $selectedFile $isDevice $isSimulator $isIOS
-    $RED $InjectionBundle $productName $appPackage $deviceRoot $mainDir
-    $template $header $appClass $bundleProjectFile $appPackage);
+    $productName $appPackage $deviceRoot $projFile $projRoot $projType
+    $InjectionBundle $template $header $appClass $appPackage $RED);
 
-($resources, $mainFile, $executable, $patchNumber, $flags, $unlockCommand, $addresses, $selectedFile) = @ARGV;
+($resources, $workspace, $mainFile, $executable, $patchNumber, $flags, $unlockCommand, $addresses, $selectedFile) = @ARGV;
 
-$productName = "InjectionBundle$patchNumber";
-($mainDir) = $mainFile =~ m@(.*)/[^/]+$@;
+($projFile, $projRoot, $projType) = $workspace =~ m@^((.*?)/[^/]+\.(xcodeproj|xcworkspace))@;
 
 ($appPackage, $deviceRoot) = $executable =~ m@((^.*)/[^/]+)/[^/]+$@;
+
+$productName = "InjectionBundle$patchNumber";
 
 $isDevice = $executable =~ m@^/var/mobile/@;
 $isSimulator = $executable =~ m@/iPhone Simulator/@;
@@ -32,8 +33,7 @@ $isIOS = $isDevice || $isSimulator;
     ("iOSBundleTemplate", "UIKit/UIKit.h", "UIApplication") :
     ("OSXBundleTemplate", "Cocoa/Cocoa.h", "NSApplication");
 
-($InjectionBundle = $template) =~ s/BundleTemplate/InjectionBundle/;
-$bundleProjectFile = "$InjectionBundle/InjectionBundle.xcodeproj/project.pbxproj";
+($InjectionBundle = $template) =~ s/BundleTemplate/InjectionProject/;
 
 BEGIN { $RED = "{\\colortbl;\\red0\\green0\\blue0;\\red255\\green100\\blue100;}\\cb2"; }
 
@@ -44,7 +44,7 @@ sub error {
 open STDERR, '>&STDOUT';
 $| = 1;
 
-chdir $mainDir or error "Could not chdir to \"$mainDir\" as: $!" if $mainDir;
+chdir $projRoot or error "Could not change to directory '$projRoot' as $!";
 
 sub loadFile {
     my ($path) = @_;
@@ -60,14 +60,12 @@ sub loadFile {
 
 sub saveFile {
     my ($path, $data) = @_;
-    my ($dir, $name) = $path =~ m#^(.*)/([^/]+)$#;
     my $current = !-f $path || loadFile( $path );
 
     if ( $data ne $current ) {
         unlock( $path );
 
-        my $save = "$dir/save"; mkdir $save, 0755 if !-d $save;
-        rename $path, "$save/$name.save" if -f $path && !-f "$save/$name.save";
+        rename $path, "$path.save" if -f $path && !-f "$path.save";
 
         if ( my $fh = IO::File->new( "> $path" ) ) {
             my ($rest, $name) = urlprep( $path );
@@ -89,7 +87,7 @@ sub urlprep {
     $_[0] =~ s@^\./@@;
     my ($rest, $name) = $_[0] =~ m@(^.*/)?([^/]*)$@;
     $rest = "" if not defined $rest;
-    ###$_[0] = $projRoot.$_[0] if $_[0] !~ m@^/@;
+    $_[0] = $projRoot.$_[0] if $_[0] !~ m@^/@;
     my $urlPrefix = "file://";
     $_[0] = $urlPrefix.$_[0];
     return ($rest, $name);
@@ -100,11 +98,22 @@ sub unlock {
     return if !-f $file || -w $file;
     print "Unlocking $file\n";
     $file =~ s@^./@@;
-    ###$file = "$projRoot$file" if $file !~ m@^/@;
+    $file = "$projRoot$file" if $file !~ m@^/@;
     print "Executing: $unlockCommand\n";
     my $command = sprintf $unlockCommand, map $file, 0..10;
     0 == system $command
         or print "${RED}Could not unlock using command: $command\n";
+}
+
+sub patchAll {
+    my ($pattern, $change) = @_;
+    foreach my $file (IO::File->new( "find . -name '$pattern' |" )->getlines()) {
+        chomp $file;
+        next if $file =~ /InjectionBundle/;
+        my $contents = loadFile( $file );
+        $change->( $contents );
+        saveFile( $file, $contents );
+    }
 }
 
 sub unique {

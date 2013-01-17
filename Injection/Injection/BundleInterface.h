@@ -13,7 +13,7 @@
 #ifdef __OBJC__
 
 #define INJECTION_PLUGIN "com.johnholdsworth.InjectionPlugin"
-#define INJECTION_VERSION "2.6";
+#define INJECTION_VERSION "2.8";
 
 // redefined to convert to category in bundle
 #define _injectable( _className ) _className

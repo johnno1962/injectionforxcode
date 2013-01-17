@@ -69,7 +69,8 @@ select "Injection/Patch project .pch" to make the interface to injection
 available to all sources. This version knows nothing about project files and
 does not automatically propagate parameters into injection's bundle project
 so you may need to check things such as include path and compiler/ARC using
-the menu item "Injection/Open Bundle Project" and editing it until it builds.
+the menu item "Injection/Open Bundle Project" and editing it's "Build Settings"
+until it builds.
 
 If you find (m)any issues in the code, get in contact using the email: support (at) injectionforxcode.com
 
@@ -204,6 +205,8 @@ __1<<0__ Project is a "demo" application i.e. /UICatalog|(iOS|OSX)GLEssentials/
 __1<<1__ Pre-convert headers of all writable class implementations.
 
 __1<<2__ Suppress application alert on load of changes.
+
+__1<<3__ Activate application/simulator on load.
 
 ## Please note:
 

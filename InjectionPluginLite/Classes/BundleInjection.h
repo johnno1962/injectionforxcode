@@ -392,22 +392,19 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
     struct _in_objc_ivars *ivars = nc->internal->ivars;
     [newClass class];
 
-    if ( ivars )
-        // align ivars in new class with original
-        for ( int i=0 ; i<ivars->count ; i++ ) {
-            Ivar ivar = class_getInstanceVariable(oldClass, ivars->ivars[i].name);
-            if ( !ivar )
-                NSLog( @"*** Please re-run your application to add ivar '%s' ***",
+    // align ivars in new class with original
+    for ( int i=0 ; ivars && i<ivars->count ; i++ ) {
+        Ivar ivar = class_getInstanceVariable(oldClass, ivars->ivars[i].name);
+        if ( !ivar )
+            NSLog( @"*** Please re-run your application to add ivar '%s' ***",
+                  ivars->ivars[i].name );
+        else {
+            if ( strcmp( ivar_getTypeEncoding( ivar ), ivars->ivars[i].type ) )
+                NSLog( @"*** Ivar '%s' has changed type, re-run application. ***",
                       ivars->ivars[i].name );
-            else {
-                if ( strcmp( ivar_getTypeEncoding( ivar ), ivars->ivars[i].type ) )
-                    NSLog( @"*** Ivar '%s' has changed type, re-run application. ***",
-                          ivars->ivars[i].name );
-                *ivars->ivars[i].offsetPtr = ivar_getOffset(ivar);
-            }
+            *ivars->ivars[i].offsetPtr = ivar_getOffset(ivar);
         }
-    else
-        NSLog( @"*** Something is wrong - does your class have a +load method??" );
+    }
 }
 
 + (void)dumpIvars:(Class)aClass {
