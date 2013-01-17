@@ -9,7 +9,7 @@ a couple of minor changes to your application's "main.m" and pre-compilation hea
 will connect to a server running inside Xcode during testing to receive commands to
 load bundles containing the code changes you make. 
 
-Stop Press: Injection no longer has to convert your classes into categories so no changes are made
+Stop Press: Injection has been refactored and no longer to convert your classes into categories so no changes are made
 to your source code in order for it to work. It works for OS X and iOS projects in the
 simulator and on the device (if you add an extra "run script" build phase as instructed.)
 The time taken to inject is the amount of time it takes to recompile the class modified.
@@ -20,21 +20,21 @@ https://vimeo.com/50137444
 
 Announcements of major commits to the repo will be made on twitter [@Injection4Xcode](https://twitter.com/#!/@Injection4Xcode).
 
-To use injection, open the InjectionPlugin project, build it and restart Xcode.
+To use Injection, open the InjectionPluginLite project, build it and restart Xcode.
 This should add a submenu and an "Inject Source" item to Xcode's "Product" menu.
-Open a simple example project such as UICatalog or GLEssentials from Apple
-and use the "Product/<ProjectName>Patch Project for Injection" menu item to 
-prepare the project and rebuild it. When you run the project it should connect
-to Xcode which will display a red badge showing the application is prepared to 
-load patch bundles. Select text in an implementation source file and use menu item
-"Product/Inject Source" to inject any changes you may have made into the app.
-Be sure to #define DEBUG.
+Open a simple example project such as UICatalog or GLEssentials from Apple and use the 
+"Product/Injection Plugin/Patch Project for Injection" menu item to prepare the project
+and rebuild it (Be sure to #define DEBUG.) When you run the project it should connect
+to Xcode which will display a red badge on it's dock icon showing the application is
+prepared to  load patch bundles. Select text in an implementation source file and use
+menu item "Product/Inject Source" to inject any changes you may have made into the app.
 
-Injection no longer need to patch your class source or headers in any way. Support
-for injecting projects using "CocoaPods" which use "workspaces" added since version 2.7.
-The plugin assumes the workspace file has the same name as the actual project ".xcodeproj".
+Injection no longer needs to patch your class source or headers in any way. Support
+for injecting projects using "CocoaPods" and "workspaces" has been added since version 2.7.
 Classes in the project or Pods can be injected as well as categories or extensions.
 The only limitation now is that the class being injected must not have a +load method.
+Please note it is not sufficient to select a file to inject it. You need to have a
+selection/cursor inside the Xcode editor for the file to be recognised by the plugin.
 
 ## License
 
@@ -45,6 +45,8 @@ are finding it useful I would prefer you made a payment of $10 (or $25 in a
 commercial environment) as suggested by the licensing code included in the software
 in order to continue using it.
 
+If you find (m)any issues in the code, get in contact using the email: support (at) injectionforxcode.com
+
 The projects in the source tree are related as follows:
 
 __InjectionPluginLite__ is a standalone, complete rewrite of the Injection plugin removing
@@ -52,7 +54,7 @@ dead code from the long and winding road injection has taken to get to this poin
 is now the only project you need to build. After building, restart Xcode and check for
 the new items at the end of the "Product" menu.
 
-Code for the previous version of the plugin is as follows
+Code for the previous obsolete version of the plugin is as follows
 
 __ObjCpp:__ A type of "Foundation++" set of C++ classes I use for operators on common objects.
 
@@ -62,8 +64,6 @@ __InjectionPlugin:__ The plugin source packaging the application for use inside 
 
 __InjectionInstallerIII:__ an installer application for the Xcode plugin.
 
-
-If you find (m)any issues in the code, get in contact using the email: support (at) injectionforxcode.com
 
 ## Source Files/Roles:
 
@@ -80,24 +80,24 @@ client being injected and runs unix scripts to prepare the project/bundles as pa
 
 ## Perl scripts:
 
-__Injection/Injection/patchProject.pl__
+__InjectionPluginLite/patchProject.pl__
 
 Run when a project is first used for injection to patch main.m and any ".pch" files.
 
-__Injection/Injection/openBundle.pl__
+__InjectionPluginLite/openBundle.pl__
 
 Opens the bundle project used by injection to inject code.
 
-__Injection/Injection/injectSource.pl__
+__InjectionPluginLite/injectSource.pl__
 
 The script called when you inject a source file to build the injection bundle project
 and signal the client application to load the resulting bundle to apply the code changes.
 
-__Injection/Injection/revertProject.pl__
+__InjectionPluginLite/revertProject.pl__
 
 Un-patches main.m and the project's .pch file when you have finished using injection.
 
-__Injection/Injection/common.pm__
+__InjectionPluginLite/common.pm__
 
 Code shared across the above scripts including the code that patches classes into categories.
 
