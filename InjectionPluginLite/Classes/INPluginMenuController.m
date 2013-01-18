@@ -114,8 +114,7 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
     NSDocument *doc = [(id)[lastTextView delegate] document];
     if ( save ) {
         [doc saveDocument:self];
-        if ( !refkey )
-            [self setupLicensing];
+        [self setupLicensing];
     }
     return [[doc fileURL] path];
 }
@@ -249,6 +248,7 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 #pragma mark - Licensing Code
 
 - (IBAction)license:sender{
+    [self setupLicensing];
     NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@cgi-bin/sale.cgi?vers=%s&inst=%d&ident=%@&lkey=%d",
                                        kAppHome, INJECTION_VERSION, (int)installed, mac, licensed]];
     webView.customUserAgent = @"040ccedcacacccedcacac";
@@ -305,6 +305,8 @@ static CFDataRef copy_mac_address(void)
 }
 
 - (void)setupLicensing {
+    if ( refkey )
+        return;
     time_t now = time(NULL);
     installed = [defaults integerForKey:kInstalled];
     if ( !installed ) {

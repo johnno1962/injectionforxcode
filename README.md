@@ -62,6 +62,9 @@ dead code from the long and winding road injection has taken to get to this poin
 is now the only project you need to build. After building, restart Xcode and check for
 the new items at the end of the "Product" menu.
 
+__InjectionInstallerIII__ The "Injection Plugin" application distributed as a package for
+installing/uninstalling the plugin.
+
 ## Source Files/Roles:
 
 __InjectionPluginLite/Classes/INPluginMenuController.m__
@@ -100,12 +103,6 @@ Code shared across the above scripts including the code that patches classes int
 
 ## Script output line-prefix conventions from -[InDocument monitorScript]:
 
-__#/__ directory to be monitored for individual file changes (n/a in plugin version)
-
-__#!__ directory to be added to array for FSEvents (n/a for plugin version)
-
-__##__ Start FSEvent stream (n/a "") and use the regexp given for file filter.
-
 __>__ open local file for write
 
 __<__ read from local file (and send to local file or to application)
@@ -115,14 +112,6 @@ __!>__ open file on device/simulator for write
 __!<__ open file on device/simulator for read (can be directory)
 
 __!/__ load bundle at remote path into client application
-
-__!:__ set local "key file" variable (main.m and .pch locations)
-
-__%!__ evaluate javascript in source status window
-
-__%2__ load line as HTML into source status window
-
-__%1__ append line as HTML to console NSTextView
 
 __?__ display alert to user with message
 
