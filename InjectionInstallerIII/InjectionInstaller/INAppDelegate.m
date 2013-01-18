@@ -7,13 +7,12 @@
 //
 
 #import "INAppDelegate.h"
-#import "BundleInterface.h"
 
 @implementation INAppDelegate
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
     webView.drawsBackground = NO;
-    [[webView mainFrame] loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"http://injection.johnholdsworth.com/plugintro.html"]]];
+    [[webView mainFrame] loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"http://injection.johnholdsworth.com/pluginlite.html"]]];
     [window makeKeyAndOrderFront:self];
 }
 

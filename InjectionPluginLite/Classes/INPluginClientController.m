@@ -12,20 +12,33 @@
 #import "INPluginMenuController.h"
 
 static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent",
-    *kINOrderFront = @"INOrderFront", *colorFormat = @"%f,%f,%f,%f";
+    *kINOrderFront = @"INOrderFront", *colorFormat = @"%f,%f,%f,%f",
+    *pluginAppResources = @"/Applications/Injection Plugin.app/Contents/Resources/InjectionPlugin.xcplugin/Contents/Resources";
 
 @implementation INPluginClientController
 
 - (void)awakeFromNib {
-    resourcePath = [[NSBundle bundleForClass:[self class]] resourcePath];
-    [self logRTF:@"{\\rtf1\\ansi\\def0}\n"];
-
     NSUserDefaults *defaults = menuController.defaults;
     if ( [defaults valueForKey:kINUnlockCommand] )
         unlockField.stringValue = [defaults valueForKey:kINUnlockCommand];
     silentButton.state = [defaults boolForKey:kINSilent];
     frontButton.state = [defaults boolForKey:kINOrderFront];
+
+    scriptPath = [[NSBundle bundleForClass:[self class]] resourcePath];
+    if ( [[self implementionInDirectory:pluginAppResources]
+          isEqualTo:[self implementionInDirectory:scriptPath]] )
+        resourcePath = pluginAppResources;
+    else
+        resourcePath = scriptPath;
+
     docTile = [[NSApplication sharedApplication] dockTile];
+    [self logRTF:@"{\\rtf1\\ansi\\def0}\n"];
+}
+
+- (NSString *)implementionInDirectory:(NSString *)dir {
+    return [NSString stringWithContentsOfURL:[[NSURL fileURLWithPath:dir]
+                                              URLByAppendingPathComponent:@"BundleInjection.h"]
+                             encoding:NSUTF8StringEncoding error:NULL];
 }
 
 - (IBAction)unlockChanged:(NSTextField *)sender  {
@@ -193,7 +206,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
         [consolePanel orderFront:self];
     NSString *command = [NSString stringWithFormat:@"\"%@/%@\" "
                          "\"%@\" \"%@\" \"%@\" \"%@\" %d %d \"%@\" \"%@\" \"%@\" 2>&1",
-                         resourcePath, script, resourcePath, menuController.workspacePath,
+                         scriptPath, script, resourcePath, menuController.workspacePath,
                          mainFilePath ? mainFilePath : @"", executablePath ? executablePath : @"",
                          ++patchNumber, (silentButton.state ? 0 : 1<<2) | (frontButton.state ? 1<<3 : 0),
                          [unlockField.stringValue stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""],

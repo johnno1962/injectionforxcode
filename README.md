@@ -9,10 +9,9 @@ a couple of minor changes to your application's "main.m" and pre-compilation hea
 will connect to a server running inside Xcode during testing to receive commands to
 load bundles containing the code changes you make. 
 
-Stop Press: Injection has been refactored and no longer to convert your classes into categories so no changes are made
-to your source code in order for it to work. It works for OS X and iOS projects in the
-simulator and on the device (if you add an extra "run script" build phase as instructed.)
-The time taken to inject is the amount of time it takes to recompile the class modified.
+Stop Press: Injection has been refactored and no longer has to convert your classes into categories
+in order for it to work so no changes are made to your source code. It works for OS X and iOS projects
+in the simulator and on the device (if you add an extra "run script" build phase as instructed.)
 
 A quick demonstration video/tutorial of Injection in action is available here:
 
@@ -35,9 +34,9 @@ A project patched for injection #imports the file "BundleInjection.h" from the r
 plugin into it's "main.m" source file. Code in this header uses a +load method to connect back
 through a socket to a server running inside Xcode and waits in a thread for commands to load bundles.
 
-To inject a source, it is #imported into "BundleContents.m" in a bundle project which is then built
+When you inject a source, it is #imported into "BundleContents.m" in a bundle project which is then built
 and the application messaged by Xcode through the socket connection to load the bundle. When the bundle
-loads, it has a +load method which calls the method [BundleInjection loadClass:theNewClass notify:flags].
+loads, it too has a +load method which calls the method [BundleInjection loadClass:theNewClass notify:flags].
 This method aligns the instance variables of the newly loaded class to the original (as @properties can be reordered) 
 and then swizzles the new implementations onto the original class.
 
@@ -62,17 +61,6 @@ __InjectionPluginLite__ is a standalone, complete rewrite of the Injection plugi
 dead code from the long and winding road injection has taken to get to this point. This
 is now the only project you need to build. After building, restart Xcode and check for
 the new items at the end of the "Product" menu.
-
-Code for the previous obsolete version of the plugin is as follows:
-
-__ObjCpp:__ A type of "Foundation++" set of C++ classes I use for operators on common objects.
-
-__Injection:__ The original application which worked alongside Xcode as submitted to Apple
-
-__InjectionPlugin:__ The plugin source packaging the application for use inside Xcode
-
-__InjectionInstallerIII:__ an installer application for the Xcode plugin.
-
 
 ## Source Files/Roles:
 

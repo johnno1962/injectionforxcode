@@ -261,10 +261,6 @@
 				CURRENT_PROJECT_VERSION = 3.0;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					FOR_PLUGIN,
-					OPEN_APP_STORE,
-				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
@@ -274,50 +270,6 @@
 			};
 			name = Debug;
 		};
-		BBE29E6E16169C3700F7B1CC /* Debug Web */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
-				CURRENT_PROJECT_VERSION = 3.0;
-				GCC_C_LANGUAGE_STANDARD = c99;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					FOR_PLUGIN,
-					OPEN_APP_STORE,
-					WEB_PLUGIN,
-				);
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				INSTALL_PATH = "$(HOME)/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
-				MACOSX_DEPLOYMENT_TARGET = 10.7;
-				SDKROOT = macosx;
-			};
-			name = "Debug Web";
-		};
-		BBE29E6F16169C3700F7B1CC /* Debug Web */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CODE_SIGN_ENTITLEMENTS = "";
-				CODE_SIGN_IDENTITY = "";
-				COMBINE_HIDPI_IMAGES = YES;
-				COPY_PHASE_STRIP = NO;
-				DEPLOYMENT_LOCATION = YES;
-				DEPLOYMENT_POSTPROCESSING = YES;
-				DSTROOT = "$(HOME)";
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_OBJC_GC = supported;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				INFOPLIST_FILE = Info.plist;
-				INSTALL_PATH = "/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
-				LD_RUNPATH_SEARCH_PATHS = /Developer;
-				PRODUCT_NAME = InjectionPlugin;
-				STRIP_INSTALLED_PRODUCT = NO;
-				WRAPPER_EXTENSION = xcplugin;
-			};
-			name = "Debug Web";
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -325,7 +277,6 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB913B08733D840010E9CD /* Debug */,
-				BBE29E6F16169C3700F7B1CC /* Debug Web */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -334,7 +285,6 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB913F08733D840010E9CD /* Debug */,
-				BBE29E6E16169C3700F7B1CC /* Debug Web */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

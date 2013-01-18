@@ -10,10 +10,8 @@
 		BB06C891160E94FC00EC7EB3 /* injection.png in Resources */ = {isa = PBXBuildFile; fileRef = BB06C890160E94FC00EC7EB3 /* injection.png */; };
 		BB06C893160E951C00EC7EB3 /* syringe.png in Resources */ = {isa = PBXBuildFile; fileRef = BB06C892160E951C00EC7EB3 /* syringe.png */; };
 		BB26EB84160DE0B200A62DFC /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB26EB83160DE0B200A62DFC /* WebKit.framework */; };
-		BB26EB8B160DE83600A62DFC /* BundleInjection.h in Resources */ = {isa = PBXBuildFile; fileRef = BB26EB89160DE82600A62DFC /* BundleInjection.h */; };
-		BB26EB8C160DE83D00A62DFC /* BundleInterface.h in Resources */ = {isa = PBXBuildFile; fileRef = BB26EB8A160DE82600A62DFC /* BundleInterface.h */; };
 		BB26EB91160DE8CB00A62DFC /* locked.png in Resources */ = {isa = PBXBuildFile; fileRef = BB26EB8F160DE8CB00A62DFC /* locked.png */; };
-		BB26EB97160DEC4300A62DFC /* InjectionPlugin.xcplugin in Resources */ = {isa = PBXBuildFile; fileRef = BB26EB96160DEC4300A62DFC /* InjectionPlugin.xcplugin */; };
+		BB71CA791678A91500FEC2B5 /* InjectionPlugin.xcplugin in Resources */ = {isa = PBXBuildFile; fileRef = BB71CA781678A91500FEC2B5 /* InjectionPlugin.xcplugin */; };
 		BBDA9F67160B3B49007B7848 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BBDA9F66160B3B49007B7848 /* Cocoa.framework */; };
 		BBDA9F71160B3B49007B7848 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = BBDA9F6F160B3B49007B7848 /* InfoPlist.strings */; };
 		BBDA9F73160B3B49007B7848 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = BBDA9F72160B3B49007B7848 /* main.m */; };
@@ -30,11 +28,9 @@
 		BB06C890160E94FC00EC7EB3 /* injection.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = injection.png; path = ../../Injection/Injection/injection.png; sourceTree = "<group>"; };
 		BB06C892160E951C00EC7EB3 /* syringe.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = syringe.png; path = ../../Injection/Injection/syringe.png; sourceTree = "<group>"; };
 		BB26EB83160DE0B200A62DFC /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
-		BB26EB89160DE82600A62DFC /* BundleInjection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BundleInjection.h; path = ../../Injection/Injection/BundleInjection.h; sourceTree = "<group>"; };
-		BB26EB8A160DE82600A62DFC /* BundleInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BundleInterface.h; path = ../../Injection/Injection/BundleInterface.h; sourceTree = "<group>"; };
 		BB26EB8F160DE8CB00A62DFC /* locked.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = locked.png; path = ../../Injection/Injection/locked.png; sourceTree = "<group>"; };
-		BB26EB96160DEC4300A62DFC /* InjectionPlugin.xcplugin */ = {isa = PBXFileReference; lastKnownFileType = folder; name = InjectionPlugin.xcplugin; path = "../../../Library/Developer/Xcode/DerivedData/InjectionPlugin-fghdhsztqdrrakcryudmnpeigglv/Build/Products/Debug/InjectionPlugin.xcplugin"; sourceTree = "<group>"; };
 		BB5F4FC4160D285E00C9B5AD /* InjectionInstaller.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = InjectionInstaller.entitlements; sourceTree = "<group>"; };
+		BB71CA781678A91500FEC2B5 /* InjectionPlugin.xcplugin */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = InjectionPlugin.xcplugin; path = "../../../Library/Application Support/Developer/Shared/Xcode/Plug-ins/InjectionPlugin.xcplugin"; sourceTree = "<group>"; };
 		BBDA9F62160B3B49007B7848 /* Injection Plugin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Injection Plugin.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BBDA9F66160B3B49007B7848 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		BBDA9F69160B3B49007B7848 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -111,8 +107,6 @@
 		BBDA9F6C160B3B49007B7848 /* InjectionInstaller */ = {
 			isa = PBXGroup;
 			children = (
-				BB26EB89160DE82600A62DFC /* BundleInjection.h */,
-				BB26EB8A160DE82600A62DFC /* BundleInterface.h */,
 				BBDA9F78160B3B49007B7848 /* INAppDelegate.h */,
 				BBDA9F79160B3B49007B7848 /* INAppDelegate.m */,
 				BBDA9F7B160B3B49007B7848 /* MainMenu.xib */,
@@ -130,7 +124,7 @@
 				BBDA9F8B160B40FC007B7848 /* App.icns */,
 				BBDA9F6E160B3B49007B7848 /* InjectionInstaller-Info.plist */,
 				BB5F4FC4160D285E00C9B5AD /* InjectionInstaller.entitlements */,
-				BB26EB96160DEC4300A62DFC /* InjectionPlugin.xcplugin */,
+				BB71CA781678A91500FEC2B5 /* InjectionPlugin.xcplugin */,
 				BBDA9F6F160B3B49007B7848 /* InfoPlist.strings */,
 				BBDA9F72160B3B49007B7848 /* main.m */,
 				BBDA9F74160B3B49007B7848 /* InjectionInstaller-Prefix.pch */,
@@ -191,16 +185,14 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BB26EB8C160DE83D00A62DFC /* BundleInterface.h in Resources */,
-				BB26EB8B160DE83600A62DFC /* BundleInjection.h in Resources */,
 				BBDA9F71160B3B49007B7848 /* InfoPlist.strings in Resources */,
 				BBDA9F77160B3B49007B7848 /* Credits.rtf in Resources */,
 				BBDA9F7D160B3B49007B7848 /* MainMenu.xib in Resources */,
 				BBDA9F8C160B40FC007B7848 /* App.icns in Resources */,
 				BB26EB91160DE8CB00A62DFC /* locked.png in Resources */,
-				BB26EB97160DEC4300A62DFC /* InjectionPlugin.xcplugin in Resources */,
 				BB06C891160E94FC00EC7EB3 /* injection.png in Resources */,
 				BB06C893160E951C00EC7EB3 /* syringe.png in Resources */,
+				BB71CA791678A91500FEC2B5 /* InjectionPlugin.xcplugin in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

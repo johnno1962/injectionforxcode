@@ -23,9 +23,9 @@ my $idef = $projName =~ /UICatalog|(iOS|OSX)GLEssentials/ ?
 print "\\b Patching project contained in: $projRoot\n";
 
 patchAll( "main.m", sub {
-    $_[0] =~ s/\n+$key.*|$/<<CODE/es;
+    $_[0] =~ s/\n*($key.*)?$/<<CODE/es;
 
-    
+
 $key
 
 #ifdef $idef
@@ -39,7 +39,7 @@ CODE
 } );
 
 patchAll( "*refix.pch", sub {
-    $_[0] =~ s/\n+$key.*|$/<<CODE/es;
+    $_[0] =~ s/\n*($key.*)?$/<<CODE/es;
 
 
 $key

@@ -56,7 +56,7 @@ struct _in_header { int pathLength, dataLength; };
 
 @interface BundleInjection(Private)
 - (void)bundleLoader;
-- (void)doLoad;
+- (void)loadBundle;
 @end
 
 @implementation BundleInjection

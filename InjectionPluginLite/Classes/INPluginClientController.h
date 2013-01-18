@@ -21,9 +21,9 @@
     IBOutlet NSView *vals, *sliders, *maxs, *wells;
     IBOutlet NSImageView *imageWell;
 
-    NSString *resourcePath, *mainFilePath, *executablePath;
+    NSString *scriptPath, *resourcePath, *mainFilePath, *executablePath;
     int clientSocket, patchNumber, fdin, fdout, fdfile, lines, status;
-    char buffer[10*1024*1024];
+    char buffer[1024*1024];
     NSDockTile *docTile;
     FILE *scriptOutput;
 }

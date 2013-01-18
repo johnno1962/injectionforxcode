@@ -1,5 +1,5 @@
 #
-#  $Id: //depot/InjectionPluginLite/common.pm#9 $
+#  $Id: //depot/InjectionPluginLite/common.pm#10 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -77,7 +77,7 @@ sub saveFile {
                 print "Modified $link ...\n";
                 (my $diff = `/usr/bin/diff -C 5 \"$path.save\" \"$path\"`) =~ s/([\{\}\\])/\\$1/g;
                 $diff =~ s/\n/\\line/g;
-                print " {\\colortbl;\\red0\\green0\\blue0;\\red245\\green222\\blue179;}\\cb2$diff\n";
+                print "{\\colortbl;\\red0\\green0\\blue0;\\red245\\green222\\blue179;}\\cb2$diff\n";
             }
             return 1;
         }
