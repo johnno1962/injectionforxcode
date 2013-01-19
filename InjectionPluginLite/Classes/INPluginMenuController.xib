@@ -99,7 +99,7 @@
 											<string key="NSFrameSize">{465, 256}</string>
 											<reference key="NSSuperview" ref="303166865"/>
 											<reference key="NSWindow"/>
-											<reference key="NSNextKeyView" ref="640256177"/>
+											<reference key="NSNextKeyView" ref="365303789"/>
 											<string key="NSReuseIdentifierKey">_NS:13</string>
 											<object class="NSTextContainer" key="NSTextContainer" id="386417726">
 												<object class="NSLayoutManager" key="NSLayoutManager">
@@ -363,7 +363,7 @@ wGw</bytes>
 							<string key="NSFrame">{{-1, 18}, {482, 258}}</string>
 							<reference key="NSSuperview" ref="937701230"/>
 							<reference key="NSWindow"/>
-							<reference key="NSNextKeyView" ref="365303789"/>
+							<reference key="NSNextKeyView" ref="303166865"/>
 							<string key="NSReuseIdentifierKey">_NS:9</string>
 							<int key="NSsFlags">133138</int>
 							<reference key="NSVScroller" ref="640256177"/>
@@ -379,7 +379,6 @@ wGw</bytes>
 							<string key="NSFrame">{{6, 3}, {468, 13}}</string>
 							<reference key="NSSuperview" ref="937701230"/>
 							<reference key="NSWindow"/>
-							<reference key="NSNextKeyView"/>
 							<string key="NSReuseIdentifierKey">_NS:1535</string>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="583113293">
@@ -1128,7 +1127,6 @@ wGw</bytes>
 							<string key="NSFrame">{{544, 20}, {43, 17}}</string>
 							<reference key="NSSuperview" ref="391157660"/>
 							<reference key="NSWindow"/>
-							<reference key="NSNextKeyView"/>
 							<string key="NSReuseIdentifierKey">_NS:1535</string>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="743073745">
@@ -1321,7 +1319,6 @@ wGw</bytes>
 							<string key="NSFrame">{{227, 10}, {41, 17}}</string>
 							<reference key="NSSuperview" ref="379633312"/>
 							<reference key="NSWindow"/>
-							<reference key="NSNextKeyView"/>
 							<string key="NSReuseIdentifierKey">_NS:22</string>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="282493631">
@@ -1427,7 +1424,6 @@ wGw</bytes>
 							<string key="NSFrame">{{231, 10}, {37, 17}}</string>
 							<reference key="NSSuperview" ref="349265544"/>
 							<reference key="NSWindow"/>
-							<reference key="NSNextKeyView"/>
 							<string key="NSReuseIdentifierKey">_NS:22</string>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="808815046">
@@ -1798,7 +1794,6 @@ wGw</bytes>
 				<string key="NSFrameSize">{96, 20}</string>
 				<reference key="NSSuperview"/>
 				<reference key="NSWindow"/>
-				<reference key="NSNextKeyView"/>
 				<string key="NSReuseIdentifierKey">_NS:9</string>
 				<string key="NSHuggingPriority">{250, 250}</string>
 				<int key="NSpiFlags">16397</int>
@@ -1910,6 +1905,14 @@ wGw</bytes>
 						<reference key="destination" ref="177676215"/>
 					</object>
 					<int key="connectionID">552</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">introItem</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="29884092"/>
+					</object>
+					<int key="connectionID">600</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -3336,7 +3339,7 @@ wGw</bytes>
 			<nil key="activeLocalization"/>
 			<dictionary class="NSMutableDictionary" key="localizations"/>
 			<nil key="sourceID"/>
-			<int key="maxID">598</int>
+			<int key="maxID">600</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<array class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -3440,8 +3443,48 @@ wGw</bytes>
 				<object class="IBPartialClassDescription">
 					<string key="className">INPluginMenuController</string>
 					<string key="superclassName">NSObject</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="injectSource:">id</string>
+						<string key="license:">id</string>
+						<string key="openBundle:">id</string>
+						<string key="patchMain:">id</string>
+						<string key="patchPch:">id</string>
+						<string key="support:">id</string>
+						<string key="viewIntro:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="injectSource:">
+							<string key="name">injectSource:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="license:">
+							<string key="name">license:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openBundle:">
+							<string key="name">openBundle:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="patchMain:">
+							<string key="name">patchMain:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="patchPch:">
+							<string key="name">patchPch:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="support:">
+							<string key="name">support:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="viewIntro:">
+							<string key="name">viewIntro:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
 					<dictionary class="NSMutableDictionary" key="outlets">
 						<string key="client">INPluginClientController</string>
+						<string key="introItem">NSMenuItem</string>
 						<string key="lastTextView">NSTextView</string>
 						<string key="progressIndicator">NSProgressIndicator</string>
 						<string key="subMenu">NSMenu</string>
@@ -3453,6 +3496,10 @@ wGw</bytes>
 						<object class="IBToOneOutletInfo" key="client">
 							<string key="name">client</string>
 							<string key="candidateClassName">INPluginClientController</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="introItem">
+							<string key="name">introItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
 						</object>
 						<object class="IBToOneOutletInfo" key="lastTextView">
 							<string key="name">lastTextView</string>

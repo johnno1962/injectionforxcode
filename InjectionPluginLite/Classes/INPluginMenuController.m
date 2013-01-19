@@ -72,6 +72,8 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
                 [menuItem setTarget:self];
             [productMenu addItem:menuItem];
         }
+
+        introItem.title = [NSString stringWithFormat:@"Injection v%s Intro", INJECTION_VERSION];
         
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(selectionDidChange:)

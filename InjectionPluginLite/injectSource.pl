@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#8 $
+#  $Id$
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -22,24 +22,27 @@ if ( !$executable ) {
 }
 
 if ( ! -d $InjectionBundle ) {
+
     print "Copying $template into project.\n";
     0 == system "cp -r \"$resources/$template\" $InjectionBundle && chmod -R og+w $InjectionBundle"
         or error "Could not copy injection bundle.";
 
-    saveFile( "$InjectionBundle/InjectionBundle-Prefix.pch", <<CODE );
-
-/* Updated once as bundle template is copied */
-/* Keep in sync with your projects main .pch */
-
-#ifdef __OBJC__
-    #import <$header>
-#endif
+    my $bundlePCH = "$InjectionBundle/InjectionBundle-Prefix.pch";
+    if ( my ($projectPCH) = split "\n", `find . -name "$projName-Prefix.pch"` ) {
+        print "Linking to pre-compilation header: $projectPCH\n";
+        unlink $bundlePCH;
+        symlink "../$projectPCH", $bundlePCH
+            or error "Could not link main preprocessor header as: $!";
+    }
+    else {
+        IO::File->new( ">> $bundlePCH" )->print( <<CODE );
 
 #ifdef DEBUG
     #define INJECTION_ENABLED
     #import "$resources/BundleInterface.h"
 #endif
 CODE
+    }
 
     if ( $projFile =~ /\.xcodeproj$/ ) {
         print "Migrating project parameters to bundle..\n";

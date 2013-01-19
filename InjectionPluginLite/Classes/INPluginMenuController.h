@@ -20,6 +20,7 @@
     IBOutlet NSPanel *webPanel;
     IBOutlet WebView *webView;
     IBOutlet NSMenu *subMenu;
+    IBOutlet NSMenuItem *introItem;
 
     IBOutlet NSTextView *lastTextView;
     IBOutlet INPluginClientController *client;

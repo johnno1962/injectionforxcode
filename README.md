@@ -10,7 +10,7 @@ will connect to a server running inside Xcode during testing to receive commands
 load bundles containing the code changes you make. 
 
 Stop Press: Injection has been refactored and no longer has to convert your classes into categories
-in order for it to work so no changes are made to your source code. It works for OS X and iOS projects
+in order for it to work so no changes are made to your class source. It works for OS X and iOS projects
 in the simulator and on the device (if you add an extra "run script" build phase as instructed.)
 
 A quick demonstration video/tutorial of Injection in action is available here:
@@ -71,11 +71,11 @@ __InjectionPluginLite/Classes/INPluginMenuController.m__
 
 Responsible for coordinating the injection menu and running up TCP server process on port 31442 receiving
 connections from applications with their main.m patched for injection. When an incoming connection
-arrives it opens sets the current connection on the associated "client" controller instance.
+arrives it sets the current connection on the associated "client" controller instance.
 
 __InjectionPluginLite/Classes/INPluginClientController.m__
 
-An singleton instance to shadow a client connection from an application. It runs unix scripts to
+A (currently) singleton instance to shadow a client connection from an application. It runs unix scripts to
 prepare the project and bundles used as part of injection and monitors for successful loading of the bundle.
 
 ## Perl scripts:
@@ -84,14 +84,14 @@ __InjectionPluginLite/patchProject.pl__
 
 Patches all main.m and ".pch" files to include headers for use with injection.
 
-__InjectionPluginLite/openBundle.pl__
-
-Opens the Xcode project used by injection to build a loadable bundle.
-
 __InjectionPluginLite/injectSource.pl__
 
-The script called when you inject a source file to build the injection bundle project
+The script called when you inject a source file to create/build the injection bundle project
 and signal the client application to load the resulting bundle to apply the code changes.
+
+__InjectionPluginLite/openBundle.pl__
+
+Opens the Xcode project used by injection to build a loadable bundle to track down build problems.
 
 __InjectionPluginLite/revertProject.pl__
 
