@@ -49,13 +49,12 @@ CODE
     my $pbxFile = "$projName.xcodeproj/project.pbxproj";
     if ( -f $pbxFile ) {
         print "Migrating project parameters to bundle..\n";
-
         my $projectSource = loadFile( $pbxFile );
 
         # FRAMEWORK_SEARCH_PATHS HEADER_SEARCH_PATHS USER_HEADER_SEARCH_PATHS
-        foreach my $parm (qw(ARCHS VALID_ARCHS SDKROOT MACOSX_DEPLOYMENT_TARGET
-                GCC_VERSION GCC_PREPROCESSOR_DEFINITIONS GCC_ENABLE_OBJC_GC
-                GCC_ENABLE_OBJC_EXCEPTIONS CLANG_ENABLE_OBJC_ARC)) {
+        # ARCHS VALID_ARCHS GCC_PREPROCESSOR_DEFINITIONS GCC_ENABLE_OBJC_EXCEPTIONS
+        foreach my $parm (qw(MACOSX_DEPLOYMENT_TARGET IPHONEOS_DEPLOYMENT_TARGET
+                SDKROOT GCC_VERSION GCC_ENABLE_OBJC_GC CLANG_ENABLE_OBJC_ARC)) {
             if ( my ($val) = $projectSource =~ /(\b$parm = [^;]*;)/ ) {
                 print "Inported setting $val\n";
                 $bundleProjectSource =~ s/\b$parm = [^;]*;/$val/g;
