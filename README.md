@@ -1,5 +1,4 @@
-Injection for Xcode Source
-==========================
+![Icon](http://www.injectionforxcode.com/injection.png) Injection for Xcode Source
 
 Copyright (c) John Holdsworth 2012
 
@@ -7,7 +6,7 @@ Injection is a plugin for Xcode that allows you to "inject" Objective-C code cha
 running application without having to restart it during development and testing. After making
 a couple of minor changes to your application's "main.m" and pre-compilation header it
 will connect to a server running inside Xcode during testing to receive commands to
-load bundles containing the code changes you make. 
+load bundles containing the code changes. 
 
 Stop Press: Injection has been refactored and no longer has to convert your classes into categories
 in order for it to work so no changes are made to your class source. It works for OS X and iOS projects

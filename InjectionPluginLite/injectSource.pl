@@ -15,6 +15,7 @@ use lib $FindBin::Bin;
 use common;
 
 my $bundleProjectFile = "$InjectionBundle/InjectionBundle.xcodeproj/project.pbxproj";
+my $bundleProjectSource = -f $bundleProjectFile && loadFile( $bundleProjectFile );
 
 if ( !$executable ) {
     print "Application is not connected.\n";
@@ -22,8 +23,8 @@ if ( !$executable ) {
 }
 
 if ( ! -d $InjectionBundle ) {
-
     print "Copying $template into project.\n";
+
     0 == system "cp -r \"$resources/$template\" $InjectionBundle && chmod -R og+w $InjectionBundle"
         or error "Could not copy injection bundle.";
 
@@ -44,11 +45,12 @@ if ( ! -d $InjectionBundle ) {
 CODE
     }
 
-    if ( $projFile =~ /\.xcodeproj$/ ) {
+    $bundleProjectSource = loadFile( $bundleProjectFile );
+    my $pbxFile = "$projName.xcodeproj/project.pbxproj";
+    if ( -f $pbxFile ) {
         print "Migrating project parameters to bundle..\n";
 
-        my $projectSource = loadFile( "$projFile/project.pbxproj" );
-        my $bundleProjectSource = loadFile( $bundleProjectFile );
+        my $projectSource = loadFile( $pbxFile );
 
         # FRAMEWORK_SEARCH_PATHS HEADER_SEARCH_PATHS USER_HEADER_SEARCH_PATHS
         foreach my $parm (qw(ARCHS VALID_ARCHS SDKROOT MACOSX_DEPLOYMENT_TARGET
@@ -59,8 +61,6 @@ CODE
                 $bundleProjectSource =~ s/\b$parm = [^;]*;/$val/g;
             }
         }
-
-        saveFile( $bundleProjectFile, $bundleProjectSource );
     }
 }
 
@@ -77,11 +77,11 @@ if ( $isDevice ) {
     $localBinary =~ s@([^./]+).app@$1.app/$1@;
 }
 
-my $projectContents = loadFile( $bundleProjectFile );
-if ( $localBinary && $projectContents =~ s/(BUNDLE_LOADER = )([^;]+;)/$1"$localBinary";/g ) {
+if ( $localBinary && $bundleProjectSource =~ s/(BUNDLE_LOADER = )([^;]+;)/$1"$localBinary";/g ) {
     print "Patching bundle project to app path: $localBinary\n";
-    saveFile( $bundleProjectFile, $projectContents );
 }
+
+saveFile( $bundleProjectFile, $bundleProjectSource );
 
 ############################################################################
 
@@ -151,7 +151,7 @@ else {
 print "$build\n\n";
 open BUILD, "cd $InjectionBundle && $build 2>&1 |" or error "Build failed $!\n";
 
-my ($bundlePath, $warned, $w2);
+my ($bundlePath, $warned);
 while ( my $line = <BUILD> ) {
 
     if ( $recording && $line =~ m@/usr/bin/(clang|\S*gcc)@ ) {
@@ -186,12 +186,9 @@ while ( my $line = <BUILD> ) {
     if ( $line =~ /"_OBJC_CLASS_\$_BundleInjection", referenced from:/ ) {
         $line .=  "${RED}Make sure you do not have option 'Symbols Hidden by Default' set in your build.."
     }
-    if ( $line =~ /"_OBJC_IVAR_\$_/ && !$warned++ ) {
-        $line = "${RED}Classes with \@private or aliased ivars can not be injected..\n$line";
-    }
-    if ( $line =~ /category is implementing a method which will also be implemented by its primary class/ && !$w2 ) {
+    if ( $line =~ /category is implementing a method which will also be implemented by its primary class/ && !$warned ) {
         $line = "${RED}Add -Wno-objc-protocol-method-implementation to \"Other C Flags\"\\line in this application's bundle project to suppress this warning.\n$line";
-        $w2++;
+        $warned++;
     }
     print "$line";
 }
