@@ -224,6 +224,8 @@ static int status;
                                                    withObject:nil waitUntilDone:YES];
                         else
                             NSLog( @"Synchronization error." );
+                        if ( !status )
+                            NSLog( @"*** Bundle has failed to load. If this is due to symbols not found, make sure that Build Setting 'Symbols Hidden by Default' is NO for your Debug build. ***");
                         write( loaderSocket, &status, sizeof status );
                         break;
                     case '>': // open file/directory to write/create
