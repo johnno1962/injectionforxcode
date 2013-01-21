@@ -1,4 +1,4 @@
-# ![Icon](http://www.injectionforxcode.com/injection.png) Injection for Xcode Source
+# ![Awesome](http://injectionforxcode.com/injection.png) Injection for Xcode Source
 
 Copyright (c) John Holdsworth 2012
 
