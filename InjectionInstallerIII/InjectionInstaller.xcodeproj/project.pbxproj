@@ -7,30 +7,31 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BB06C891160E94FC00EC7EB3 /* injection.png in Resources */ = {isa = PBXBuildFile; fileRef = BB06C890160E94FC00EC7EB3 /* injection.png */; };
-		BB06C893160E951C00EC7EB3 /* syringe.png in Resources */ = {isa = PBXBuildFile; fileRef = BB06C892160E951C00EC7EB3 /* syringe.png */; };
 		BB26EB84160DE0B200A62DFC /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB26EB83160DE0B200A62DFC /* WebKit.framework */; };
-		BB26EB91160DE8CB00A62DFC /* locked.png in Resources */ = {isa = PBXBuildFile; fileRef = BB26EB8F160DE8CB00A62DFC /* locked.png */; };
 		BB71CA791678A91500FEC2B5 /* InjectionPlugin.xcplugin in Resources */ = {isa = PBXBuildFile; fileRef = BB71CA781678A91500FEC2B5 /* InjectionPlugin.xcplugin */; };
+		BB80315E16ADA02E005590BA /* App.icns in Resources */ = {isa = PBXBuildFile; fileRef = BB80315A16ADA02E005590BA /* App.icns */; };
+		BB80315F16ADA02E005590BA /* injection.png in Resources */ = {isa = PBXBuildFile; fileRef = BB80315B16ADA02E005590BA /* injection.png */; };
+		BB80316016ADA02E005590BA /* locked.png in Resources */ = {isa = PBXBuildFile; fileRef = BB80315C16ADA02E005590BA /* locked.png */; };
+		BB80316116ADA02E005590BA /* syringe.png in Resources */ = {isa = PBXBuildFile; fileRef = BB80315D16ADA02E005590BA /* syringe.png */; };
 		BBDA9F67160B3B49007B7848 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BBDA9F66160B3B49007B7848 /* Cocoa.framework */; };
 		BBDA9F71160B3B49007B7848 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = BBDA9F6F160B3B49007B7848 /* InfoPlist.strings */; };
 		BBDA9F73160B3B49007B7848 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = BBDA9F72160B3B49007B7848 /* main.m */; };
 		BBDA9F77160B3B49007B7848 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = BBDA9F75160B3B49007B7848 /* Credits.rtf */; };
 		BBDA9F7A160B3B49007B7848 /* INAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = BBDA9F79160B3B49007B7848 /* INAppDelegate.m */; };
 		BBDA9F7D160B3B49007B7848 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = BBDA9F7B160B3B49007B7848 /* MainMenu.xib */; };
-		BBDA9F8C160B40FC007B7848 /* App.icns in Resources */ = {isa = PBXBuildFile; fileRef = BBDA9F8B160B40FC007B7848 /* App.icns */; };
 		BBEC886B160DF68C00C3C10F /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BBEC8868160DF68C00C3C10F /* libcrypto.dylib */; };
 		BBEC886C160DF68C00C3C10F /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BBEC8869160DF68C00C3C10F /* Security.framework */; };
 		BBEC886D160DF68C00C3C10F /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BBEC886A160DF68C00C3C10F /* IOKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		BB06C890160E94FC00EC7EB3 /* injection.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = injection.png; path = ../../Injection/Injection/injection.png; sourceTree = "<group>"; };
-		BB06C892160E951C00EC7EB3 /* syringe.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = syringe.png; path = ../../Injection/Injection/syringe.png; sourceTree = "<group>"; };
 		BB26EB83160DE0B200A62DFC /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
-		BB26EB8F160DE8CB00A62DFC /* locked.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = locked.png; path = ../../Injection/Injection/locked.png; sourceTree = "<group>"; };
 		BB5F4FC4160D285E00C9B5AD /* InjectionInstaller.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = InjectionInstaller.entitlements; sourceTree = "<group>"; };
 		BB71CA781678A91500FEC2B5 /* InjectionPlugin.xcplugin */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = InjectionPlugin.xcplugin; path = "../../../Library/Application Support/Developer/Shared/Xcode/Plug-ins/InjectionPlugin.xcplugin"; sourceTree = "<group>"; };
+		BB80315A16ADA02E005590BA /* App.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = App.icns; sourceTree = "<group>"; };
+		BB80315B16ADA02E005590BA /* injection.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = injection.png; sourceTree = "<group>"; };
+		BB80315C16ADA02E005590BA /* locked.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = locked.png; sourceTree = "<group>"; };
+		BB80315D16ADA02E005590BA /* syringe.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = syringe.png; sourceTree = "<group>"; };
 		BBDA9F62160B3B49007B7848 /* Injection Plugin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Injection Plugin.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BBDA9F66160B3B49007B7848 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		BBDA9F69160B3B49007B7848 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -43,7 +44,6 @@
 		BBDA9F78160B3B49007B7848 /* INAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = INAppDelegate.h; sourceTree = "<group>"; };
 		BBDA9F79160B3B49007B7848 /* INAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = INAppDelegate.m; sourceTree = "<group>"; };
 		BBDA9F7C160B3B49007B7848 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
-		BBDA9F8B160B40FC007B7848 /* App.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = App.icns; path = ../../Injection/Injection/App.icns; sourceTree = "<group>"; };
 		BBEC8868160DF68C00C3C10F /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = usr/lib/libcrypto.dylib; sourceTree = SDKROOT; };
 		BBEC8869160DF68C00C3C10F /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		BBEC886A160DF68C00C3C10F /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
@@ -118,10 +118,10 @@
 		BBDA9F6D160B3B49007B7848 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				BB06C892160E951C00EC7EB3 /* syringe.png */,
-				BB06C890160E94FC00EC7EB3 /* injection.png */,
-				BB26EB8F160DE8CB00A62DFC /* locked.png */,
-				BBDA9F8B160B40FC007B7848 /* App.icns */,
+				BB80315A16ADA02E005590BA /* App.icns */,
+				BB80315B16ADA02E005590BA /* injection.png */,
+				BB80315D16ADA02E005590BA /* syringe.png */,
+				BB80315C16ADA02E005590BA /* locked.png */,
 				BBDA9F6E160B3B49007B7848 /* InjectionInstaller-Info.plist */,
 				BB5F4FC4160D285E00C9B5AD /* InjectionInstaller.entitlements */,
 				BB71CA781678A91500FEC2B5 /* InjectionPlugin.xcplugin */,
@@ -188,11 +188,11 @@
 				BBDA9F71160B3B49007B7848 /* InfoPlist.strings in Resources */,
 				BBDA9F77160B3B49007B7848 /* Credits.rtf in Resources */,
 				BBDA9F7D160B3B49007B7848 /* MainMenu.xib in Resources */,
-				BBDA9F8C160B40FC007B7848 /* App.icns in Resources */,
-				BB26EB91160DE8CB00A62DFC /* locked.png in Resources */,
-				BB06C891160E94FC00EC7EB3 /* injection.png in Resources */,
-				BB06C893160E951C00EC7EB3 /* syringe.png in Resources */,
 				BB71CA791678A91500FEC2B5 /* InjectionPlugin.xcplugin in Resources */,
+				BB80315E16ADA02E005590BA /* App.icns in Resources */,
+				BB80315F16ADA02E005590BA /* injection.png in Resources */,
+				BB80316016ADA02E005590BA /* locked.png in Resources */,
+				BB80316116ADA02E005590BA /* syringe.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
