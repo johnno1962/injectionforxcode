@@ -16,7 +16,7 @@
 #import "INPluginMenuController.h"
 
 static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent",
-    *kINOrderFront = @"INOrderFront", *colorFormat = @"%f,%f,%f,%f",
+    *kINStoryBoard = @"INStoryboard", *kINOrderFront = @"INOrderFront", *colorFormat = @"%f,%f,%f,%f",
     *pluginAppResources = @"/Applications/Injection Plugin.app/Contents/Resources/InjectionPlugin.xcplugin/Contents/Resources";
 
 @implementation INPluginClientController
@@ -27,6 +27,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
         unlockField.stringValue = [defaults valueForKey:kINUnlockCommand];
     silentButton.state = [defaults boolForKey:kINSilent];
     frontButton.state = [defaults boolForKey:kINOrderFront];
+    storyButton.state = [defaults boolForKey:kINStoryBoard];
 
     scriptPath = [[NSBundle bundleForClass:[self class]] resourcePath];
     if ( [[self implementionInDirectory:pluginAppResources]
@@ -55,6 +56,12 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 
 - (IBAction)frontChanged:(NSButton *)sender {
     [menuController.defaults setBool:frontButton.state forKey:kINOrderFront];
+}
+
+- (IBAction)storyChanged:(NSButton *)sender {
+    [menuController.defaults setBool:storyButton.state forKey:kINStoryBoard];
+    if ( storyButton.state )
+        [self alert:@"Please add the following Run Script/Build Phase: \"$HOME/Library/Application Support/Developer/Shared/Xcode/Plug-ins/InjectionPlugin.xcplugin/Contents/Resources/projectBuilt.pl\""];
 }
 
 - (void)alert:(NSString *)msg {
@@ -122,10 +129,20 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
          performSelectorOnMainThread:@selector(setStringValue:)
          withObject:mainFilePath = [NSString stringWithUTF8String:path]
          waitUntilDone:NO];
-    else
-        NSLog( @"Bogus connection attempt." );
+    else {
+        identity = [NSString stringWithUTF8String:path];
 
-    status = 1;
+        path[0] = '@';
+        path[header.dataLength+1] = '\000';
+        read( appConnection, path+1, header.dataLength );
+        productPath = [NSString stringWithUTF8String:path+1];
+
+        [BundleInjection writeBytes:INJECTION_MAGIC withPath:path from:0 to:clientSocket];
+        close( appConnection );
+        return;
+    }
+
+    status = storyButton.state ? 2 : 1;
     write( appConnection, &status, sizeof status );
 
     [BundleInjection readHeader:&header forPath:path from:appConnection];

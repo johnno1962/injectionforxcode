@@ -166,9 +166,10 @@ static int status;
     return 0;
 }
 
+#import <objc/runtime.h>
 #import <sys/sysctl.h>
 
-+  (void)bundleLoader {
++ (void)bundleLoader {
 #ifndef INJECTION_ISARC
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
 #else
@@ -201,10 +202,17 @@ static int status;
 
             read( loaderSocket, &status, sizeof status );
             if ( !status ) {
-                NSLog( @"Unable to locate project \"%s\", please reopen it in '%s' and rebuild your application.",
-                      _inMainFilePath, INJECTION_APPNAME );
+                NSLog( @"Unable to locate main file \"%s\", re-patch it in Xcode and rebuild your application.",
+                      _inMainFilePath );
                 return;
             }
+
+#ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
+            if ( status == 2 )
+                method_exchangeImplementations(
+                   class_getInstanceMethod([UINib class], @selector(instantiateWithOwner:options:)),
+                   class_getInstanceMethod([UINib class], @selector(_instantiateWithOwner:options:)));
+#endif
 
             NSString *executablePath = [[NSBundle mainBundle] executablePath];
             [executablePath getCString:path maxLength:sizeof path encoding:NSUTF8StringEncoding];
@@ -312,6 +320,12 @@ static int status;
 #endif
                     }
                         break;
+#ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
+                    case '@': // project built, reload visible view controllers
+                        [self performSelectorOnMainThread:@selector(reloadNibs)
+                                               withObject:nil waitUntilDone:YES];
+                        break;
+#endif
                     default: // parameter or color value update
                         if ( isdigit(path[0]) ) {
                             int tag = path[0]-'0';
@@ -379,8 +393,6 @@ static int status;
         INLog( @"Injecting Bundle: %s", path );
     [bundle load];
 }
-
-#import <objc/runtime.h>
 
 // a little inside knowledge of Objective-C data structures for the new version of the class ...
 struct _in_objc_ivars { int twenty, count; struct { long *offsetPtr; char *name, *type; int align, size; } ivars[1]; };
@@ -475,6 +487,61 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 
 #endif
 
+#ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
+
+static NSMutableDictionary *uiNibs;
+
++ (void)reloadVC:(UIViewController *)vc fromBundle:(NSBundle *)bundle storyBoard:(NSString *)storyBoard {
+    if ( [vc respondsToSelector:@selector(visibleViewController)] )
+        vc = [(UINavigationController *)vc visibleViewController];
+    if ( [vc presentedViewController] )
+        vc = [vc presentedViewController];
+
+    UINib *nib = [UINib nibWithNibName:[NSString stringWithFormat:@"%@.storyboardc/%@",
+                                        storyBoard, vc.nibName] bundle:bundle];
+    if ( !uiNibs )
+        uiNibs = [[NSMutableDictionary alloc] init];
+    [uiNibs setObject:nib forKey:vc.nibName];
+
+    [nib instantiateWithOwner:vc options:nil];
+
+    [vc viewDidLoad];
+    [vc viewWillAppear:YES];
+    [vc viewDidAppear:YES];
+}
+
++ (void)reloadNibs {
+    NSBundle *bundle = [NSBundle bundleWithPath:[NSString stringWithUTF8String:path+1]];
+    NSString *storyBoard = [[[NSBundle mainBundle] infoDictionary] valueForKey:@"UIMainStoryboardFile"];
+    INLog( @"Reloading nibs from storyboard: %@", storyBoard );
+
+    UIViewController *rootVC = [[[UIApplication sharedApplication] keyWindow] rootViewController];
+    NSArray *vcs = [rootVC respondsToSelector:@selector(viewControllers)] ?
+    [(UISplitViewController *)rootVC viewControllers] : [NSArray arrayWithObject:rootVC];
+    for ( UIViewController *vc in vcs )
+        [self reloadVC:vc fromBundle:bundle storyBoard:storyBoard];
+}
+
+@end
+
+@implementation UINib(BundleInjection)
+- (NSArray *)_instantiateWithOwner:(id)ownerOrNil options:(NSDictionary *)optionsOrNil {
+    if ( ownerOrNil ) {
+        static NSMutableDictionary *proxies;
+        if ( !proxies )
+            proxies = [[NSMutableDictionary alloc] init];
+        if ( optionsOrNil )
+            [proxies setObject:optionsOrNil forKey:[ownerOrNil description]];
+        else
+            optionsOrNil = [proxies objectForKey:[ownerOrNil description]];
+    }
+
+    UINib *nib = [ownerOrNil respondsToSelector:@selector(nibName)] ?
+        [uiNibs objectForKey:[ownerOrNil nibName]] : nil;
+    return [nib ? nib : self _instantiateWithOwner:ownerOrNil options:optionsOrNil];
+}
+
+#endif
 @end
 
 #ifdef INJECTION_ENABLED

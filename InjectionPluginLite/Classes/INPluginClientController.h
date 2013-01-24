@@ -18,14 +18,14 @@
 
 	IBOutlet NSPanel *consolePanel, *paramsPanel, *alertPanel, *errorPanel;
     IBOutlet NSTextField *colorLabel, *mainSourceLabel, *msgField, *unlockField;
+    IBOutlet NSButton *silentButton, *frontButton, *storyButton;
     IBOutlet INPluginMenuController *menuController;
-    IBOutlet NSButton *silentButton, *frontButton;
     IBOutlet NSTextView *consoleTextView;
 
     IBOutlet NSView *vals, *sliders, *maxs, *wells;
     IBOutlet NSImageView *imageWell;
 
-    NSString *scriptPath, *resourcePath, *mainFilePath, *executablePath;
+    NSString *scriptPath, *resourcePath, *mainFilePath, *executablePath, *productPath, *identity;
     int clientSocket, patchNumber, fdin, fdout, fdfile, lines, status;
     char buffer[1024*1024];
     NSDockTile *docTile;
