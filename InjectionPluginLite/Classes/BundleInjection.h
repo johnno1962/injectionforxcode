@@ -118,7 +118,7 @@ SEL INColorActions[INJECTION_PARAMETERS];
 id INImageTarget;
 
 static char path[PATH_MAX], *file = &path[1];
-static int status;
+static int status, sbInjection;
 
 #import <dirent.h>
 
@@ -208,7 +208,7 @@ static int status;
             }
 
 #ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
-            if ( status == 2 )
+            if ( sbInjection = (status == 2) )
                 method_exchangeImplementations(
                    class_getInstanceMethod([UINib class], @selector(instantiateWithOwner:options:)),
                    class_getInstanceMethod([UINib class], @selector(_instantiateWithOwner:options:)));
@@ -322,8 +322,11 @@ static int status;
                         break;
 #ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
                     case '@': // project built, reload visible view controllers
-                        [self performSelectorOnMainThread:@selector(reloadNibs)
-                                               withObject:nil waitUntilDone:YES];
+                        if ( sbInjection )
+                            [self performSelectorOnMainThread:@selector(reloadNibs)
+                                                   withObject:nil waitUntilDone:YES];
+                        else
+                            NSLog( @"'Inject StoryBds' must be enabled on the Tunable Parameters panel to work." );
                         break;
 #endif
                     default: // parameter or color value update
