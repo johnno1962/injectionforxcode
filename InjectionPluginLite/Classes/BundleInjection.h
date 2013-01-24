@@ -3,12 +3,12 @@
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
-//  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
+//  Copyright (c) 2012 John Holdsworth. All rights reserved.
 //
 //  Client application interface to Code Injection system.
 //  Added to program's main.m to connect to the Injection app.
 //
-// This file is copyright and may not be re-distributed, whole or in part.
+//  This file is copyright and may not be re-distributed, whole or in part.
 //
 
 #import "BundleInterface.h"

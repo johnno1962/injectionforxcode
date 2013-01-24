@@ -3,7 +3,11 @@
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
+//  Copyright (c) 2012 John Holdsworth. All rights reserved.
 //
+//  Manages interaction with client application and runs UNIX scripts.
+//
+//  This file is copyright and may not be re-distributed, whole or in part.
 //
 
 #import <Cocoa/Cocoa.h>

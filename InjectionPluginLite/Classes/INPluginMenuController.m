@@ -3,7 +3,11 @@
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
+//  Copyright (c) 2012 John Holdsworth. All rights reserved.
 //
+//  Manages interactions with Xcode's product menu and runs TCP server.
+//
+//  This file is copyright and may not be re-distributed, whole or in part.
 //
 
 #import "INPluginMenuController.h"
@@ -30,10 +34,6 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 
 - (NSUserDefaults *)defaults {
     return defaults;
-}
-
-- (NSArray *)serverAddresses {
-    return serverAddresses;
 }
 
 - (void)error:(NSString *)format, ... {
@@ -83,9 +83,9 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
         [self error:@"InInjectionPlugin: Could not locate Product Menu."];
 
     progressIndicator.frame = NSMakeRect(60, 20, 200, 10);
-    serverAddresses = [self startServer];
     webView.drawsBackground = NO;
     [self setProgress:@-1];
+    [self startServer];
 }
 
 - (void)setProgress:(NSNumber *)fraction {
@@ -137,16 +137,11 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem {
-    NSString *lastFile = [self lastFileSaving:NO];
     SEL action = [menuItem action];
     if ( action == @selector(patchProject:) || action == @selector(revertProject:) )
         return [self workspacePath] != nil;
     else if ( [menuItem action] == @selector(openBundle:) )
         return client.connected;
-    else if ( [menuItem action] == @selector(injectSource:) )
-        return lastFile && [lastFile rangeOfString:@"\\.mm?$"
-                                           options:NSRegularExpressionSearch].location != NSNotFound &&
-            client.connected;
     else
         return YES;
 }
@@ -175,7 +170,21 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
     [client runScript:@"openBundle.pl" withArg:[self lastFileSaving:YES]];
 }
 - (IBAction)injectSource:(id)sender {
-    [client runScript:@"injectSource.pl" withArg:[self lastFileSaving:YES]];
+    NSString *lastFile = [self lastFileSaving:YES];
+    if ( ![self workspacePath] )
+        [client alert:@"No project is open. Make sure the project you are working on is the \"Key Window\"."];
+    else if ( !client.connected )
+        [client alert:@"No  application has connected to injection. "
+         "Patch project and make sure DEBUG is #defined then run project again."];
+    else if ( !lastFile )
+        [client alert:@"No source file is selected. "
+         "Make sure that text is selected and the cursor is inside the file you have edited."];
+    else if ( [lastFile rangeOfString:@"\\.mm?$"
+                                options:NSRegularExpressionSearch].location == NSNotFound )
+        [client alert:@"Only class implementations (.m or .mm files) can be injected. "
+         "Make sure that text is selected and the cursor is inside the file you have edited."];
+    else
+        [client runScript:@"injectSource.pl" withArg:lastFile];
 }
 
 #pragma mark - Injection Service
@@ -183,7 +192,7 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 #include <sys/ioctl.h>
 #include <net/if.h>
 
-- (NSArray *)startServer {
+- (void)startServer {
     struct sockaddr_in serverAddr;
 
     serverAddr.sin_family = AF_INET;
@@ -204,6 +213,23 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
     else
         [self performSelectorInBackground:@selector(backgroundConnectionService) withObject:nil];
 
+}
+
+- (void)backgroundConnectionService {
+    INLog( @"Waiting for connections..." );
+    while ( TRUE ) {
+        struct sockaddr_in clientAddr;
+        socklen_t addrLen = sizeof clientAddr;
+
+        int appConnection = accept( serverSocket, (struct sockaddr *)&clientAddr, &addrLen );
+        if ( appConnection > 0 )
+            [client setConnection:appConnection];
+        else
+            [NSThread sleepForTimeInterval:.5];
+    }
+}
+
+- (NSArray *)serverAddresses {
     NSMutableArray *addrs = [NSMutableArray array];
     char buffer[1024];
     struct ifconf ifc;
@@ -224,22 +250,8 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
             struct sockaddr_in *iaddr = (struct sockaddr_in *)&ifr->ifr_addr;
             [addrs addObject:[NSString stringWithUTF8String:inet_ntoa( iaddr->sin_addr )]];
         }
-
+    
     return addrs;
-}
-
-- (void)backgroundConnectionService {
-    INLog( @"Waiting for connections..." );
-    while ( TRUE ) {
-        struct sockaddr_in clientAddr;
-        socklen_t addrLen = sizeof clientAddr;
-
-        int appConnection = accept( serverSocket, (struct sockaddr *)&clientAddr, &addrLen );
-        if ( appConnection > 0 )
-            [client setConnection:appConnection];
-        else
-            [NSThread sleepForTimeInterval:.5];
-    }
 }
 
 - (BOOL)windowShouldClose:(id)sender {

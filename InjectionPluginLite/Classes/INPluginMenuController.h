@@ -3,7 +3,11 @@
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
+//  Copyright (c) 2012 John Holdsworth. All rights reserved.
 //
+//  Manages interactions with Xcode's product menu and runs TCP server.
+//
+//  This file is copyright and may not be re-distributed, whole or in part.
 //
 
 #import "INPluginClientController.h"
@@ -28,7 +32,6 @@
     Class DVTSourceTextView;
     Class IDEWorkspaceDocument;
 
-    NSArray *serverAddresses;
     NSUserDefaults *defaults;
     int serverSocket;
 
