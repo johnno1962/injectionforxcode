@@ -33,7 +33,6 @@ Injection will now inject UIViewController nibs in a storyboarded application. T
 you need to select the "Inject Storybds" option in the Tunable Parameters and add the 
 following as a "Build Phase" of type "Run Script" to your project (quotes included.)
 
-<style> pre { color: red; } </style>
 <pre>
 "$HOME/Library/Application Support/Developer/Shared/Xcode/Plug-ins/InjectionPlugin.xcplugin/Contents/Resources/projectBuilt.pl"
 </pre>
