@@ -31,11 +31,12 @@ menu item "Product/Inject Source" to inject any changes you may have made into t
 
 Injection will now inject UIViewController nibs in a storyboarded application. To do this
 you need to select the "Inject Storybds" option in the Tunable Parameters and add the 
-following as a "Run Script" "Build Phase" of your project.
+following as a "Build Phase" of type "Run Script" to your project (quotes included.)
 
-<tt>
+<style> pre { color: red; } </style>
+<pre>
 "$HOME/Library/Application Support/Developer/Shared/Xcode/Plug-ins/InjectionPlugin.xcplugin/Contents/Resources/projectBuilt.pl"
-</tt>
+</pre>
 
 When you next run the application if you edit the storyboard and build the project, changes will be
 injected onto the UIViewControllers currently visible by reloading their "nib" and sending
