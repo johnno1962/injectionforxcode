@@ -1,5 +1,5 @@
 //
-//  BundleInjection.m
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#16 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -118,7 +118,7 @@ SEL INColorActions[INJECTION_PARAMETERS];
 id INImageTarget;
 
 static char path[PATH_MAX], *file = &path[1];
-static int status;
+static int status, sbInjection;
 
 #import <dirent.h>
 
@@ -166,9 +166,10 @@ static int status;
     return 0;
 }
 
+#import <objc/runtime.h>
 #import <sys/sysctl.h>
 
-+  (void)bundleLoader {
++ (void)bundleLoader {
 #ifndef INJECTION_ISARC
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
 #else
@@ -201,10 +202,17 @@ static int status;
 
             read( loaderSocket, &status, sizeof status );
             if ( !status ) {
-                NSLog( @"Unable to locate project \"%s\", please reopen it in '%s' and rebuild your application.",
-                      _inMainFilePath, INJECTION_APPNAME );
+                NSLog( @"Unable to locate main file \"%s\", re-patch it in Xcode and rebuild your application.",
+                      _inMainFilePath );
                 return;
             }
+
+#ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
+            if ( (sbInjection = status == 2) )
+                method_exchangeImplementations(
+                   class_getInstanceMethod([UINib class], @selector(instantiateWithOwner:options:)),
+                   class_getInstanceMethod([UINib class], @selector(inInstantiateWithOwner:options:)));
+#endif
 
             NSString *executablePath = [[NSBundle mainBundle] executablePath];
             [executablePath getCString:path maxLength:sizeof path encoding:NSUTF8StringEncoding];
@@ -312,6 +320,13 @@ static int status;
 #endif
                     }
                         break;
+                    case '@': // project built, reload visible view controllers
+                        if ( sbInjection )
+                            [self performSelectorOnMainThread:@selector(reloadNibs)
+                                                   withObject:nil waitUntilDone:YES];
+                        else
+                            NSLog( @"'Inject StoryBds' must be enabled on the Tunable Parameters panel to work." );
+                        break;
                     default: // parameter or color value update
                         if ( isdigit(path[0]) ) {
                             int tag = path[0]-'0';
@@ -379,8 +394,6 @@ static int status;
         INLog( @"Injecting Bundle: %s", path );
     [bundle load];
 }
-
-#import <objc/runtime.h>
 
 // a little inside knowledge of Objective-C data structures for the new version of the class ...
 struct _in_objc_ivars { int twenty, count; struct { long *offsetPtr; char *name, *type; int align, size; } ivars[1]; };
@@ -475,6 +488,61 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 
 #endif
 
+#ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
+
+static NSMutableDictionary *nibsByNibName, *optionsByVC;
+
++ (void)reloadVisibleVC:(UIViewController *)vc fromBundle:(NSBundle *)bundle storyBoard:(NSString *)storyBoard {
+    if ( [vc respondsToSelector:@selector(visibleViewController)] )
+        vc = [(UINavigationController *)vc visibleViewController];
+    if ( [vc presentedViewController] )
+        vc = [vc presentedViewController];
+
+    NSString *nibPath = [NSString stringWithFormat:@"%@.storyboardc/%@", storyBoard, vc.nibName];
+    UINib *nib = [UINib nibWithNibName:nibPath bundle:bundle];
+
+    if ( !nibsByNibName )
+        nibsByNibName = [[NSMutableDictionary alloc] init];
+
+    if ( !nib )
+        NSLog( @"Could not open nib named '%@' in bundle: %@", nibPath, bundle );
+    else
+        [nibsByNibName setObject:nib forKey:vc.nibName];
+
+    [nib instantiateWithOwner:vc options:[optionsByVC objectForKey:[vc description]]];
+
+    [vc viewDidLoad];
+    [vc viewWillAppear:YES];
+    [vc viewDidAppear:YES];
+}
+
++ (void)reloadNibs {
+    NSString *storyBoard = [[[NSBundle mainBundle] infoDictionary] valueForKey:@"UIMainStoryboardFile"];
+    NSBundle *bundle = [NSBundle bundleWithPath:[NSString stringWithUTF8String:path+1]];
+    INLog( @"Reloading nibs from storyboard: %@", storyBoard );
+
+    UIViewController *rootVC = [[[UIApplication sharedApplication] keyWindow] rootViewController];
+    NSArray *vcs = [rootVC respondsToSelector:@selector(viewControllers)] ?
+        [(UISplitViewController *)rootVC viewControllers] : [NSArray arrayWithObject:rootVC];
+    for ( UIViewController *vc in vcs )
+        [self reloadVisibleVC:vc fromBundle:bundle storyBoard:storyBoard];
+}
+
+@end
+
+@implementation UINib(BundleInjection)
+- (NSArray *)inInstantiateWithOwner:(id)ownerOrNil options:(NSDictionary *)optionsOrNil {
+    if ( !optionsByVC )
+        optionsByVC = [[NSMutableDictionary alloc] init];
+    if ( ownerOrNil && optionsOrNil )
+        [optionsByVC setObject:optionsOrNil forKey:[ownerOrNil description]];
+
+    UINib *nib = [ownerOrNil respondsToSelector:@selector(nibName)] ?
+        [nibsByNibName objectForKey:[ownerOrNil nibName]] : nil;
+    return [nib ? nib : self inInstantiateWithOwner:ownerOrNil options:optionsOrNil];
+}
+
+#endif
 @end
 
 #ifdef INJECTION_ENABLED
