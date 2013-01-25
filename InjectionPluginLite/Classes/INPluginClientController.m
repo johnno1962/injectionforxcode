@@ -1,5 +1,5 @@
 //
-//  INPluginMenuController.m
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.m#15 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.

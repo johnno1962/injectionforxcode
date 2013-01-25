@@ -1,5 +1,5 @@
 //
-//  BundleInjection.m
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#16 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -208,10 +208,10 @@ static int status, sbInjection;
             }
 
 #ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
-            if ( sbInjection = (status == 2) )
+            if ( (sbInjection = status == 2) )
                 method_exchangeImplementations(
                    class_getInstanceMethod([UINib class], @selector(instantiateWithOwner:options:)),
-                   class_getInstanceMethod([UINib class], @selector(_instantiateWithOwner:options:)));
+                   class_getInstanceMethod([UINib class], @selector(inInstantiateWithOwner:options:)));
 #endif
 
             NSString *executablePath = [[NSBundle mainBundle] executablePath];
@@ -320,7 +320,6 @@ static int status, sbInjection;
 #endif
                     }
                         break;
-#ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
                     case '@': // project built, reload visible view controllers
                         if ( sbInjection )
                             [self performSelectorOnMainThread:@selector(reloadNibs)
@@ -328,7 +327,6 @@ static int status, sbInjection;
                         else
                             NSLog( @"'Inject StoryBds' must be enabled on the Tunable Parameters panel to work." );
                         break;
-#endif
                     default: // parameter or color value update
                         if ( isdigit(path[0]) ) {
                             int tag = path[0]-'0';
@@ -492,21 +490,26 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 
 #ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
 
-static NSMutableDictionary *uiNibs;
+static NSMutableDictionary *nibsByNibName, *optionsByVC;
 
-+ (void)reloadVC:(UIViewController *)vc fromBundle:(NSBundle *)bundle storyBoard:(NSString *)storyBoard {
++ (void)reloadVisibleVC:(UIViewController *)vc fromBundle:(NSBundle *)bundle storyBoard:(NSString *)storyBoard {
     if ( [vc respondsToSelector:@selector(visibleViewController)] )
         vc = [(UINavigationController *)vc visibleViewController];
     if ( [vc presentedViewController] )
         vc = [vc presentedViewController];
 
-    UINib *nib = [UINib nibWithNibName:[NSString stringWithFormat:@"%@.storyboardc/%@",
-                                        storyBoard, vc.nibName] bundle:bundle];
-    if ( !uiNibs )
-        uiNibs = [[NSMutableDictionary alloc] init];
-    [uiNibs setObject:nib forKey:vc.nibName];
+    NSString *nibPath = [NSString stringWithFormat:@"%@.storyboardc/%@", storyBoard, vc.nibName];
+    UINib *nib = [UINib nibWithNibName:nibPath bundle:bundle];
 
-    [nib instantiateWithOwner:vc options:nil];
+    if ( !nibsByNibName )
+        nibsByNibName = [[NSMutableDictionary alloc] init];
+
+    if ( !nib )
+        NSLog( @"Could not open nib named '%@' in bundle: %@", nibPath, bundle );
+    else
+        [nibsByNibName setObject:nib forKey:vc.nibName];
+
+    [nib instantiateWithOwner:vc options:[optionsByVC objectForKey:[vc description]]];
 
     [vc viewDidLoad];
     [vc viewWillAppear:YES];
@@ -514,34 +517,29 @@ static NSMutableDictionary *uiNibs;
 }
 
 + (void)reloadNibs {
-    NSBundle *bundle = [NSBundle bundleWithPath:[NSString stringWithUTF8String:path+1]];
     NSString *storyBoard = [[[NSBundle mainBundle] infoDictionary] valueForKey:@"UIMainStoryboardFile"];
+    NSBundle *bundle = [NSBundle bundleWithPath:[NSString stringWithUTF8String:path+1]];
     INLog( @"Reloading nibs from storyboard: %@", storyBoard );
 
     UIViewController *rootVC = [[[UIApplication sharedApplication] keyWindow] rootViewController];
     NSArray *vcs = [rootVC respondsToSelector:@selector(viewControllers)] ?
-    [(UISplitViewController *)rootVC viewControllers] : [NSArray arrayWithObject:rootVC];
+        [(UISplitViewController *)rootVC viewControllers] : [NSArray arrayWithObject:rootVC];
     for ( UIViewController *vc in vcs )
-        [self reloadVC:vc fromBundle:bundle storyBoard:storyBoard];
+        [self reloadVisibleVC:vc fromBundle:bundle storyBoard:storyBoard];
 }
 
 @end
 
 @implementation UINib(BundleInjection)
-- (NSArray *)_instantiateWithOwner:(id)ownerOrNil options:(NSDictionary *)optionsOrNil {
-    if ( ownerOrNil ) {
-        static NSMutableDictionary *proxies;
-        if ( !proxies )
-            proxies = [[NSMutableDictionary alloc] init];
-        if ( optionsOrNil )
-            [proxies setObject:optionsOrNil forKey:[ownerOrNil description]];
-        else
-            optionsOrNil = [proxies objectForKey:[ownerOrNil description]];
-    }
+- (NSArray *)inInstantiateWithOwner:(id)ownerOrNil options:(NSDictionary *)optionsOrNil {
+    if ( !optionsByVC )
+        optionsByVC = [[NSMutableDictionary alloc] init];
+    if ( ownerOrNil && optionsOrNil )
+        [optionsByVC setObject:optionsOrNil forKey:[ownerOrNil description]];
 
     UINib *nib = [ownerOrNil respondsToSelector:@selector(nibName)] ?
-        [uiNibs objectForKey:[ownerOrNil nibName]] : nil;
-    return [nib ? nib : self _instantiateWithOwner:ownerOrNil options:optionsOrNil];
+        [nibsByNibName objectForKey:[ownerOrNil nibName]] : nil;
+    return [nib ? nib : self inInstantiateWithOwner:ownerOrNil options:optionsOrNil];
 }
 
 #endif
