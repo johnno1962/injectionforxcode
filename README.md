@@ -29,7 +29,7 @@ menu item "Product/Inject Source" to inject any changes you may have made into t
 
 ## Storyboard Injection
 
-Injection will now inject UIViewController nibs in a storyboarded application. To do this
+Injection will now inject UIViewController layouts in a storyboarded application. To do this
 you need to select the "Inject Storybds" option in the Tunable Parameters and add the 
 following as a "Build Phase" of type "Run Script" to your project (quotes included.)
 
@@ -37,10 +37,10 @@ following as a "Build Phase" of type "Run Script" to your project (quotes includ
 "$HOME/Library/Application Support/Developer/Shared/Xcode/Plug-ins/InjectionPlugin.xcplugin/Contents/Resources/projectBuilt.pl"
 </pre>
 
-When you next run the application if you edit the storyboard and build the project, changes will be
-injected onto the UIViewControllers currently visible by reloading their "nib" and sending
--viewDidLoad, -viewWillAppear:YES and - viewDidAppear:YES to the view controller. This only
-works for applications with a single active Storyboard.
+When you next run the application if you edit the storyboard and build the project, layout changes will be
+injected onto the UIViewControllers currently visible while the application is still running by reloading
+their "nib" and sending -viewDidLoad, -viewWillAppear:YES and - viewDidAppear:YES to the view controller.
+This only works for applications with a single active Storyboard.
 
 ## License
 
