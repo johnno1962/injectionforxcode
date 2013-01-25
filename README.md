@@ -27,6 +27,32 @@ to Xcode which will display a red badge on it's dock icon showing the applicatio
 prepared to load patch bundles. Select text in a class source file and use
 menu item "Product/Inject Source" to inject any changes you may have made into the app.
 
+## Storyboard Injection
+
+Injection will now inject UIViewController nibs in a storyboarded application. To do this
+you need to select the "Inject Storybds" option in the Tunable Parameters and add the 
+following as a "Run Script" "Build Phase" of your project.
+
+<tt>
+"$HOME/Library/Application Support/Developer/Shared/Xcode/Plug-ins/InjectionPlugin.xcplugin/Contents/Resources/projectBuilt.pl"
+</tt>
+
+When you next run the application if you edit the storyboard and build the project, changes will be
+injected onto the UIViewControllers currently visible by reloading their "nib" and sending
+-viewDidLoad, -viewWillAppear:YES and - viewDidAppear:YES to the view controller. This only
+works for applications with a single active Storyboard.
+
+## License
+
+The source code is provided on the understanding it will not be redistributed in whole
+or part for payment and can only be redistributed with it's licensing code left in.
+License is hereby granted to evaluate this software for two weeks after which if you
+are finding it useful I would prefer you made a payment of $10 (or $25 in a 
+commercial environment) as suggested by the licensing code included in the software
+in order to continue using it.
+
+If you find (m)any issues in the code, get in contact using the email: support (at) injectionforxcode.com
+
 ## How it works
 
 A project patched for injection #imports the file "BundleInjection.h" from the resources of the 
@@ -42,17 +68,6 @@ and then swizzles the new implementations onto the original class.
 Support for injecting projects using "CocoaPods" and "workspaces" has been added since version 2.7.
 Classes in the project or Pods can be injected as well as categories or extensions.
 The only limitation is that the class being injected must not itself have a +load method.
-
-## License
-
-The source code is provided on the understanding it will not be redistributed in whole
-or part for payment and can only be redistributed with it's licensing code left in.
-License is hereby granted to evaluate this software for two weeks after which if you
-are finding it useful I would prefer you made a payment of $10 (or $25 in a 
-commercial environment) as suggested by the licensing code included in the software
-in order to continue using it.
-
-If you find (m)any issues in the code, get in contact using the email: support (at) injectionforxcode.com
 
 The projects in the source tree are related as follows:
 
