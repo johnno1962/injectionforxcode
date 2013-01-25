@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.m#15 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.m#16 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -137,7 +137,9 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
         read( appConnection, path+1, header.dataLength );
         productPath = [NSString stringWithUTF8String:path+1];
 
-        [BundleInjection writeBytes:INJECTION_MAGIC withPath:path from:0 to:clientSocket];
+        if ( self.connected )
+            [BundleInjection writeBytes:INJECTION_MAGIC withPath:path from:0 to:clientSocket];
+
         close( appConnection );
         return;
     }
