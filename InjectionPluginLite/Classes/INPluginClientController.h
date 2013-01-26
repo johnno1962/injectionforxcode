@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.h#8 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.h#9 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -30,6 +30,7 @@
     char buffer[1024*1024];
     NSDockTile *docTile;
     FILE *scriptOutput;
+    BOOL autoOpened;
 }
 
 - (void)alert:(NSString *)msg;

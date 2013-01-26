@@ -1,5 +1,5 @@
 #
-#  $Id: //depot/InjectionPluginLite/common.pm#12 $
+#  $Id: //depot/InjectionPluginLite/common.pm#13 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -15,11 +15,11 @@ use Carp;
 use vars qw($resources $workspace $mainFile $executable $patchNumber $flags
     $unlockCommand $addresses $selectedFile $isDevice $isSimulator $isIOS
     $productName $appPackage $deviceRoot $projFile $projRoot $projName $projType
-    $InjectionBundle $template $header $appClass $appPackage $RED);
+    $InjectionBundle $template $header $appClass $appPackage $appName $RED);
 
 ($resources, $workspace, $mainFile, $executable, $patchNumber, $flags, $unlockCommand, $addresses, $selectedFile) = @ARGV;
 
-($appPackage, $deviceRoot) = $executable =~ m@((^.*)/[^/]+)/[^/]+$@;
+($appPackage, $deviceRoot, $appName) = $executable =~ m@((^.*)/([^/]+))/[^/]+$@;
 
 $productName = "InjectionBundle$patchNumber";
 
@@ -125,6 +125,27 @@ sub patchAll {
 sub unique {
     my %hash = map {$_, $_} @_;
     return sort keys %hash;
+}
+
+sub copyToDevice {
+    my ($from,$to,$pattern) = @_;
+
+    print "Uploading '$from' to device...\n";
+    print "<$from\n";
+    print "!>$to\n";
+
+    my $files = IO::File->new( "cd \"$from\" && find . -print |" )
+        or error "Could not find: $from";
+    while ( my $file = <$files> ) {
+        chomp $file;
+        if ( -d "$from/$file" || !$pattern || $file =~ /$pattern/ ) {
+            #print "\\i1Copying $file\n";
+            print "<$from/$file\n";
+            print "!>$to/$file\n";
+        }
+    }
+
+    return $to;
 }
 
 1;

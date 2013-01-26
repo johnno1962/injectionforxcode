@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.m#16 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.m#17 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -138,7 +138,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
         productPath = [NSString stringWithUTF8String:path+1];
 
         if ( self.connected )
-            [BundleInjection writeBytes:INJECTION_MAGIC withPath:path from:0 to:clientSocket];
+            [self runScript:@"injectStoryboard.pl" withArg:productPath];
 
         close( appConnection );
         return;
@@ -201,14 +201,18 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 - (void)completed:error {
     if ( error ) {
         [self logRTF:error];
+        if ( !consolePanel.isVisible )
+            autoOpened = YES;
         [consolePanel orderFront:self];
         [errorPanel orderFront:self];
     }
     else {
         [self logRTF:@"\\line Bundle loaded successfully.\\line"];
-        [consolePanel orderOut:self];
+        if ( autoOpened )
+            [consolePanel orderOut:self];
         [errorPanel orderOut:self];
         [self mapSimulator];
+        autoOpened = NO;
     }
 }
 
@@ -304,7 +308,8 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
                         }
                     case '<':
                     case '/':
-                        if ( clientSocket )
+                    case '@':
+                        if ( self.connected )
                             [BundleInjection writeBytes:INJECTION_MAGIC
                                                withPath:file from:0 to:clientSocket];
                         else

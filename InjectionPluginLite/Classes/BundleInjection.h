@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#17 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#19 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -207,7 +207,7 @@ static int status, sbInjection;
                 return;
             }
 
-#if TARGET_IPHONE_SIMULATOR
+#if __IPHONE_OS_VERSION_MIN_REQUIRED
             if ( (sbInjection = status & 2) )
                 method_exchangeImplementations(
                    class_getInstanceMethod([UINib class], @selector(instantiateWithOwner:options:)),
@@ -323,14 +323,14 @@ static int status, sbInjection;
                     }
                         break;
                     case '@': // project built, reload visible view controllers
-#if TARGET_IPHONE_SIMULATOR
+#if __IPHONE_OS_VERSION_MIN_REQUIRED
                         if ( sbInjection )
                             [self performSelectorOnMainThread:@selector(reloadNibs)
                                                    withObject:nil waitUntilDone:YES];
                         else
                             NSLog( @"'Inject StoryBds' must be enabled on the Tunable Parameters panel." );
 #else
-                        NSLog( @"Storyboard injection only available in simulator." );
+                        NSLog( @"Storyboard injection only available for iOS." );
 #endif
                         break;
                     default: // parameter or color value update
@@ -494,7 +494,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 
 #endif
 
-#if TARGET_IPHONE_SIMULATOR
+#if __IPHONE_OS_VERSION_MIN_REQUIRED
 
 static NSMutableDictionary *nibsByNibName, *optionsByVC;
 
@@ -515,6 +515,7 @@ static NSMutableDictionary *nibsByNibName, *optionsByVC;
     else
         [nibsByNibName setObject:nib forKey:vc.nibName];
 
+    INLog( @"Reloading nib %@ onto %@", nibPath, vc );
     [nib instantiateWithOwner:vc options:[optionsByVC objectForKey:[vc description]]];
 
     [vc viewDidLoad];
@@ -525,7 +526,6 @@ static NSMutableDictionary *nibsByNibName, *optionsByVC;
 + (void)reloadNibs {
     NSString *storyBoard = [[[NSBundle mainBundle] infoDictionary] valueForKey:@"UIMainStoryboardFile"];
     NSBundle *bundle = [NSBundle bundleWithPath:[NSString stringWithUTF8String:path+1]];
-    INLog( @"Reloading visible nibs from storyboard: %@", storyBoard );
 
     UIViewController *rootVC = [[[UIApplication sharedApplication] keyWindow] rootViewController];
     NSArray *vcs = [rootVC respondsToSelector:@selector(viewControllers)] ?

@@ -40,8 +40,8 @@ following as a "Build Phase" of type "Run Script" to your project (quotes includ
 When you next run the application, if you edit the storyboard and build the project, layout changes will be
 injected onto the UIViewControllers currently visible while the application is still running. This is 
 achieved by reloading their "nib" onto the existing view controller and sending -viewDidLoad, 
--viewWillAppear:YES and - viewDidAppear:YES to the view controller for it to redraw.
-This only works for applications with a single active Storyboard and only in the simulator.
+-viewWillAppear:YES and -viewDidAppear:YES to the view controller for it to redraw.
+This only works for applications with a single active Storyboard.
 
 ## License
 

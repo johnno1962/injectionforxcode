@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#12 $
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#13 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -242,22 +242,7 @@ if ( $isDevice ) {
     0 == system "codesign -s '$identity' \"$bundlePath\""
         or error "Could not code sign as '$identity': $bundlePath";
 
-    my $remoteBundle = "$deviceRoot/tmp/$productName.bundle";
-
-    print "Uploading bundle to device...\n";
-    print "<$bundlePath\n";
-    print "!>$remoteBundle\n";
-
-    my $files = IO::File->new( "cd \"$bundlePath\" && find . -print |" )
-        or error "Could not find: $bundlePath";
-    while ( my $file = <$files> ) {
-        chomp $file;
-        #print "\\i1Copying $file\n";
-        print "<$bundlePath/$file\n";
-        print "!>$remoteBundle/$file\n";
-    }
-
-    $bundlePath = $remoteBundle;
+    $bundlePath = copyToDevice( $bundlePath, "$deviceRoot/tmp/$productName.bundle" );
 }
 
 if ( $executable ) {

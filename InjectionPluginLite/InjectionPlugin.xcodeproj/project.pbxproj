@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		7F2EB89C145057F200E97A87 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F2EB899145057EA00E97A87 /* AppKit.framework */; };
+		BB020F6E16B3CC2D00126E33 /* injectStoryboard.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB020F6D16B3CC2D00126E33 /* injectStoryboard.pl */; };
 		BB3EFFB116A4B815001F0065 /* INPluginClientController.m in Sources */ = {isa = PBXBuildFile; fileRef = BB3EFFAD16A4B815001F0065 /* INPluginClientController.m */; };
 		BB3EFFB216A4B815001F0065 /* INPluginMenuController.m in Sources */ = {isa = PBXBuildFile; fileRef = BB3EFFAF16A4B815001F0065 /* INPluginMenuController.m */; };
 		BB3EFFBA16A53307001F0065 /* injection.png in Resources */ = {isa = PBXBuildFile; fileRef = BB3EFFB816A53307001F0065 /* injection.png */; };
@@ -31,6 +32,7 @@
 		7F2EB899145057EA00E97A87 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		8D5B49B6048680CD000E48DA /* InjectionPlugin.xcplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = InjectionPlugin.xcplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BB020F6D16B3CC2D00126E33 /* injectStoryboard.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = injectStoryboard.pl; sourceTree = "<group>"; };
 		BB3EFFAC16A4B815001F0065 /* INPluginClientController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INPluginClientController.h; sourceTree = "<group>"; };
 		BB3EFFAD16A4B815001F0065 /* INPluginClientController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = INPluginClientController.m; sourceTree = "<group>"; };
 		BB3EFFAE16A4B815001F0065 /* INPluginMenuController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INPluginMenuController.h; sourceTree = "<group>"; };
@@ -128,6 +130,7 @@
 				BB5DEF9916A55E1800E97DD4 /* openBundle.pl */,
 				BB5DEF9816A55E1800E97DD4 /* injectSource.pl */,
 				BBEADCF516B12EAE003EF366 /* projectBuilt.pl */,
+				BB020F6D16B3CC2D00126E33 /* injectStoryboard.pl */,
 			);
 			name = Scripts;
 			sourceTree = "<group>";
@@ -199,6 +202,7 @@
 				BB5DEF9C16A55E1800E97DD4 /* injectSource.pl in Resources */,
 				BB5DEF9D16A55E1800E97DD4 /* openBundle.pl in Resources */,
 				BBEADCF616B12EAE003EF366 /* projectBuilt.pl in Resources */,
+				BB020F6E16B3CC2D00126E33 /* injectStoryboard.pl in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
