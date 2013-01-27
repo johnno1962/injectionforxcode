@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.h#6 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.h#7 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -24,7 +24,7 @@
     IBOutlet NSPanel *webPanel;
     IBOutlet WebView *webView;
     IBOutlet NSMenu *subMenu;
-    IBOutlet NSMenuItem *introItem;
+    IBOutlet NSMenuItem *subMenuItem, *introItem;
 
     IBOutlet NSTextView *lastTextView;
     IBOutlet INPluginClientController *client;

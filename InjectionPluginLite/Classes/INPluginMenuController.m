@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#15 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#16 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -67,7 +67,7 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
                                                        keyEquivalent:items[i].key];
             //[menuItem setKeyEquivalentModifierMask:NSControlKeyMask];
             if ( i==0 )
-                [menuItem setSubmenu:subMenu];
+                [subMenuItem = menuItem setSubmenu:subMenu];
             else
                 [menuItem setTarget:self];
             [productMenu addItem:menuItem];
@@ -138,6 +138,16 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem {
     SEL action = [menuItem action];
+    if ( action == @selector(injectSource:) ) {
+        NSString *workspace = [self workspacePath];
+        NSRange range = [workspace rangeOfString:@"([^/]+)(?=\\.(?:xcodeproj|xcworkspace))"
+                                         options:NSRegularExpressionSearch];
+
+        if ( workspace && range.location != NSNotFound )
+            subMenuItem.title = [workspace substringWithRange:range];
+        else
+            subMenuItem.title = @"Injection Plugin";
+    }
     if ( action == @selector(patchProject:) || action == @selector(revertProject:) )
         return [self workspacePath] != nil;
     else if ( [menuItem action] == @selector(openBundle:) )
@@ -175,7 +185,7 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
         [client alert:@"No project is open. Make sure the project you are working on is the \"Key Window\"."];
     else if ( !client.connected )
         [client alert:@"No  application has connected to injection. "
-         "Patch project and make sure DEBUG is #defined then run project again."];
+         "Patch the project and make sure DEBUG is #defined then run project again."];
     else if ( !lastFile )
         [client alert:@"No source file is selected. "
          "Make sure that text is selected and the cursor is inside the file you have edited."];
