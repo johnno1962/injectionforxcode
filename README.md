@@ -41,16 +41,16 @@ When you next run the application, if you edit the storyboard and build the proj
 injected onto the UIViewControllers currently visible while the application is still running. This is 
 achieved by reloading their "nib" onto the existing view controller and sending -viewDidLoad, 
 -viewWillAppear:YES and -viewDidAppear:YES to the view controller for it to redraw.
-This only works for applications with a single active Storyboard.
+This only works for applications with a single active Storyboard. See class method
++reloadNibs in the file "BundleInjection.h".
 
-## License
+## Shareware License
 
-The source code is provided on the understanding it will not be redistributed in whole
-or part for payment and can only be redistributed with it's licensing code left in.
-License is hereby granted to evaluate this software for two weeks after which if you
-are finding it useful I would prefer you made a payment of $10 (or $25 in a 
-commercial environment) as suggested by the licensing code included in the software
-in order to continue using it.
+This source code is provided on github on the understanding it will not be redistributed.
+License is granted to use this software during development for any purpose indefinitely
+(it should never be included in a released application!) After two weeks you
+will be prompted to register and have the opportunity to make a donation $10
+(or $25 in a commercial environment) as suggested by code included in the software.
 
 If you find (m)any issues in the code, get in contact using the email: support (at) injectionforxcode.com
 
