@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#13 $
+#  $Id$
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -115,7 +115,8 @@ $changesSource->print( <<CODE );
 \@implementation $productName
 
 + (void)load {
-@{[join '', map "    extern Class OBJC_CLASS_\$_$_;\n\t[BundleInjection loadedClass:INJECTION_BRIDGE(Class)(void *)&OBJC_CLASS_\$_$_ notify:$flags];\n", @classes]}    [BundleInjection loadedNotify:$flags];
+    Class bundleInjection = NSClassFromString(@"BundleInjection");
+@{[join '', map "    extern Class OBJC_CLASS_\$_$_;\n\t[bundleInjection loadedClass:INJECTION_BRIDGE(Class)(void *)&OBJC_CLASS_\$_$_ notify:$flags];\n", @classes]}    [bundleInjection loadedNotify:$flags];
 }
 
 \@end
@@ -182,13 +183,6 @@ while ( my $line = <BUILD> ) {
     if ( $line =~ /has been modified since the precompiled header was built/ ) {
         $rebuild++;
     }
-    if ( $line =~ /"_OBJC_CLASS_\$_BundleInjection", referenced from:/ ) {
-        $line .=  "${RED}Make sure you do not have option 'Symbols Hidden by Default' set in your build.."
-    }
-    if ( $line =~ /category is implementing a method which will also be implemented by its primary class/ && !$warned ) {
-        $line = "${RED}Add -Wno-objc-protocol-method-implementation to \"Other C Flags\"\\line in this application's bundle project to suppress this warning.\n$line";
-        $warned++;
-    }
     print "$line";
 }
 
@@ -210,27 +204,13 @@ if ( $recording ) {
 
 ############################################################################
 
-print "Renaming bundle..\n";
+print "Renaming bundle so it reloads..\n";
 
 my ($bundleRoot, $bundleName) = $bundlePath =~ m@^(.*)/([^/]*)$@;
 my $newBundle = $isIOS ? "$bundleRoot/$productName.bundle" : "$appPackage/$productName.bundle";
 
 0 == system "rm -rf \"$newBundle\" && cp -r \"$bundlePath\" \"$newBundle\""
-    or die "Could not copy bundle";
-
-my $plist = "$newBundle@{[$isIOS?'':'/Contents']}/Info.plist";
-
-system "plutil -convert xml1 \"$plist\"" if $isDevice;
-
-my $info = loadFile( $plist );
-$info =~ s/\bInjectionBundle\b/$productName/g;
-saveFile( $plist, $info );
-
-system "plutil -convert binary1 \"$plist\"" if $isDevice;
-
-my $execRoot = "$newBundle@{[$isIOS ? '' : '/Contents/MacOS']}";
-rename "$execRoot/InjectionBundle", "$execRoot/$productName"
-    or die "Rename1 error $! for: $execRoot/InjectionBundle, $execRoot/$productName";
+    or error "Could not copy bundle to: $newBundle";
 
 $bundlePath = $newBundle;
 
@@ -240,7 +220,7 @@ if ( $isDevice ) {
     print "Codesigning for iOS device\n";
 
     0 == system "codesign -s '$identity' \"$bundlePath\""
-        or error "Could not code sign as '$identity': $bundlePath";
+        or error "Could not codesign as '$identity': $bundlePath";
 
     $bundlePath = copyToDevice( $bundlePath, "$deviceRoot/tmp/$productName.bundle" );
 }
