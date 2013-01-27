@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#19 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#20 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -47,6 +47,9 @@ struct _in_header { int pathLength, dataLength; };
 #ifndef INJECTION_NOIMPL
 
 #ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
+@interface UINib(BundleInjection)
+- (NSArray *)inInstantiateWithOwner:(id)ownerOrNil options:(NSDictionary *)optionsOrNil;
+@end
 @implementation UIAlertView(Injection)
 - (void)injectionDismiss {
     [self dismissWithClickedButtonIndex:0 animated:YES];
