@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#20 $
+//  $Id$
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -223,7 +223,7 @@ static int status, sbInjection;
             [executablePath getCString:path maxLength:sizeof path encoding:NSUTF8StringEncoding];
             [self writeBytes:INJECTION_MAGIC withPath:path from:0 to:loaderSocket];
 
-            INLog( @"Connected to \"%s\" application, ready to load code.", INJECTION_APPNAME );
+            INLog( @"Connected to \"%s\" plugin, ready to load code.", INJECTION_APPNAME );
 
             int fdout = 0; 
             struct _in_header header;
