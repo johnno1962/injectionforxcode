@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#14 $
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#16 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -51,10 +51,15 @@ CODE
         print "Migrating project parameters to bundle..\n";
         my $projectSource = loadFile( $pbxFile );
 
+        if ( $projectSource =~ /sourcecode.cpp.objcpp/ ) {
+            $bundleProjectSource =~ s/(explicitFileType = sourcecode).c.objc/$1.cpp.objcpp/;
+        }
+
         # FRAMEWORK_SEARCH_PATHS HEADER_SEARCH_PATHS USER_HEADER_SEARCH_PATHS
         # ARCHS VALID_ARCHS GCC_PREPROCESSOR_DEFINITIONS GCC_ENABLE_OBJC_EXCEPTIONS
         foreach my $parm (qw(MACOSX_DEPLOYMENT_TARGET IPHONEOS_DEPLOYMENT_TARGET
-                SDKROOT GCC_VERSION GCC_ENABLE_OBJC_GC CLANG_ENABLE_OBJC_ARC)) {
+                SDKROOT GCC_VERSION GCC_ENABLE_OBJC_GC CLANG_ENABLE_OBJC_ARC
+                CLANG_CXX_LANGUAGE_STANDARD CLANG_CXX_LIBRARY)) {
             if ( my ($val) = $projectSource =~ /(\b$parm = [^;]*;)/ ) {
                 print "Inported setting $val\n";
                 $bundleProjectSource =~ s/\b$parm = [^;]*;/$val/g;
