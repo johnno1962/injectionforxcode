@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.m#17 $
+//  $Id$
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -137,7 +137,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
         read( appConnection, path+1, header.dataLength );
         productPath = [NSString stringWithUTF8String:path+1];
 
-        if ( self.connected )
+        if ( self.connected && menuController.workspacePath )
             [self runScript:@"injectStoryboard.pl" withArg:productPath];
 
         close( appConnection );
