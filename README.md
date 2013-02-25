@@ -20,12 +20,25 @@ Announcements of major commits to the repo will be made on twitter [@Injection4X
 
 To use Injection, open the InjectionPluginLite project, build it and restart Xcode.
 This should add a submenu and an "Inject Source" item to Xcode's "Product" menu.
+If at first it doesn't appear, try restarting Xcode again.
+
 Open a simple example project such as UICatalog or GLEssentials from Apple and use the 
 "Product/Injection Plugin/Patch Project for Injection" menu item to prepare the project
 and rebuild it (Be sure to #define DEBUG.) When you run the project it should connect
 to Xcode which will display a red badge on it's dock icon showing the application is
 prepared to load patch bundles. Select text in a class source file and use
 menu item "Product/Inject Source" to inject any changes you may have made into the app.
+
+## JetBrains AppCode IDE Support
+
+The InjectionPluginAppCode project provides basic support for code injection in the
+AppCode IDE. To use, install the file Injection.jar to directory "~/Library/Application Support/appCode10".
+For it to work you must also have the most recent version of the Xcode plugin
+installed as they share the same scripts. Re-patch your project when you switch from
+Xcode to AppCode as the internal TCP servers use different port numbers to connect.
+This new Java version of the Injection Plugin only works in the simulator and
+on my machine at least although it appears as command-"=" you need to type 
+control-"=" to inject.
 
 ## Storyboard Injection
 
@@ -77,8 +90,10 @@ dead code from the long and winding road injection has taken to get to this poin
 is now the only project you need to build. After building, restart Xcode and check for
 the new items at the end of the "Product" menu.
 
-__InjectionInstallerIII__ The "Injection Plugin" application distributed as a package for
-installing/uninstalling the plugin.
+__InjectionPluginAppCode__ Java plugin for JetBrains AppCode IDE support.
+
+I've removed the InjectionInstallerIII project as it needs you to have built the plugin anyway
+which will have already put it in the right place to load when you restart Xcode.
 
 ## Source Files/Roles:
 
@@ -157,6 +172,8 @@ __$selectedFile__ Last source file selected in Xcode editor
 __1<<2__ Suppress application alert on load of changes.
 
 __1<<3__ Activate application/simulator on load.
+
+__1<<4__ Plugin is running in AppCode.
 
 ## Please note:
 

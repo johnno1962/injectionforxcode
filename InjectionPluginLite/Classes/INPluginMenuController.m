@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#17 $
+//  $Id$
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -171,10 +171,10 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 }
                   
 - (IBAction)patchProject:sender {
-    [client runScript:@"patchProject.pl" withArg:nil];
+    [client runScript:@"patchProject.pl" withArg:@""];
 }
 - (IBAction)revertProject:sender {
-    [client runScript:@"revertProject.pl" withArg:nil];
+    [client runScript:@"revertProject.pl" withArg:@""];
 }
 - (IBAction)openBundle:sender {
     [client runScript:@"openBundle.pl" withArg:[self lastFileSaving:YES]];

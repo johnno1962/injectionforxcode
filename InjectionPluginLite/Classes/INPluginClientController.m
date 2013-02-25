@@ -1,5 +1,5 @@
 //
-//  $Id$
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.m#19 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -309,6 +309,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
                     case '<':
                     case '/':
                     case '@':
+                    case '!':
                         if ( self.connected )
                             [BundleInjection writeBytes:INJECTION_MAGIC
                                                withPath:file from:0 to:clientSocket];

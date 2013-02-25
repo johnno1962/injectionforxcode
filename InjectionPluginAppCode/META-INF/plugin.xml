@@ -1,0 +1,53 @@
+<idea-plugin version="2">
+  <id>com.injectionforxcode.injection.plugin.id</id>
+  <name>Injection for App Code</name>
+  <version>1.0</version>
+  <vendor email="support@injectionforxcode.com" url="http://www.injectionforxcode.com">Injection for Xcode</vendor>
+
+  <description><![CDATA[
+      Dynamic Objective-C Code Injection for App Code.<br>
+      <small>Requires Injection for Xcode plugin to work.</small>
+      ]]></description>
+
+  <change-notes><![CDATA[
+      Initial Version.<br>
+      ]]>
+  </change-notes>
+
+  <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
+  <idea-version since-build="107.105"/>
+
+  <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
+       on how to target different products -->
+  <!-- uncomment to enable plugin in all products -->
+  <depends>com.intellij.modules.lang</depends>
+
+  <application-components>
+    <!-- Add your application components here -->
+  </application-components>
+
+  <project-components>
+    <!-- Add your project components here -->
+  </project-components>
+
+  <actions>
+    <!-- Add your actions here -->
+      <action id="Injection.Inject" class="com.injectionforxcode.InjectionAction" text="Inject Source" description="Inject Source">
+          <add-to-group group-id="RunMenu" anchor="last"/>
+          <keyboard-shortcut keymap="$default" first-keystroke="meta EQUALS"/>
+      </action>
+      <action id="Injection.Patch" class="com.injectionforxcode.InjectionAction$PatchAction" text="Patch Project for Injection" description="Patch Project">
+          <add-to-group group-id="RunMenu" anchor="last"/>
+      </action>
+      <action id="Injection.Unpatch" class="com.injectionforxcode.InjectionAction$UnpatchAction" text="Revert Injection's changes" description="Unpatch Project">
+          <add-to-group group-id="RunMenu" anchor="last"/>
+      </action>
+      <action id="Injection.Bundle" class="com.injectionforxcode.InjectionAction$BundleAction" text="Open Bundle Project" description="Open Injection's Bundle Project">
+          <add-to-group group-id="RunMenu" anchor="last"/>
+      </action>
+  </actions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <!-- Add your extensions here -->
+  </extensions>
+</idea-plugin>

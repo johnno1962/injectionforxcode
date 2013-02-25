@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/patchProject.pl#6 $
+#  $Id: //depot/InjectionPluginLite/patchProject.pl#8 $
 #  Injection
 #
 #  Created by John Holdsworth on 15/01/2013.
@@ -17,26 +17,11 @@ use common;
 my @ip4Addresses = grep $_ !~ /:/, split " ", $addresses;
 
 my $key = "// From here to end of file added by Injection Plugin //";
-my $idef = $projName =~ /UICatalog|(iOS|OSX)GLEssentials/ ?
+my $ifdef = $projName =~ /UICatalog|(iOS|OSX)GLEssentials/ ?
     "__OBJC__ // would normally be DEBUG" : "DEBUG";
 
+
 print "\\b Patching project contained in: $projRoot\n";
-
-patchAll( "main.m", sub {
-    $_[0] =~ s/\n*($key.*)?$/<<CODE/es;
-
-
-$key
-
-#ifdef $idef
-static char _inMainFilePath[] = __FILE__;
-static const char *_inIPAddresses[] = {@{[join ', ', map "\"$_\"", @ip4Addresses]}, NULL};
-
-#define INJECTION_ENABLED
-#import "$resources/BundleInjection.h"
-#endif
-CODE
-} );
 
 patchAll( "*refix.pch", sub {
     $_[0] =~ s/\n*($key.*)?$/<<CODE/es;
@@ -44,9 +29,28 @@ patchAll( "*refix.pch", sub {
 
 $key
 
-#ifdef $idef
+#ifdef $ifdef
 #define INJECTION_ENABLED
 #import "$resources/BundleInterface.h"
+#endif
+CODE
+} );
+
+
+$ifdef .= "\n#define INJECTION_PORT $selectedFile" if $isAppCode;
+
+patchAll( "main.m", sub {
+    $_[0] =~ s/\n*($key.*)?$/<<CODE/es;
+
+
+$key
+
+#ifdef $ifdef
+static char _inMainFilePath[] = __FILE__;
+static const char *_inIPAddresses[] = {@{[join ', ', map "\"$_\"", @ip4Addresses]}, NULL};
+
+#define INJECTION_ENABLED
+#import "$resources/BundleInjection.h"
 #endif
 CODE
 } );

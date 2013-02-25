@@ -1,5 +1,5 @@
 #
-#  $Id: //depot/InjectionPluginLite/common.pm#13 $
+#  $Id: //depot/InjectionPluginLite/common.pm#15 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -13,7 +13,7 @@ use strict;
 use Carp;
 
 use vars qw($resources $workspace $mainFile $executable $patchNumber $flags
-    $unlockCommand $addresses $selectedFile $isDevice $isSimulator $isIOS
+    $unlockCommand $addresses $selectedFile $isDevice $isSimulator $isIOS $isAppCode
     $productName $appPackage $deviceRoot $projFile $projRoot $projName $projType
     $InjectionBundle $template $header $appClass $appPackage $appName $RED);
 
@@ -26,6 +26,7 @@ $productName = "InjectionBundle$patchNumber";
 $isDevice = $executable =~ m@^/var/mobile/@;
 $isSimulator = $executable =~ m@/iPhone Simulator/@;
 $isIOS = $isDevice || $isSimulator;
+$isAppCode = $flags & 1<<4;
 
 ($template, $header, $appClass) = $isIOS ?
     ("iOSBundleTemplate", "UIKit/UIKit.h", "UIApplication") :
@@ -42,7 +43,7 @@ sub error {
 open STDERR, '>&STDOUT';
 $| = 1;
 
-($projFile, $projRoot, $projName, $projType) = $workspace =~ m@^((.*?/)([^/]+)\.(xcodeproj|xcworkspace))@
+($projFile, $projRoot, $projName, $projType) = $workspace =~ m@^((.*?/)([^/]*)\.(xcodeproj|xcworkspace|idea/misc.xml))@
     or error "Could not parse workspace: $workspace";
 
 chdir $projRoot or error "Could not change to directory '$projRoot' as $!";
@@ -70,14 +71,16 @@ sub saveFile {
 
         if ( my $fh = IO::File->new( "> $path" ) ) {
             my ($rest, $name) = urlprep( my $link = $path );
-            $link = "$rest\{\\field{\\*\\fldinst HYPERLINK \"$link\"}{\\fldrslt $name}}";
+            $link = "$rest\{\\field{\\*\\fldinst HYPERLINK \"$link\"}{\\fldrslt $name}}" if !$isAppCode;
             $fh->print( $data );
             $fh->close();
             if ( $path !~ /\.plist$/ ) {
                 print "Modified $link ...\n";
-                (my $diff = `/usr/bin/diff -C 5 \"$path.save\" \"$path\"`) =~ s/([\{\}\\])/\\$1/g;
-                $diff =~ s/\n/\\line/g;
-                print "{\\colortbl;\\red0\\green0\\blue0;\\red245\\green222\\blue179;}\\cb2$diff\n";
+                if ( !$isAppCode ) {
+                    (my $diff = `/usr/bin/diff -C 5 \"$path.save\" \"$path\"`) =~ s/([\{\}\\])/\\$1/g;
+                    $diff =~ s/\n/\\line/g;
+                    print "{\\colortbl;\\red0\\green0\\blue0;\\red245\\green222\\blue179;}\\cb2$diff\n";
+                }
             }
             return 1;
         }

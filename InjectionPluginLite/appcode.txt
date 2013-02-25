@@ -1,0 +1,3 @@
+
+An Injection plugin is available for JetBrains AppCode
+here: https://github.com/johnno1962/injectionforxcode

@@ -1,5 +1,5 @@
 //
-//  $Id$
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#23 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -13,7 +13,10 @@
 
 #import "BundleInterface.h"
 
+#ifndef INJECTION_PORT
 #define INJECTION_PORT 31442
+#endif
+
 #define INJECTION_MAGIC -INJECTION_PORT*INJECTION_PORT
 #define INJECTION_APPNAME "Injection"
 #define INJECTION_MKDIR -1
@@ -335,6 +338,9 @@ static int status, sbInjection;
 #else
                         NSLog( @"Storyboard injection only available for iOS." );
 #endif
+                        break;
+                    case '!':
+                        printf( "%s\n", file );
                         break;
                     default: // parameter or color value update
                         if ( isdigit(path[0]) ) {
