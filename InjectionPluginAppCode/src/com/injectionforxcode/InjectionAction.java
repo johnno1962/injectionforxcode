@@ -52,12 +52,18 @@ public class InjectionAction extends AnAction {
     static ServerSocket serverSocket;
     static OutputStream clientOutput;
 
-    static void error( final String msg ) {
+    static int alert( final String msg ) {
         UIUtil.invokeAndWaitIfNeeded(new Runnable() {
             public void run() {
                 Messages.showMessageDialog((Project)null, msg, "Injection Plugin", Messages.getInformationIcon());
             }
         } );
+        return 0;
+    }
+
+    static void error( String where, Throwable e ) {
+        alert( where+": "+e+" "+e.getMessage() );
+        throw new Error( "Injection Plugin error", e );
     }
 
     static {
@@ -70,18 +76,18 @@ public class InjectionAction extends AnAction {
                             serviceConnection();
                         }
                         catch ( Throwable e ) {
-                            error( "Error on accept: "+e+" "+e.getMessage() );
+                            error( "Error on accept", e );
                         }
                     }
                 }
             } ).start();
         }
         catch ( IOException e ) {
-            error("Unable to setup Server Socket: "+e+" "+e.getMessage());
+            error("Unable to setup Server Socket", e );
         }
     }
 
-    static void serviceConnection() throws  Throwable {
+    static void serviceConnection() throws Throwable {
 
         final Socket socket = serverSocket.accept();
         socket.setTcpNoDelay(true);
@@ -111,9 +117,9 @@ public class InjectionAction extends AnAction {
                     }
                     catch ( IOException e1 ) {
                     }
-                    finally {
-                        clientOutput = null;
-                    }
+                }
+                finally {
+                    clientOutput = null;
                 }
             }
         } ).start();
@@ -128,90 +134,91 @@ public class InjectionAction extends AnAction {
         return "127.0.0.1";
     }
 
-    static void runScript( final String script, final AnActionEvent event ) {
+    static int runScript( String script, AnActionEvent event ) {
         try {
-            if ( !new File(resourcesPath+"appcode.txt").exists() ) {
-                error( "Version 3.2 of the Xcode version of the Injection plugin must be installed." );
-                return;
-            }
+            if ( !new File(resourcesPath+"appcode.txt").exists() )
+                return alert( "Version 3.2 of the Xcode version of the Injection plugin must be installed." );
 
             Project project = event.getData(PlatformDataKeys.PROJECT);
+            String contents = event.getData(PlatformDataKeys.FILE_TEXT);
             VirtualFile vf = event.getData(PlatformDataKeys.VIRTUAL_FILE);
             if ( vf == null )
-                return;
+                return 0;
 
             String selectedFile = vf.getCanonicalPath();
             if ( script == "patchProject.pl" )
-                selectedFile = ""+INJECTION_PORT;
-            else if ( script == "injectSource.pl" && clientOutput == null ) {
-                error( "Application not running/connected.");
-                return;
-            }
-            else if ( selectedFile == null || selectedFile.charAt( selectedFile.length()-1 ) != 'm' ) {
-                error( "Select text in an implmentation file to inject..." );
-                return;
-            }
-
-            String contents = event.getData(PlatformDataKeys.FILE_TEXT);
-            if ( contents != null )
+                selectedFile = ""+INJECTION_PORT+" // AppCode";
+            else if ( script == "injectSource.pl" && clientOutput == null )
+                return alert( "Application not running/connected.");
+            else if ( selectedFile == null || selectedFile.charAt( selectedFile.length()-1 ) != 'm' )
+                return alert( "Select text in an implementation file to inject..." );
+            else if ( contents != null && contents.length() != 0 )
                 new FileOutputStream( selectedFile ).write( contents.getBytes( CHARSET ) );
 
-            final Process proc = Runtime.getRuntime().exec(new String[]{resourcesPath + script, resourcesPath,
+            runCommand( script, new String[]{resourcesPath + script, resourcesPath,
                     project.getProjectFilePath(), mainFilePath, executablePath, "" + ++patchNumber,
-                    "" + flags, unlockCommand, serverAddresses(), selectedFile}, null, null);
-            final BufferedReader stdout = new BufferedReader( new InputStreamReader( proc.getInputStream(), CHARSET ) );
-
-            new Thread( new Runnable() {
-                public void run() {
-                    try {
-                        String line;
-                        while ( (line = stdout.readLine()) != null ) {
-                            char char0 = line.length() > 0 ? line.charAt(0) : 0;
-
-                            if ( char0 == '?' || clientOutput == null ) {
-                                error( line );
-                                continue;
-                            }
-
-                            if ( char0 == '!' )
-                                line = line.substring(1);
-                            else
-                                line = "!Injection: "+line.replaceAll( "\\{\\\\.*?\\}(?!\\{)|\\\\(b|(i|cb)\\d)","");
-
-                            int MAX_LINE = 500;
-                            if ( line.length() > MAX_LINE )
-                                line = line.substring(0,MAX_LINE)+" ...";
-
-                            writeCommand( clientOutput, line );
-                        }
-                    }
-                    catch ( IOException e ) {
-                        error( "Script i/o error: "+e.getMessage() );
-                    }
-                    try {
-                        stdout.close();
-                        if ( proc.waitFor() != 0 )
-                            if ( script == "injectSource.pl" )
-                                UIUtil.invokeAndWaitIfNeeded(new Runnable() {
-                                    public void run() {
-                                        if ( Messages.showYesNoDialog((Project)null, "Build Failed -- You may want to open "+
-                                                "Injection's bundle project to resolve the problem.", "Injection Plugin",
-                                                "OK", "Open Bundle Project", Messages.getInformationIcon()) == 1 )
-                                            runScript( "openBundle.pl", event );
-                                    }
-                                } );
-                            else
-                                error( script+" returned failure." );
-                    }
-                    catch ( Throwable e ) {
-                        error( "Wait problem: "+e+" "+e.getMessage() );
-                    }
-                }
-            } ).start();
+                    "" + flags, unlockCommand, serverAddresses(), selectedFile}, event );
         }
         catch ( Throwable e ) {
-            error( "Run script "+e+": "+e.getMessage() );
+                error( "Run script error", e );
         }
+
+        return 0;
+    }
+
+    static void runCommand( final String script, String command[], final AnActionEvent event ) throws IOException {
+        final Process proc = Runtime.getRuntime().exec( command, null, null);
+        final BufferedReader stdout = new BufferedReader( new InputStreamReader( proc.getInputStream(), CHARSET ) );
+
+        new Thread( new Runnable() {
+            public void run() {
+                try {
+                    String line;
+                    while ( (line = stdout.readLine()) != null ) {
+                        char char0 = line.length() > 0 ? line.charAt(0) : 0;
+                        line = line.replaceAll( "\\{\\\\.*?\\}(?!\\{)|\\\\(b|(i|cb)\\d)\\s*","");
+
+                        if ( char0 == '?' || clientOutput == null ) {
+                            alert( line );
+                            continue;
+                        }
+
+                        if ( char0 == '!' )
+                            line = line.substring(1);
+                        else
+                            line = "!Injection: "+line;
+
+                        int MAX_LINE = 500;
+                        if ( line.length() > MAX_LINE )
+                            line = line.substring(0,MAX_LINE)+" ...";
+
+                        writeCommand( clientOutput, line );
+                    }
+                }
+                catch ( IOException e ) {
+                    error( "Script i/o error", e );
+                }
+
+                try {
+                    stdout.close();
+                    if ( proc.waitFor() != 0 )
+                        if ( script == "injectSource.pl" )
+                            UIUtil.invokeAndWaitIfNeeded(new Runnable() {
+                                public void run() {
+                                    if ( Messages.showYesNoDialog((Project)null, "Build Failed -- You may want to open "+
+                                            "Injection's bundle project to resolve the problem.", "Injection Plugin",
+                                            "OK", "Open Bundle Project", Messages.getInformationIcon()) == 1 )
+                                        runScript( "openBundle.pl", event );
+                                }
+                            } );
+                        else
+                            alert( script+" returned failure." );
+                }
+                catch ( Throwable e ) {
+                    error( "Wait problem", e );
+                }
+            }
+        } ).start();
     }
 
     static int unsign( byte  b ) {
@@ -228,13 +235,13 @@ public class InjectionAction extends AnAction {
     static String readPath( InputStream s ) throws IOException {
         int pathLength = readInt( s );
         if ( readInt( s ) != INJECTION_MAGIC )
-            error( "Bad connection magic" );
+            alert( "Bad connection magic" );
         if ( pathLength < 0 )
-            error( "-ve path len: "+pathLength );
+            alert( "-ve path len: "+pathLength );
 
         byte buffer[] = new byte[pathLength];
         if ( s.read(buffer) != pathLength )
-            error( "Bad path read" );
+            alert( "Bad path read" );
         return new String( buffer, 0, pathLength-1, CHARSET );
     }
 

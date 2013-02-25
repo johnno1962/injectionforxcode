@@ -32,13 +32,13 @@ menu item "Product/Inject Source" to inject any changes you may have made into t
 ## JetBrains AppCode IDE Support
 
 The InjectionPluginAppCode project provides basic support for code injection in the
-AppCode IDE. To use, install the file Injection.jar to directory "~/Library/Application Support/appCode10".
-For it to work you must also have the most recent version of the Xcode plugin
-installed as they share the same scripts. Re-patch your project when you switch from
-Xcode to AppCode as the internal TCP servers use different port numbers to connect.
-This new Java version of the Injection Plugin only works in the simulator and
-on my machine at least although it appears as command-"=" you need to type 
-control-"=" to inject.
+AppCode IDE for the iPhone Simulator. To use, install the file Injection.jar into directory
+"~/Library/Application Support/appCode10". The new menu options should appear at the end 
+of the "Run" menu when you restart AppCode. For it to work you must also have the most 
+recent version of the Xcode plugin installed as they share some of the same scripts. 
+Re-patch your project when you switch from Xcode to AppCode as the internal TCP servers 
+use different port numbers to connect. Although it appears as command-"=" it seems 
+you need to type control-"=" to inject. 
 
 ## Storyboard Injection
 
