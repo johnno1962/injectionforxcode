@@ -29,6 +29,8 @@ to Xcode which will display a red badge on it's dock icon showing the applicatio
 prepared to load patch bundles. Select text in a class source file and use
 menu item "Product/Inject Source" to inject any changes you may have made into the app.
 
+On OS X remember to have your entitlements include "Allow outgoing connections". 
+
 ## JetBrains AppCode IDE Support
 
 The InjectionPluginAppCode project provides basic support for code injection in the
