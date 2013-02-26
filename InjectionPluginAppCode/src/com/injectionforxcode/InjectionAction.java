@@ -27,6 +27,10 @@ import java.io.*;
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
+ * If you want to "support the cause", consider a paypal donation to:
+ *
+ * injectionforxcode@johnholdsworth.com
+ *
  */
 
 public class InjectionAction extends AnAction {
@@ -74,13 +78,10 @@ public class InjectionAction extends AnAction {
         throw new Error( "Injection Plugin error", e );
     }
 
-    static String CHARSET = "UTF-8";
     static short INJECTION_PORT = 31444;
     static int INJECTION_MAGIC = -INJECTION_PORT*INJECTION_PORT;
     static int INJECTION_MKDIR = -1;
-
-    String mainFilePath = "", executablePath = "";
-    OutputStream clientOutput;
+    static String CHARSET = "UTF-8";
 
     void startServer(int portNumber) {
         try {
@@ -105,6 +106,9 @@ public class InjectionAction extends AnAction {
         }
     }
 
+    OutputStream clientOutput;
+    String mainFilePath = "", executablePath = "";
+
     void serviceClientApp(final Socket socket) throws Throwable {
 
         socket.setTcpNoDelay(true);
@@ -119,7 +123,6 @@ public class InjectionAction extends AnAction {
         clientOutput.write( ok );
 
         executablePath = readPath( clientInput );
-        //writePath( clientOutput, "!Connection from: "+executablePath);
 
         new Thread( new Runnable() {
             public void run() {
@@ -190,9 +193,6 @@ public class InjectionAction extends AnAction {
         return 0;
     }
 
-    static Pattern removeRTF = Pattern.compile( "\\{\\\\.*?\\}(?!\\{)|\\\\(b|(i|cb)\\d)\\s*" );
-    String filein;
-
     void processScriptOutput(final String script, String command[], final AnActionEvent event) throws IOException {
 
         final Process process = Runtime.getRuntime().exec( command, null, null);
@@ -202,52 +202,8 @@ public class InjectionAction extends AnAction {
             public void run() {
                 try {
                     String line;
-                    while ( (line = stdout.readLine()) != null ) {
-                        char char0 = line.length() > 0 ? line.charAt(0) : 0;
-                        line = removeRTF.matcher(line).replaceAll("");
-
-                        if ( char0 == '?' || clientOutput == null ) {
-                            alert(line);
-                            continue;
-                        }
-
-                        if ( char0 == '<' ) {
-                            filein = line.substring(1);
-                            continue;
-                        }
-
-                        if ( char0 == '!' ) {
-                            line = line.substring(1); // actual command for client app
-
-                            // copies file/dir to client for on-device injection
-                            if ( line.charAt(0) ==  '>' && filein != null ) {
-                                File from = new File( filein );
-                                if ( from.isDirectory() )
-                                    writeCommand( clientOutput, line, INJECTION_MKDIR );
-                                else {
-                                    int size = (int)from.length();
-                                    byte buffer[] = new byte[size];
-
-                                    FileInputStream is = new FileInputStream( filein );
-                                    is.read(buffer);
-                                    is.close();
-
-                                    writeCommand(clientOutput, line, size);
-                                    clientOutput.write(buffer);
-                                    filein = null;
-                                }
-                                continue;
-                            }
-                        }
-                        else
-                            line = "!Injection: "+line; // otherwise output sent to client to echo to console
-
-                        int MAX_LINE = 500;
-                        if ( line.length() > MAX_LINE )
-                            line = line.substring(0,MAX_LINE)+" ...";
-
-                        writeCommand( clientOutput, line, INJECTION_MAGIC );
-                    }
+                    while ( (line = stdout.readLine()) != null )
+                        processLine(line);
                 }
                 catch ( IOException e ) {
                     error( "Script i/o error", e );
@@ -273,6 +229,57 @@ public class InjectionAction extends AnAction {
                 }
             }
         } ).start();
+    }
+
+    static Pattern removeRTF = Pattern.compile( "\\{\\\\.*?\\}(?!\\{)|\\\\(b|(i|cb)\\d)\\s*" );
+
+    String filein;
+
+    void processLine(String line) throws IOException {
+        char char0 = line.length() > 0 ? line.charAt(0) : 0;
+        line = removeRTF.matcher(line).replaceAll("");
+
+        if ( char0 == '?' || clientOutput == null ) {
+            alert(line);
+            return;
+        }
+
+        if ( char0 == '<' ) {
+            filein = line.substring(1);
+            return;
+        }
+
+        if ( char0 == '!' ) {
+            line = line.substring(1); // actual command for client app
+
+            // copies file/dir to client for on-device injection
+            if ( line.charAt(0) ==  '>' && filein != null ) {
+                File from = new File( filein );
+                if ( from.isDirectory() )
+                    writeCommand( clientOutput, line, INJECTION_MKDIR );
+                else {
+                    int size = (int)from.length();
+                    byte buffer[] = new byte[size];
+
+                    FileInputStream is = new FileInputStream( filein );
+                    is.read(buffer);
+                    is.close();
+
+                    writeCommand(clientOutput, line, size);
+                    clientOutput.write(buffer);
+                    filein = null;
+                }
+                return;
+            }
+        }
+        else
+            line = "!Injection: "+line; // otherwise output sent to client to echo to console
+
+        int MAX_LINE = 500;
+        if ( line.length() > MAX_LINE )
+            line = line.substring(0,MAX_LINE)+" ...";
+
+        writeCommand( clientOutput, line, INJECTION_MAGIC );
     }
 
     static int unsign( byte  b ) {
