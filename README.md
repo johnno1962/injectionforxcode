@@ -32,13 +32,20 @@ menu item "Product/Inject Source" to inject any changes you may have made into t
 ## JetBrains AppCode IDE Support
 
 The InjectionPluginAppCode project provides basic support for code injection in the
-AppCode IDE for the iPhone Simulator. To use, install the file Injection.jar into directory
+AppCode IDE. To use, install the file Injection.jar into directory
 "~/Library/Application Support/appCode10". The new menu options should appear at the end 
 of the "Run" menu when you restart AppCode. For it to work you must also have the most 
 recent version of the Xcode plugin installed as they share some of the same scripts. 
-Re-patch your project when you switch from Xcode to AppCode as the internal TCP servers 
-use different port numbers to connect. Although it appears as command-"=" it seems 
-you need to type control-"=" to inject. 
+
+For some reason there is a very long delay when the client first connects to the plugin.
+This seems to be Java specific. If anyone has any ideas how to fix this, get in touch!
+
+All the code to perform injection direct to a device is included but this is always
+a "challenge" to get going. It requires an extra build phase to run a script and
+the client app has to find it's way over Wi-Fi to connect back to the plugin.
+Start small by injecting to the simulator then injecting to a device using the Xcode 
+plugin. Then try injecting to the device from AppCode. Don't forget to re-patch the
+project for injection in AppCode as it uses a different port than the Xcode plugin.
 
 ## Storyboard Injection
 

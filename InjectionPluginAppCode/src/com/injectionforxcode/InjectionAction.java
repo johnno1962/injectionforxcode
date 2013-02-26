@@ -8,18 +8,35 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.util.ui.UIUtil;
 
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.util.regex.Pattern;
+import java.util.Enumeration;
+import java.net.*;
 import java.io.*;
 
 /**
+ * Copyright (c) 2013 John Holdsworth. All rights reserved.
+ *
  * Created with IntelliJ IDEA.
- * User: johnholdsworth
  * Date: 24/02/2013
- * Time: 11:36
- * To change this template use File | Settings | File Templates.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
  */
+
 public class InjectionAction extends AnAction {
+
+    static InjectionAction plugin;
+
+    {
+        startServer(INJECTION_PORT);
+        plugin = this;
+    }
 
     public void actionPerformed(AnActionEvent event) {
         runScript("injectSource.pl", event);
@@ -27,58 +44,59 @@ public class InjectionAction extends AnAction {
 
     static public class PatchAction extends AnAction {
         public void actionPerformed(AnActionEvent event) {
-            runScript("patchProject.pl", event);
+            plugin.runScript("patchProject.pl", event);
         }
     }
 
     static public class UnpatchAction  extends AnAction {
         public void actionPerformed(AnActionEvent event) {
-            runScript("revertProject.pl", event);
+            plugin.runScript("revertProject.pl", event);
         }
     }
 
     static public class BundleAction  extends AnAction {
         public void actionPerformed(AnActionEvent event) {
-            runScript("openBundle.pl", event);
+            plugin.runScript("openBundle.pl", event);
         }
     }
-
-    static String CHARSET = "UTF-8";
-    static short INJECTION_PORT = 31444;
-    static int INJECTION_MAGIC = -INJECTION_PORT*INJECTION_PORT;
-
-    static String mainFilePath = "", executablePath = "";
-
-    static ServerSocket serverSocket;
-    static OutputStream clientOutput;
 
     static int alert( final String msg ) {
         UIUtil.invokeAndWaitIfNeeded(new Runnable() {
             public void run() {
-                Messages.showMessageDialog((Project)null, msg, "Injection Plugin", Messages.getInformationIcon());
+                Messages.showMessageDialog(msg, "Injection Plugin", Messages.getInformationIcon());
             }
         } );
         return 0;
     }
 
     static void error( String where, Throwable e ) {
-        alert( where+": "+e+" "+e.getMessage() );
+        alert(where + ": " + e + " " + e.getMessage());
         throw new Error( "Injection Plugin error", e );
     }
 
-    static {
+    static String CHARSET = "UTF-8";
+    static short INJECTION_PORT = 31444;
+    static int INJECTION_MAGIC = -INJECTION_PORT*INJECTION_PORT;
+    static int INJECTION_MKDIR = -1;
+
+    String mainFilePath = "", executablePath = "";
+    OutputStream clientOutput;
+
+    void startServer(int portNumber) {
         try {
-            serverSocket = new ServerSocket( INJECTION_PORT );
+            final ServerSocket serverSocket = new ServerSocket();
+            serverSocket.setReuseAddress(true);
+            serverSocket.bind(new InetSocketAddress(portNumber),5);
+
             new Thread( new Runnable() {
                 public void run() {
-                    while ( true ) {
+                    while ( true )
                         try {
-                            serviceConnection();
+                            serviceClientApp(serverSocket.accept());
                         }
                         catch ( Throwable e ) {
                             error( "Error on accept", e );
                         }
-                    }
                 }
             } ).start();
         }
@@ -87,9 +105,8 @@ public class InjectionAction extends AnAction {
         }
     }
 
-    static void serviceConnection() throws Throwable {
+    void serviceClientApp(final Socket socket) throws Throwable {
 
-        final Socket socket = serverSocket.accept();
         socket.setTcpNoDelay(true);
 
         final InputStream clientInput = socket.getInputStream();
@@ -98,8 +115,8 @@ public class InjectionAction extends AnAction {
 
         mainFilePath = readPath( clientInput );
 
-        byte bytes[] = new byte[] {1,0,0,0};
-        clientOutput.write( bytes );
+        byte ok[] = new byte[] {1,0,0,0};
+        clientOutput.write( ok );
 
         executablePath = readPath( clientInput );
         //writePath( clientOutput, "!Connection from: "+executablePath);
@@ -127,14 +144,18 @@ public class InjectionAction extends AnAction {
 
     static String resourcesPath = System.getProperty( "user.home" )+"/Library/Application Support/Developer/Shared/Xcode/Plug-ins/InjectionPlugin.xcplugin/Contents/Resources/";
     static String unlockCommand = "chmod +w \"%s\"";
-    static int patchNumber = 0, flags = 1<<2 | 1<<4;
 
-    static String serverAddresses() {
-        // should return space separated ip addresses serverSocket is listening on
-        return "127.0.0.1";
+    int patchNumber = 0, flags = 1<<2 | 1<<4;
+
+    static String serverAddresses() throws SocketException {
+        String ipaddrs = "127.0.0.1";
+        NetworkInterface ni = NetworkInterface.getByName("en0");
+        for ( Enumeration<InetAddress> e = ni.getInetAddresses() ; e.hasMoreElements() ; )
+            ipaddrs += "  "+e.nextElement().getHostAddress();
+        return ipaddrs; // should return space separated ip addresses serverSocket is listening on
     }
 
-    static int runScript( String script, AnActionEvent event ) {
+    int runScript( String script, AnActionEvent event ) {
         try {
             if ( !new File(resourcesPath+"appcode.txt").exists() )
                 return alert( "Version 3.2 of the Xcode version of the Injection plugin must be installed." );
@@ -148,27 +169,34 @@ public class InjectionAction extends AnAction {
             String selectedFile = vf.getCanonicalPath();
             if ( script == "patchProject.pl" )
                 selectedFile = ""+INJECTION_PORT+" // AppCode";
+
             else if ( script == "injectSource.pl" && clientOutput == null )
                 return alert( "Application not running/connected.");
+
             else if ( selectedFile == null || selectedFile.charAt( selectedFile.length()-1 ) != 'm' )
                 return alert( "Select text in an implementation file to inject..." );
+
             else if ( contents != null && contents.length() != 0 )
                 new FileOutputStream( selectedFile ).write( contents.getBytes( CHARSET ) );
 
-            runCommand( script, new String[]{resourcesPath + script, resourcesPath,
+            processScriptOutput(script, new String[]{resourcesPath + script, resourcesPath,
                     project.getProjectFilePath(), mainFilePath, executablePath, "" + ++patchNumber,
-                    "" + flags, unlockCommand, serverAddresses(), selectedFile}, event );
+                    "" + flags, unlockCommand, serverAddresses(), selectedFile}, event);
         }
         catch ( Throwable e ) {
-                error( "Run script error", e );
+            error( "Run script error", e );
         }
 
         return 0;
     }
 
-    static void runCommand( final String script, String command[], final AnActionEvent event ) throws IOException {
-        final Process proc = Runtime.getRuntime().exec( command, null, null);
-        final BufferedReader stdout = new BufferedReader( new InputStreamReader( proc.getInputStream(), CHARSET ) );
+    static Pattern removeRTF = Pattern.compile( "\\{\\\\.*?\\}(?!\\{)|\\\\(b|(i|cb)\\d)\\s*" );
+    String filein;
+
+    void processScriptOutput(final String script, String command[], final AnActionEvent event) throws IOException {
+
+        final Process process = Runtime.getRuntime().exec( command, null, null);
+        final BufferedReader stdout = new BufferedReader( new InputStreamReader( process.getInputStream(), CHARSET ) );
 
         new Thread( new Runnable() {
             public void run() {
@@ -176,23 +204,49 @@ public class InjectionAction extends AnAction {
                     String line;
                     while ( (line = stdout.readLine()) != null ) {
                         char char0 = line.length() > 0 ? line.charAt(0) : 0;
-                        line = line.replaceAll( "\\{\\\\.*?\\}(?!\\{)|\\\\(b|(i|cb)\\d)\\s*","");
+                        line = removeRTF.matcher(line).replaceAll("");
 
                         if ( char0 == '?' || clientOutput == null ) {
-                            alert( line );
+                            alert(line);
                             continue;
                         }
 
-                        if ( char0 == '!' )
-                            line = line.substring(1);
+                        if ( char0 == '<' ) {
+                            filein = line.substring(1);
+                            continue;
+                        }
+
+                        if ( char0 == '!' ) {
+                            line = line.substring(1); // actual command for client app
+
+                            // copies file/dir to client for on-device injection
+                            if ( line.charAt(0) ==  '>' && filein != null ) {
+                                File from = new File( filein );
+                                if ( from.isDirectory() )
+                                    writeCommand( clientOutput, line, INJECTION_MKDIR );
+                                else {
+                                    int size = (int)from.length();
+                                    byte buffer[] = new byte[size];
+
+                                    FileInputStream is = new FileInputStream( filein );
+                                    is.read(buffer);
+                                    is.close();
+
+                                    writeCommand(clientOutput, line, size);
+                                    clientOutput.write(buffer);
+                                    filein = null;
+                                }
+                                continue;
+                            }
+                        }
                         else
-                            line = "!Injection: "+line;
+                            line = "!Injection: "+line; // otherwise output sent to client to echo to console
 
                         int MAX_LINE = 500;
                         if ( line.length() > MAX_LINE )
                             line = line.substring(0,MAX_LINE)+" ...";
 
-                        writeCommand( clientOutput, line );
+                        writeCommand( clientOutput, line, INJECTION_MAGIC );
                     }
                 }
                 catch ( IOException e ) {
@@ -201,18 +255,18 @@ public class InjectionAction extends AnAction {
 
                 try {
                     stdout.close();
-                    if ( proc.waitFor() != 0 )
+                    if ( process.waitFor() != 0 )
                         if ( script == "injectSource.pl" )
                             UIUtil.invokeAndWaitIfNeeded(new Runnable() {
                                 public void run() {
-                                    if ( Messages.showYesNoDialog((Project)null, "Build Failed -- You may want to open "+
+                                    if ( Messages.showYesNoDialog("Build Failed -- You may want to open "+
                                             "Injection's bundle project to resolve the problem.", "Injection Plugin",
                                             "OK", "Open Bundle Project", Messages.getInformationIcon()) == 1 )
                                         runScript( "openBundle.pl", event );
                                 }
                             } );
                         else
-                            alert( script+" returned failure." );
+                            alert(script + " returned failure.");
                 }
                 catch ( Throwable e ) {
                     error( "Wait problem", e );
@@ -222,33 +276,33 @@ public class InjectionAction extends AnAction {
     }
 
     static int unsign( byte  b ) {
-        return (int)b&0xff;
+        return (int)b & 0xff;
     }
 
     static int readInt( InputStream s ) throws IOException {
         byte bytes[] = new byte[4];
         if ( s.read(bytes) != bytes.length )
             throw new IOException( "readInt() EOF" );
-        return unsign(bytes[0])+(unsign(bytes[1])<<8)+(unsign(bytes[2])<<16)+(unsign(bytes[3])<<24);
+        return unsign(bytes[0]) + (unsign(bytes[1])<<8) + (unsign(bytes[2])<<16) + (unsign(bytes[3])<<24);
     }
 
     static String readPath( InputStream s ) throws IOException {
         int pathLength = readInt( s );
         if ( readInt( s ) != INJECTION_MAGIC )
-            alert( "Bad connection magic" );
+            alert("Bad connection magic");
         if ( pathLength < 0 )
-            alert( "-ve path len: "+pathLength );
+            alert("-ve path len: " + pathLength);
 
         byte buffer[] = new byte[pathLength];
         if ( s.read(buffer) != pathLength )
-            alert( "Bad path read" );
+            alert("Bad path read");
         return new String( buffer, 0, pathLength-1, CHARSET );
     }
 
-    static void writeCommand( OutputStream s, String path ) throws IOException {
+    static void writeCommand( OutputStream s, String path, int dataLength ) throws IOException {
         byte bytes[] = path.getBytes( CHARSET ), buffer[] = new byte[bytes.length+1];
         System.arraycopy( bytes, 0, buffer, 0, bytes.length );
-        writeHeader( s, bytes.length+1, INJECTION_MAGIC );
+        writeHeader( s, bytes.length+1, dataLength );
         s.write( buffer );
     }
 
