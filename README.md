@@ -91,8 +91,8 @@ and then swizzles the new implementations onto the original class.
 Support for injecting projects using "CocoaPods" and "workspaces" has been added since version 2.7.
 Classes in the project or Pods can be injected as well as categories or extensions.
 The only limitation is that the class being injected must not itself have a +load method.
-Other options are on the "Project..Tuneable Parameters" page such as turning off the
-message dialogue when classes are injected.
+Other options are on the "Project..Tunable Parameters" page such as the "Silent" option for
+turning off the message dialogue each time classes are injected.
 
 ![Icon](http://injectionforxcode.johnholdsworth.com/params2.png)
 
