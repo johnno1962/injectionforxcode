@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#16 $
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#17 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -173,18 +173,21 @@ while ( my $line = <BUILD> ) {
 
     $line =~ s/([\{\}\\])/\\$1/g;
 
-    if ( $line =~ /gcc|clang/ ) {
-        $line = "{\\colortbl;\\red0\\green0\\blue0;\\red160\\green255\\blue160;}\\cb2\\i1$line";
+    if ( !$isAppCode ) {
+        if ( $line =~ /gcc|clang/ ) {
+            $line = "{\\colortbl;\\red0\\green0\\blue0;\\red160\\green255\\blue160;}\\cb2\\i1$line";
+        }
+        if ( $line =~ /\b(error|warning|note):/ ) {
+            $line =~ s@^(.*?/)([^/:]+):@
+                my ($p, $n) = ($1, $2);
+                (my $f = $p) =~ s!^(\.\.?/)!$projRoot/$InjectionBundle/$1!;
+                "$p\{\\field{\\*\\fldinst HYPERLINK \"file://$f$n\"}{\\fldrslt $n}}:";
+            @ge;
+            $line = "{\\colortbl;\\red0\\green0\\blue0;\\red255\\green255\\blue130;}\\cb2$line"
+                if $line =~ /\berror:/;
+        }
     }
-    if ( $line =~ /\b(error|warning|note):/ ) {
-        $line =~ s@^(.*?/)([^/:]+):@
-            my ($p, $n) = ($1, $2);
-            (my $f = $p) =~ s!^(\.\.?/)!$projRoot/$InjectionBundle/$1!;
-            "$p\{\\field{\\*\\fldinst HYPERLINK \"file://$f$n\"}{\\fldrslt $n}}:";
-        @ge;
-        $line = "{\\colortbl;\\red0\\green0\\blue0;\\red255\\green255\\blue130;}\\cb2$line"
-            if $line =~ /\berror:/;
-    }
+
     if ( $line =~ /has been modified since the precompiled header was built/ ) {
         $rebuild++;
     }

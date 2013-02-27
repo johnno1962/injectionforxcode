@@ -144,7 +144,7 @@ __InjectionPluginLite/common.pm__
 
 Code shared across the above scripts including the code that patches classes into categories.
 
-## Script output line-prefix conventions from -[InDocument monitorScript]:
+## Script output line-prefix conventions from -[INPluginClientController monitorScript]:
 
 __>__ open local file for write
 
@@ -182,7 +182,7 @@ __$selectedFile__ Last source file selected in Xcode editor
 
 ## Bitfields of $flags argument passed to scripts
 
-__1<<2__ Suppress application alert on load of changes.
+__1<<2__ Display UIAlert on load of changes (disabled with the "Silent" tunable parameter)
 
 __1<<3__ Activate application/simulator on load.
 

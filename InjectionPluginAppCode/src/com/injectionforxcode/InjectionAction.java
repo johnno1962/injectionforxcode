@@ -153,8 +153,9 @@ public class InjectionAction extends AnAction {
     static String serverAddresses() throws SocketException {
         String ipaddrs = "127.0.0.1";
         NetworkInterface ni = NetworkInterface.getByName("en0");
-        for ( Enumeration<InetAddress> e = ni.getInetAddresses() ; e.hasMoreElements() ; )
-            ipaddrs += "  "+e.nextElement().getHostAddress();
+        if ( ni != null )
+            for ( Enumeration<InetAddress> e = ni.getInetAddresses() ; e.hasMoreElements() ; )
+                ipaddrs += "  "+e.nextElement().getHostAddress();
         return ipaddrs; // should return space separated ip addresses serverSocket is listening on
     }
 
