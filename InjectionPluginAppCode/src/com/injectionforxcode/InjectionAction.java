@@ -76,7 +76,7 @@ public class InjectionAction extends AnAction {
 
     static void error( String where, Throwable e ) {
         alert(where + ": " + e + " " + e.getMessage());
-        throw new Error( "Injection Plugin error", e );
+        throw new RuntimeException( "Injection Plugin error", e );
     }
 
     static short INJECTION_PORT = 31444;

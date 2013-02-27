@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#23 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#24 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -26,7 +26,7 @@
 #ifdef DEBUG
 #define INLog NSLog
 #else
-#define INLog if(0) NSLog
+#define INLog while(0) NSLog
 #endif
 
 struct _in_header { int pathLength, dataLength; };
@@ -95,19 +95,7 @@ struct _in_header { int pathLength, dataLength; };
 #ifdef INJECTION_ENABLED
 
 + (void)load {
-#ifndef INJECTION_ISARC
-    NSAutoreleasePool *pool = [NSAutoreleasePool new];
-#else
-    @autoreleasepool {
-#endif
-
-        [self performSelectorInBackground:@selector(bundleLoader) withObject:nil];
-
-#ifndef INJECTION_ISARC
-        [pool release];
-#else
-    }
-#endif
+    [self performSelectorInBackground:@selector(bundleLoader) withObject:nil];
 }
 
 NSString *kINNotification = @"INJECTION_BUNDLE_NOTIFICATION";
@@ -154,13 +142,14 @@ static int status, sbInjection;
 
 + (int)connectTo:(const char *)ipAddress {
     struct sockaddr_in loaderAddr;
-    int loaderSocket;
 
     loaderAddr.sin_family = AF_INET;
 	inet_aton( ipAddress, &loaderAddr.sin_addr );
 	loaderAddr.sin_port = htons(INJECTION_PORT);
 
-    int optval = 1;
+    INLog( @"%s attempting connection to: %s:%d", INJECTION_APPNAME, ipAddress, INJECTION_PORT );
+
+    int loaderSocket, optval = 1;
     if ( (loaderSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0 )
         NSLog( @"Could not open socket for injection: %s", strerror( errno ) );
     else if ( setsockopt( loaderSocket, IPPROTO_TCP, TCP_NODELAY, (void *)&optval, sizeof(optval)) < 0 )
@@ -228,11 +217,12 @@ static int status, sbInjection;
 
             INLog( @"Connected to \"%s\" plugin, ready to load code.", INJECTION_APPNAME );
 
-            int fdout = 0; 
+            int fdout = 0;
             struct _in_header header;
             while ( [self readHeader:&header forPath:path from:loaderSocket] ) {
 
                 switch ( path[0] ) {
+
                     case '/': // load bundle
                         status = NO;
                         if ( header.dataLength == INJECTION_MAGIC )
@@ -244,6 +234,7 @@ static int status, sbInjection;
                             NSLog( @"*** Bundle has failed to load. If this is due to symbols not found, make sure that Build Setting 'Symbols Hidden by Default' is NO for your Debug build. ***");
                         write( loaderSocket, &status, sizeof status );
                         break;
+
                     case '>': // open file/directory to write/create
                         if ( header.dataLength == INJECTION_NOFILE ) {
                             if ( (fdout = open( file, O_CREAT|O_TRUNC|O_WRONLY, 0755 )) < 0 )
@@ -261,6 +252,7 @@ static int status, sbInjection;
                             fdout = 0;
                         }
                         break;
+
                     case '<': { // open file/directory to read/list
                         int fdin = open( file, O_RDONLY );
                         struct stat fdinfo;
@@ -308,6 +300,7 @@ static int status, sbInjection;
                         close( fdin );
                     }
                         break;
+
                     case '#': { // update image
                         int len, block = 4096;
                         read( loaderSocket, &len, sizeof len );
@@ -328,6 +321,7 @@ static int status, sbInjection;
 #endif
                     }
                         break;
+
                     case '@': // project built, reload visible view controllers
 #if __IPHONE_OS_VERSION_MIN_REQUIRED
                         if ( sbInjection )
@@ -339,9 +333,11 @@ static int status, sbInjection;
                         NSLog( @"Storyboard injection only available for iOS." );
 #endif
                         break;
-                    case '!':
+
+                    case '!': // log message to console window
                         printf( "%s\n", file );
                         break;
+
                     default: // parameter or color value update
                         if ( isdigit(path[0]) ) {
                             int tag = path[0]-'0';
@@ -388,7 +384,7 @@ static int status, sbInjection;
                 }
             }
 
-            INLog( @"Lost connection, %s", strerror( errno ) );
+            NSLog( @"Lost connection, %s", strerror( errno ) );
             close( loaderSocket );
         }
 
