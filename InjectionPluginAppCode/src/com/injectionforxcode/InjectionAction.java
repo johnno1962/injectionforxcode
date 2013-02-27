@@ -3,6 +3,7 @@ package com.injectionforxcode;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.ui.Messages;
@@ -102,12 +103,12 @@ public class InjectionAction extends AnAction {
             } ).start();
         }
         catch ( IOException e ) {
-            error("Unable to setup Server Socket", e );
+            error("Unable to bind Server Socket", e );
         }
     }
 
-    OutputStream clientOutput;
     String mainFilePath = "", executablePath = "";
+    volatile OutputStream clientOutput;
 
     void serviceClientApp(final Socket socket) throws Throwable {
 
@@ -132,13 +133,13 @@ public class InjectionAction extends AnAction {
                     }
                 }
                 catch ( IOException e ) {
+                }
+                finally {
                     try {
                         socket.close();
                     }
-                    catch ( IOException e1 ) {
+                    catch ( IOException e ) {
                     }
-                }
-                finally {
                     clientOutput = null;
                 }
             }
@@ -162,10 +163,10 @@ public class InjectionAction extends AnAction {
     int runScript( String script, AnActionEvent event ) {
         try {
             if ( !new File(resourcesPath+"appcode.txt").exists() )
-                return alert( "Version 3.2 of the Xcode version of the Injection plugin must be installed." );
+                return alert( "Version 3.2 of the Xcode version of the Injection plugin"
+                        +" from http://injectionforxcode.com must also be installed." );
 
             Project project = event.getData(PlatformDataKeys.PROJECT);
-            String contents = event.getData(PlatformDataKeys.FILE_TEXT);
             VirtualFile vf = event.getData(PlatformDataKeys.VIRTUAL_FILE);
             if ( vf == null )
                 return 0;
@@ -180,8 +181,7 @@ public class InjectionAction extends AnAction {
             else if ( selectedFile == null || selectedFile.charAt( selectedFile.length()-1 ) != 'm' )
                 return alert( "Select text in an implementation file to inject..." );
 
-            else if ( contents != null && contents.length() != 0 )
-                new FileOutputStream( selectedFile ).write( contents.getBytes( CHARSET ) );
+            FileDocumentManager.getInstance().saveAllDocuments();
 
             processScriptOutput(script, new String[]{resourcesPath + script, resourcesPath,
                     project.getProjectFilePath(), mainFilePath, executablePath, "" + ++patchNumber,
