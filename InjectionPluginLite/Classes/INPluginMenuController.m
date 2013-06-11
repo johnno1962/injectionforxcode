@@ -56,15 +56,15 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 	if (productMenu) {
 		[productMenu addItem:[NSMenuItem separatorItem]];
 
-        struct { NSString *item,  *key; SEL action; } items[] = {
-            {@"Injection Plugin", @"", NULL},
-            {@"Inject Source", @"=", @selector(injectSource:)}
+        struct { char *item,  *key; SEL action; } items[] = {
+            {"Injection Plugin", "", NULL},
+            {"Inject Source", "=", @selector(injectSource:)}
         };
 
         for ( int i=0 ; i<sizeof items/sizeof items[0] ; i++ ) {
-            NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:items[i].item
+            NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:items[i].item]
                                                               action:items[i].action
-                                                       keyEquivalent:items[i].key];
+                                                       keyEquivalent:[NSString stringWithUTF8String:items[i].key]];
             //[menuItem setKeyEquivalentModifierMask:NSControlKeyMask];
             if ( i==0 )
                 [subMenuItem = menuItem setSubmenu:subMenu];
@@ -339,7 +339,7 @@ static CFDataRef copy_mac_address(void)
         //[self performSelector:@selector(openDemo:) withObject:self afterDelay:2.];
     }
 
-    NSData *addr = (NSData *)copy_mac_address();
+    NSData *addr = INJECTION_BRIDGE(NSData *)copy_mac_address();
     int skip = 2, len = [addr length]-skip;
     unsigned char *bytes = (unsigned char *)[addr bytes]+skip;
 
@@ -349,7 +349,7 @@ static CFDataRef copy_mac_address(void)
         refkey ^= 365-[mac characterAtIndex:i*2]<<i*6;
         refkey ^= 365-[mac characterAtIndex:i*2+1]<<i*6+3;
     }
-    CFRelease( addr );
+    CFRelease( INJECTION_BRIDGE(CFDataRef)addr );
 
     licensed =  [defaults integerForKey:kLicensed];
     if ( licensed != refkey ) {
@@ -396,7 +396,7 @@ static CFDataRef copy_mac_address(void)
 
 - (void)dealloc {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	[super dealloc];
+	//[super dealloc];
 }
 
 @end
