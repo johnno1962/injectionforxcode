@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/revertProject.pl#4 $
+#  $Id: //depot/InjectionPluginLite/revertProject.pl#5 $
 #  Injection
 #
 #  Created by John Holdsworth on 15/01/2013.
@@ -18,7 +18,7 @@ my $key = "// From here to end of file added by Injection Plugin //";
 
 print "\\b Reverting project contained in: $projRoot\n";
 
-patchAll( "main.m", sub {
+patchAll( "main.m*", sub {
     $_[0] =~ s/\n+$key.*/\n/s;
 } );
 
