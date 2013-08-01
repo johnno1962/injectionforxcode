@@ -12,13 +12,6 @@ Stop Press: Injection has been refactored and no longer has to convert your clas
 in order for it to work so no changes are made to your class source. It works for OS X and iOS projects
 in the simulator and on the device (if you add an extra "run script" build phase as instructed.)
 
-### Please note 
-
-You must rebuild the plugin with ARC enabled for it to work with Xcode 5 or you will
-experience crashes as Xcode no longer uses garbage collection. You will also need 
-the new property "DVTPlugInCompatibilityUUIDs" in it's Info.plist and some minor
-changes to scripts i.e. re-sync the source to github.
-
 A quick demonstration video/tutorial of Injection in action is available here:
 
 https://vimeo.com/50137444
@@ -40,6 +33,13 @@ prepared to load patch bundles. Select text in a class source file and use
 menu item "Product/Inject Source" to inject any changes you may have made into the app.
 
 On OS X remember to have your entitlements include "Allow outgoing connections". 
+
+### Note: Using Injection with Xcode 5 
+
+You must rebuild the plugin with ARC enabled for it to work with Xcode 5 or you will
+experience random crashes as Xcode no longer uses garbage collection. You will also 
+need the new property "DVTPlugInCompatibilityUUIDs" in it's Info.plist and a minor
+changes to the injection script used i.e. re-sync the source to github.
 
 ## JetBrains AppCode IDE Support
 
