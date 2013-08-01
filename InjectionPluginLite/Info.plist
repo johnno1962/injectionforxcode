@@ -26,5 +26,9 @@
 	<false/>
 	<key>XC4Compatible</key>
 	<true/>
+	<key>DVTPlugInCompatibilityUUIDs</key>
+	<array>
+		<string>63FC1C47-140D-42B0-BB4D-A10B2D225574</string>
+	</array>
 </dict>
 </plist>

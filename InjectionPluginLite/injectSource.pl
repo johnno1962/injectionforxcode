@@ -171,6 +171,14 @@ while ( my $line = <BUILD> ) {
         $recording->print( "echo && echo '$cmd' &&\n" ) if $recording;
     }
 
+    # hacks to support Xcode 5 DP4.
+    elsif ( $line =~ m@/dsymutil (.+/InjectionBundle.bundle)/InjectionBundle@ ) {
+        ($bundlePath = $1) =~ s/\\//g;
+        $bundlePath = "\"$bundlePath\"";
+        my $cmd = "/usr/bin/touch -c $bundlePath";
+        $recording->print( "echo && echo '$cmd' &&\n" ) if $recording;
+    }
+
     $line =~ s/([\{\}\\])/\\$1/g;
 
     if ( !$isAppCode ) {
