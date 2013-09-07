@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#17 $
+#  $Id$
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -25,7 +25,7 @@ if ( !$executable ) {
 if ( ! -d $InjectionBundle ) {
     print "Copying $template into project.\n";
 
-    0 == system "cp -r \"$resources/$template\" $InjectionBundle && chmod -R og+w $InjectionBundle"
+    0 == system "cp -r \"$FindBin::Bin/$template\" $InjectionBundle && chmod -R og+w $InjectionBundle"
         or error "Could not copy injection bundle.";
 
     my $bundlePCH = "$InjectionBundle/InjectionBundle-Prefix.pch";
@@ -171,11 +171,10 @@ while ( my $line = <BUILD> ) {
         $recording->print( "echo && echo '$cmd' &&\n" ) if $recording;
     }
 
-    # hacks to support Xcode 5 DP4.
+    # support for Xcode 5 DP4-5
     elsif ( $line =~ m@/dsymutil (.+/InjectionBundle.bundle)/InjectionBundle@ ) {
         ($bundlePath = $1) =~ s/\\//g;
-        $bundlePath = "\"$bundlePath\"";
-        my $cmd = "/usr/bin/touch -c $bundlePath";
+        (my $cmd = "/usr/bin/touch -c \"$bundlePath\"") =~ s/'/'\\''/g;
         $recording->print( "echo && echo '$cmd' &&\n" ) if $recording;
     }
 
@@ -222,7 +221,7 @@ if ( $recording ) {
 
 print "Renaming bundle so it reloads..\n";
 
-my ($bundleRoot, $bundleName) = $bundlePath =~ m@^(.*)/([^/]*)$@;
+my ($bundleRoot) = $bundlePath =~ m@^\"?(.*)/([^/]*)$@;
 my $newBundle = $isIOS ? "$bundleRoot/$productName.bundle" : "$appPackage/$productName.bundle";
 
 0 == system "rm -rf \"$newBundle\" && cp -r \"$bundlePath\" \"$newBundle\""
