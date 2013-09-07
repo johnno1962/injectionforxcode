@@ -19,9 +19,6 @@ https://vimeo.com/50137444
 Announcements of major commits to the repo will be made on twitter [@Injection4Xcode](https://twitter.com/#!/@Injection4Xcode).
 
 To use Injection, open the InjectionPluginLite project, build it and restart Xcode.
-Alternatively you can download a small installer app "Injection Plugin.app" from 
-[http://injectionforxcode.com](http://injectionforxcode.com) and use the menu item 
-"File/Install Plugin" then restart Xcode (This also installs the AppCode plugin.)
 This should add a submenu and an "Inject Source" item to Xcode's "Product" menu.
 If at first it doesn't appear, try restarting Xcode again.
 

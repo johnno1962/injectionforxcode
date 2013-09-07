@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#20 $
+//  $Id$
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -21,6 +21,18 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 #pragma mark - Plugin Initialization
 
 + (void)pluginDidLoad:(NSBundle *)plugin {
+
+#ifndef INJECTION_ISARC
+    NSString *version = [[[NSBundle mainBundle] infoDictionary] valueForKey:@"CFBundleShortVersionString"];
+    if ( [version characterAtIndex:0] >= '5' ) {
+        [[NSAlert alertWithMessageText:@"Injection Plugin Compatability"
+                         defaultButton:@"OK" alternateButton:nil otherButton:nil
+             informativeTextWithFormat:@"Injection Plugin must be recompiled with ARC enabled for use "
+          "with Xcode %@. Plugin disabled.", version] runModal];
+        return;
+    }
+#endif
+
     static INPluginMenuController *injectionPlugin;
 	static dispatch_once_t onceToken;
 	dispatch_once(&onceToken, ^{
@@ -329,7 +341,8 @@ static CFDataRef copy_mac_address(void)
 }
 
 - (void)setupLicensing {
-    if ( refkey )
+    struct stat tstat;
+    if ( refkey || stat( "/Applications/Injection Plugin.app", &tstat ) == 0 )
         return;
     time_t now = time(NULL);
     installed = [defaults integerForKey:kInstalled];
