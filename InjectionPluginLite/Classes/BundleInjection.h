@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#24 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#26 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -147,7 +147,7 @@ static int status, sbInjection;
 	inet_aton( ipAddress, &loaderAddr.sin_addr );
 	loaderAddr.sin_port = htons(INJECTION_PORT);
 
-    INLog( @"%s attempting connection to: %s:%d", INJECTION_APPNAME, ipAddress, INJECTION_PORT );
+    INLog( @"%s attempting connection to: %s:%d (see project's main.m)", INJECTION_APPNAME, ipAddress, INJECTION_PORT );
 
     int loaderSocket, optval = 1;
     if ( (loaderSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0 )
@@ -240,10 +240,8 @@ static int status, sbInjection;
                             if ( (fdout = open( file, O_CREAT|O_TRUNC|O_WRONLY, 0755 )) < 0 )
                                 NSLog( @"Could not open \"%s\" for copy as: %s", file, strerror(errno) );
                         }
-                        else if ( header.dataLength == INJECTION_MKDIR ) {
-                            int rc = mkdir( file, 0777 );
-                            if(0) INLog( @"Return code %d from mkdir of \"%s\" ", rc, file );
-                        }
+                        else if ( header.dataLength == INJECTION_MKDIR )
+                            mkdir( file, 0777 );
                         else {
                             if ( (fdout = open( file, O_CREAT|O_TRUNC|O_WRONLY, 0755 )) < 0 )
                                 NSLog( @"Could not open \"%s\" for download as: %s", file, strerror(errno) );

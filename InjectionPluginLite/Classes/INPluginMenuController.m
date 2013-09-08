@@ -1,5 +1,5 @@
 //
-//  $Id$
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#26 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -13,9 +13,6 @@
 #import "INPluginMenuController.h"
 #import "INPluginClientController.h"
 
-static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
-    *kInstalled = @"INInstalled", *kLicensed = @"INLicensed2.x";
-
 @implementation INPluginMenuController
 
 #pragma mark - Plugin Initialization
@@ -25,10 +22,13 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 #ifndef INJECTION_ISARC
     NSString *version = [[[NSBundle mainBundle] infoDictionary] valueForKey:@"CFBundleShortVersionString"];
     if ( [version characterAtIndex:0] >= '5' ) {
-        [[NSAlert alertWithMessageText:@"Injection Plugin Compatability"
-                         defaultButton:@"OK" alternateButton:nil otherButton:nil
-             informativeTextWithFormat:@"Injection Plugin must be recompiled with ARC enabled for use "
-          "with Xcode %@. Plugin disabled.", version] runModal];
+        if ( [[NSAlert alertWithMessageText:@"Injection Plugin Compatability"
+                              defaultButton:@"OK" alternateButton:@"Remove Plugin" otherButton:nil
+                  informativeTextWithFormat:@"Injection Plugin must be recompiled with ARC enabled and "
+               "GCC_ENABLE_OBJC_GC switched to unsupported for use with Xcode %@. Plugin disabled.", version] runModal]
+            == NSAlertAlternateReturn )
+            [[NSFileManager defaultManager] removeItemAtPath:[[NSBundle bundleForClass:[self class]] bundlePath]
+                                                       error:NULL];
         return;
     }
 #endif
@@ -170,6 +170,9 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 
 #pragma mark - Actions
 
+static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
+    *kInstalled = @"INInstalled", *kLicensed = @"INLicensed2.x";
+
 - (IBAction)viewIntro:sender{
     NSURL *url = [NSURL URLWithString:[kAppHome stringByAppendingString:@"pluginlite.html"]];
     [webView.mainFrame loadRequest:[NSURLRequest requestWithURL:url]];
@@ -179,7 +182,7 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
     [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:url]];
 }
 - (IBAction)support:sender {
-    [self openURL:@"mailto:support@injectionforxcode.com?subject=Injection%20Feedback"];
+    [self openURL:@"mailto:injection@johnholdsworth.com?subject=Injection%20Feedback"];
 }
                   
 - (IBAction)patchProject:sender {
@@ -359,20 +362,22 @@ static CFDataRef copy_mac_address(void)
     mac = [NSMutableString string];
     for ( int i=0 ; i<len ; i++ ) {
         [mac appendFormat:@"%02x", 0xff-bytes[i]];
-        refkey ^= 365-[mac characterAtIndex:i*2]<<i*6;
-        refkey ^= 365-[mac characterAtIndex:i*2+1]<<i*6+3;
+        refkey ^= (365-[mac characterAtIndex:i*2])<<i*6;
+        refkey ^= (365-[mac characterAtIndex:i*2+1])<<(i*6+3);
     }
     CFRelease( INJECTION_BRIDGE(CFDataRef)addr );
 
     licensed =  [defaults integerForKey:kLicensed];
     if ( licensed != refkey ) {
-        // 17 day eval period
+        // was 17 day eval period
         if ( now < installed + 17*24*60*60+60 )
             licensed = refkey = 1;
         else
             [self license:nil];
     }
 }
+
+#pragma mark - WebView delegates
 
 - (NSString *)webView:(WebView *)sender runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt
           defaultText:(NSString *)defaultText initiatedByFrame:(WebFrame *)frame {
@@ -409,7 +414,9 @@ static CFDataRef copy_mac_address(void)
 
 - (void)dealloc {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	//[super dealloc];
+#ifndef INJECTION_ISARC
+	[super dealloc];
+#endif
 }
 
 @end

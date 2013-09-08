@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/patchProject.pl#9 $
+#  $Id$
 #  Injection
 #
 #  Created by John Holdsworth on 15/01/2013.
@@ -39,7 +39,7 @@ CODE
 
 $ifdef .= "\n#define INJECTION_PORT $selectedFile" if $isAppCode;
 
-patchAll( "main.m*", sub {
+patchAll( "main.m", sub {
     $_[0] =~ s/\n*($key.*)?$/<<CODE/es;
 
 

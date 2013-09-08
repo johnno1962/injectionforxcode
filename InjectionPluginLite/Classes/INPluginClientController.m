@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.m#19 $
+//  $Id$
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -17,7 +17,7 @@
 
 static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent",
     *kINStoryBoard = @"INStoryboard", *kINOrderFront = @"INOrderFront", *colorFormat = @"%f,%f,%f,%f",
-    *pluginAppResources = @"/Applications/Injection Plugin.app/Contents/Resources/InjectionPlugin.xcplugin/Contents/Resources";
+    *pluginAppResources = @"/Applications/Injection Plugin.app/Contents/Resources";
 
 @implementation INPluginClientController
 
@@ -229,7 +229,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 
 - (void)runScript:(NSString *)script withArg:(NSString *)selectedFile {
     [menuController startProgress];
-    if ( !selectedFile )
+    if ( ![selectedFile length] )
         [consolePanel orderFront:self];
     NSString *command = [NSString stringWithFormat:@"\"%@/%@\" "
                          "\"%@\" \"%@\" \"%@\" \"%@\" %d %d \"%@\" \"%@\" \"%@\" 2>&1",
@@ -385,7 +385,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 }
 
 - (void)openResource:(const char *)res {
-    [[NSWorkspace sharedWorkspace] openURL:[NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/%s", resourcePath, res]]];
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/%s", scriptPath, res]]];
 }
 
 - (IBAction)openOSXTemplate:sender {
