@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#26 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#27 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -345,7 +345,7 @@ static CFDataRef copy_mac_address(void)
 
 - (void)setupLicensing {
     struct stat tstat;
-    if ( refkey || stat( "/Applications/Injection Plugin.app", &tstat ) == 0 )
+    if ( refkey || stat( "/Applications/Injection Plugin.app/Contents/Resources/InjectionPluginLite", &tstat ) == 0 )
         return;
     time_t now = time(NULL);
     installed = [defaults integerForKey:kInstalled];

@@ -16,6 +16,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		BB2B840417DD31CD0061BBB6 /* BundleContents.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BundleContents.h; sourceTree = SOURCE_ROOT; };
 		BBBE7A1914D0E463005E60AC /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		BBBE7A1C14D0E470005E60AC /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		BBC55D8A14C4ED1500C41CA1 /* InjectionBundle.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = InjectionBundle.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -85,6 +86,7 @@
 		BBC55D9314C4ED1500C41CA1 /* InjectionBundle */ = {
 			isa = PBXGroup;
 			children = (
+				BB2B840417DD31CD0061BBB6 /* BundleContents.h */,
 				BBC7A4A116A57FCB00B90868 /* BundleContents.m */,
 				BBC55D9414C4ED1500C41CA1 /* Supporting Files */,
 			);
@@ -172,7 +174,6 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
-				BUNDLE_LOADER = "";
 				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CLANG_ENABLE_OBJC_ARC = NO;
@@ -214,7 +215,6 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
-				BUNDLE_LOADER = "";
 				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CLANG_ENABLE_OBJC_ARC = NO;

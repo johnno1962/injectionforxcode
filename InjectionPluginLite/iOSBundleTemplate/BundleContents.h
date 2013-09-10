@@ -6,8 +6,4 @@
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
-
-
-@interface BundleContents : NSObject
-
-@end
+// place any definitions you want available to all injections here

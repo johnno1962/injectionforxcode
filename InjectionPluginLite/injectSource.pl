@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id$
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#22 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -113,6 +113,8 @@ $changesSource->print( <<CODE );
 
 #undef _inval
 #define _inval( _val... ) /* = _val */
+
+#import "BundleContents.h"
 
 @{[join "", map "#import \"$_\"\n\n", $selectedFile]}
 \@interface $productName : NSObject
