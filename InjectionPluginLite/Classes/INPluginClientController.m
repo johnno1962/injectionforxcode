@@ -1,5 +1,5 @@
 //
-//  $Id$
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.m#24 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -198,6 +198,13 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
      withObject:nil waitUntilDone:NO];
 }
 
+- (void)connectionKeepalive {
+    if ( clientSocket ) {
+        [BundleInjection writeBytes:INJECTION_MAGIC withPath:"" from:0 to:clientSocket];
+        [self performSelector:@selector(connectionKeepalive) withObject:nil afterDelay:10.];
+    }
+}
+
 - (void)completed:error {
     if ( error ) {
         [self logRTF:error];
@@ -210,10 +217,14 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
         [self logRTF:@"\\line Bundle loaded successfully.\\line"];
         if ( autoOpened )
             [consolePanel orderOut:self];
+        [alertPanel orderOut:self];
         [errorPanel orderOut:self];
         [self mapSimulator];
         autoOpened = NO;
     }
+
+    [[self class] cancelPreviousPerformRequestsWithTarget:self selector:@selector(connectionKeepalive) object:nil];
+    [self connectionKeepalive];
 }
 
 - (void)mapSimulator {
@@ -234,8 +245,8 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     NSString *command = [NSString stringWithFormat:@"\"%@/%@\" "
                          "\"%@\" \"%@\" \"%@\" \"%@\" %d %d \"%@\" \"%@\" \"%@\" 2>&1",
                          scriptPath, script, resourcePath, menuController.workspacePath,
-                         mainFilePath ? mainFilePath : @"", executablePath ? executablePath : @"",
-                         ++patchNumber, (silentButton.state ? 0 : 1<<2) | (frontButton.state ? 1<<3 : 0),
+                         mainFilePath ? mainFilePath : @"", executablePath ? executablePath : @"", ++patchNumber,
+                         (silentButton.state ? 0 : INJECTION_NOTSILENT) | (frontButton.state ? INJECTION_ORDERFRONT : 0),
                          [unlockField.stringValue stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""],
                          [[menuController serverAddresses] componentsJoinedByString:@" "],
                          selectedFile];

@@ -1,5 +1,5 @@
 #
-#  $Id: //depot/InjectionPluginLite/common.pm#15 $
+#  $Id: //depot/InjectionPluginLite/common.pm#17 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -14,7 +14,7 @@ use Carp;
 
 use vars qw($resources $workspace $mainFile $executable $patchNumber $flags
     $unlockCommand $addresses $selectedFile $isDevice $isSimulator $isIOS $isAppCode
-    $productName $appPackage $deviceRoot $projFile $projRoot $projName $projType
+    $isAndroid $productName $appPackage $deviceRoot $projFile $projRoot $projName $projType
     $InjectionBundle $template $header $appClass $appPackage $appName $RED);
 
 ($resources, $workspace, $mainFile, $executable, $patchNumber, $flags, $unlockCommand, $addresses, $selectedFile) = @ARGV;
@@ -25,7 +25,9 @@ $productName = "InjectionBundle$patchNumber";
 
 $isDevice = $executable =~ m@^/var/mobile/@;
 $isSimulator = $executable =~ m@/iPhone Simulator/@;
-$isIOS = $isDevice || $isSimulator;
+$isAndroid = $executable =~ m@^/data/app/@;
+
+$isIOS = $isDevice || $isSimulator || $isAndroid;
 $isAppCode = $flags & 1<<4;
 
 ($template, $header, $appClass) = $isIOS ?
@@ -121,7 +123,9 @@ sub patchAll {
         next if $file =~ /InjectionProject/;
         my $contents = loadFile( $file );
         $change->( $contents );
-        saveFile( $file, $contents );
+        if( saveFile( $file, $contents ) ) {
+            system "open '$file'";
+        }
     }
 }
 

@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#26 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#29 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -22,6 +22,9 @@
 #define INJECTION_MKDIR -1
 #define INJECTION_NOFILE -2
 #define INJECTION_CLOSE -3
+
+#define INJECTION_NOTSILENT (1<<2)
+#define INJECTION_ORDERFRONT (1<<3)
 
 #ifdef DEBUG
 #define INLog NSLog
@@ -84,7 +87,7 @@ struct _in_header { int pathLength, dataLength; };
 
     char buffer[1024];
     while ( ok && bytes > 0 && fdin ) {
-        ssize_t rc = read( fdin, buffer, bytes < sizeof buffer ? (int)bytes : (int)sizeof buffer );
+        ssize_t rc = read( fdin, buffer, bytes < (int)sizeof buffer ? (int)bytes : (int)sizeof buffer );
         ok = ok && rc > 0 && fdout > 0 ? write( fdout, buffer, rc ) == rc : TRUE;
         bytes -= rc;
     }
@@ -220,6 +223,8 @@ static int status, sbInjection;
             int fdout = 0;
             struct _in_header header;
             while ( [self readHeader:&header forPath:path from:loaderSocket] ) {
+                if ( !path[0] && header.dataLength == INJECTION_MAGIC )
+                    continue; // WiFi keepalive
 
                 switch ( path[0] ) {
 
@@ -395,6 +400,7 @@ static int status, sbInjection;
 #endif
 }
 
+#ifndef ANDROID
 + (void)loadBundle {
     NSBundle *bundle = [NSBundle bundleWithPath:[NSString stringWithUTF8String:path]];
     if ( !bundle )
@@ -408,6 +414,102 @@ static int status, sbInjection;
 struct _in_objc_ivars { int twenty, count; struct { long *offsetPtr; char *name, *type; int align, size; } ivars[1]; };
 struct _in_objc_ronly { int z1, offsetStart; long offsetEnd, z2; char *className; void *methods; long z3; struct _in_objc_ivars *ivars; };
 struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_ronly *internal; };
+
+#else
+
+#import <dlfcn.h>
+
++ (const char *)registerSelectorsInFile:(const char *)file containing:(void *)hook {
+
+    struct stat st;
+    if ( stat( file, &st ) < 0 )
+        return "could not stat file";
+
+    char *buffer = (char *)malloc( st.st_size );
+
+    FILE *fp = fopen( file, "r" );
+    if ( !fp )
+        return "Could not open file";
+    if ( fread( buffer, 1, st.st_size, fp ) != st.st_size )
+        return "Could not read file";
+    fclose( fp );
+
+    struct _elf {
+        char e_ident[16];
+        uint16_t e_type, e_machine;
+        uint32_t e_version, e_entry, e_phoff, e_shoff, e_flags;;
+        uint16_t e_ehsize, e_phentsize, e_phnum, e_shentsize, e_shnum;
+    } *hdr = (struct _elf *)buffer;
+
+    //NSLog( @"Offsets: %lld %d %d %d %d", st.st_size, hdr->e_phoff, hdr->e_shoff, hdr->e_shentsize, hdr->e_shnum );
+
+    if ( hdr->e_shoff > st.st_size )
+        return "Bad segment header offset";
+
+    struct _section {
+        uint32_t sh_name, sh_type, sh_flags, sh_addr, sh_offset,
+            sh_size, sh_link, sh_info, sh_addralign, sh_entsize;
+    } *sections = (struct _section *)(buffer+hdr->e_shoff);
+
+    if ( sections[hdr->e_shnum-1].sh_offset > st.st_size )
+        return "Bad section name table offset";
+
+    const char *names = buffer+sections[hdr->e_shnum-1].sh_offset;
+    unsigned offset = 0, nsels = 0;
+
+    for ( int i=0 ; i<hdr->e_shnum ; i++ ) {
+        struct _section *sect = &sections[i];
+        const char *name = names+sect->sh_name;
+        //NSLog( @"Section: %s 0x%x[%d] %d %d", name, sect->sh_offset, sect->sh_size, sect->sh_addr, sect->sh_addralign );
+        if ( strcmp( name, "__DATA, __objc_selrefs, literal_pointers, no_dead_strip" ) == 0 ) {
+            offset = sect->sh_addr;
+            nsels = sect->sh_size;
+        }
+    }
+
+    if ( !offset )
+        return "Unable to locate selrefs segment";
+
+    Dl_info info;
+    if ( !dladdr( hook, &info ) )
+        return "Could not find load address";
+    SEL *sels = (SEL *)((char *)info.dli_fbase+offset);
+
+    for ( unsigned i=0 ; i<nsels/sizeof *sels ; i++ )
+        if ( (void *)sels[i] < info.dli_fbase )
+            NSLog( @"Dud selector reference: %p - %.50s", sels[i],
+                  *(char **)&sels[i]+((char *)info.dli_fbase-(char *)0) );
+        else
+            sels[i] = sel_registerName( (const char *)(void *)sels[i] );
+
+    free( buffer );
+    return NULL;
+}
+
++ (void)loadBundle {
+    NSLog( @"Loading shared library: %s", path );
+    void *library = dlopen( path, RTLD_NOW);
+    if ( !library )
+        NSLog( @"%s: %s", INJECTION_APPNAME, dlerror() );
+    else {
+        int (*hook)() = dlsym( library, "injectionHook" );
+        if ( !hook )
+            NSLog( @"Unable to locate injectionHook() in: %s", path );
+        else {
+            const char *err = [self registerSelectorsInFile:path containing:hook];
+            if ( err )
+                NSLog( @"registerSelectors: %s", err );
+            status = hook( path );
+        }
+    }
+}
+
+// a little inside knowledge of Objective-C data structures for the new version of the class ...
+struct _in_objc_ivars { int twenty, count; struct { long *offsetPtr; char *name, *type; int align, size; } ivars[1]; };
+struct _in_objc_ronly { int z1, offsetStart; int offsetEnd, z2; char *className; void *methods, *skip2; struct _in_objc_ivars *ivars; };
+struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_ronly *internal; };
+
+#endif
 
 + (void)alignIvarsOf:(Class)newClass to:(Class)oldClass {
     // new version of class must not have been messaged at this point
@@ -439,13 +541,17 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
         NSLog( @"%s %s %d", ivar_getName(vars[i]), ivar_getTypeEncoding(vars[i]), (int)ivar_getOffset(vars[i]));
 }
 
-+ (void)swizzle:(Class)oldClass from:(Class)newClass {
++ (void)swizzle:(char)which className:(const char *)className onto:(Class)oldClass from:(Class)newClass {
     unsigned i, mc = 0;
     Method *methods = class_copyMethodList(newClass, &mc);
-    for( i=0; i<mc; i++ )
-        class_replaceMethod(oldClass, method_getName(methods[i]),
-                            method_getImplementation(methods[i]),
-                            method_getTypeEncoding(methods[i]));
+    for( i=0; i<mc; i++ ) {
+        SEL name = method_getName(methods[i]);
+        IMP newIMPL = method_getImplementation(methods[i]);
+        const char *type = method_getTypeEncoding(methods[i]);
+
+        INLog( @"Swizzling: %c[%s %s] %s to: %p", which, className, sel_getName(name), type, newIMPL );
+        class_replaceMethod(oldClass, name, newIMPL, type);
+    }
     free(methods);
 }
 
@@ -457,8 +563,8 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
         [self alignIvarsOf:newClass to:oldClass];
 
         // replace implementations for class and instance methods
-        [self swizzle:object_getClass(oldClass) from:object_getClass(newClass)];
-        [self swizzle:oldClass from:newClass];
+        [self swizzle:'+' className:className onto:object_getClass(oldClass) from:object_getClass(newClass)];
+        [self swizzle:'-' className:className onto:oldClass from:newClass];
     }
 
 #if 0
@@ -466,7 +572,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
     [self dumpIvars:newClass];
 #endif
 #ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
-    if ( notify & 1<<2 ) {
+    if ( notify & INJECTION_NOTSILENT ) {
         NSString *msg = [[NSString alloc] initWithFormat:@"Class '%s' injected.", className];
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Bundle Loaded"
                                                         message:msg delegate:nil
@@ -487,7 +593,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 + (void)loadedNotify:(BOOL)notify {
     INLog( @"Bundle \"%s\" loaded successfully.", strrchr( path, '/' )+1 );
 #ifndef __IPHONE_OS_VERSION_MIN_REQUIRED
-    if ( notify & 1<<3 )
+    if ( notify & INJECTION_ORDERFRONT )
         [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
 #endif
     status = YES;

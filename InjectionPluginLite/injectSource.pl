@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#22 $
+#  $Id$
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -16,6 +16,7 @@ use common;
 
 my $bundleProjectFile = "$InjectionBundle/InjectionBundle.xcodeproj/project.pbxproj";
 my $bundleProjectSource = -f $bundleProjectFile && loadFile( $bundleProjectFile );
+my $pbxFile = "$projName.xcodeproj/project.pbxproj";
 
 if ( !$executable ) {
     print "Application is not connected.\n";
@@ -46,7 +47,6 @@ CODE
     }
 
     $bundleProjectSource = loadFile( $bundleProjectFile );
-    my $pbxFile = "$projName.xcodeproj/project.pbxproj";
     if ( -f $pbxFile ) {
         print "Migrating project parameters to bundle..\n";
         my $projectSource = loadFile( $pbxFile );
@@ -116,7 +116,6 @@ $changesSource->print( <<CODE );
 
 #import "BundleContents.h"
 
-@{[join "", map "#import \"$_\"\n\n", $selectedFile]}
 \@interface $productName : NSObject
 \@end
 \@implementation $productName
@@ -128,8 +127,50 @@ $changesSource->print( <<CODE );
 
 \@end
 
+extern int injectionHook();
+
+int injectionHook() {
+    NSLog( \@"injectionHook():" );
+    [$productName load];
+    return YES;
+}
+
+@{[join "", map "#import \"$_\"\n\n", $selectedFile]}
+
 CODE
+
 $changesSource->close();
+
+############################################################################
+
+if ( $isAndroid ) {
+    my $pkg;
+    patchAll( "*Info.plist", sub {
+        $pkg ||= ($_[0] =~ m@<key>CFBundleIdentifier</key>\s*<string>([^<]*)<@s)[0];
+    } );
+    $pkg =~ s/\${PRODUCT_NAME:rfc1034identifier}/$projName/;
+    $pkg =~ s/ /_/g;
+
+    (my $prjName = $projName) =~ s/ //g;
+    my $so = "/data/data/$pkg/cache/$productName.so";
+    my @syslibs = qw(c m v cxx System objc pthread_workqueue dispatch ffi Foundation freetype CoreGraphics OpenAL BridgeKit GLESv1_CM GLESv2 dl);
+    my $isARC = loadFile( $pbxFile ) =~ /CLANG_ENABLE_OBJC_ARC = YES/ ? "-fobjc-arc" : "-fno-objc-arc";
+
+    my $command = <<COMPILE;
+cd ~/.apportable/SDK && export PATH=~/.apportable/SDK/toolchain/macosx/android-ndk/toolchains/arm-linux-androideabi-4.7/prebuilt/darwin-x86/bin:~/.apportable/SDK/bin:/opt/iOSOpenDev/bin:\$PATH && ./toolchain/macosx/clang/bin/clang -o /tmp/injection_$ENV{USER}.o -c -fpic -target arm-linux-androideabi -ccc-gcc-name arm-linux-androideabi-g++ -march=armv5te -mfloat-abi=soft -nostdinc -fsigned-char -isystem ~/.apportable/SDK/toolchain/macosx/clang/lib/clang/3.3/include -Xclang -mconstructor-aliases -fzero-initialized-in-bss -fobjc-runtime=ios-6.0.0 -fobjc-legacy-dispatch -mllvm -arm-reserve-r9 -fblocks -fobjc-call-cxx-cdtors -fstack-protector -fno-short-enums -Werror-return-type -Werror-objc-root-class -fconstant-string-class=NSConstantString -ffunction-sections -funwind-tables -Xclang -fobjc-default-synthesize-properties -Wno-c++11-narrowing -DNS_BLOCK_ASSERTIONS=1 -fwritable-strings -fasm-blocks -fno-asm -fpascal-strings $isARC -Wempty-body -Wno-deprecated-declarations -Wreturn-type -Wswitch -Wparentheses -Wformat -Wuninitialized -Wunused-value -Wunused-variable -iquote "Build/android-armeabi-debug/$projName-generated-files.hmap" -I "Build/android-armeabi-debug/$projName-own-target-headers.hmap" -I "Build/android-armeabi-debug/$projName-all-target-headers.hmap" -iquote "Build/android-armeabi-debug/$projName-project-headers.hmap" -include ~/.apportable/SDK/System/debug.pch -include "$projRoot$projName"/*Prefix.pch '-D__SHORT_FILE__="BundleContents.m"' -g -Wprotocol -std=gnu99 -fgnu-keywords -DANDROID=1 -DAPPORTABLE=1 -DGNUSTEP=1 -DGNUSTEP_TARGET_OS=unix -DNS_BLOCK_ASSERTIONS=1 -DTARGET_CPU_ARM=1 -DTARGET_IPHONE_SIMULATOR=0 -DTARGET_OS_ANDROID=1 -DTARGET_OS_IPHONE=1 -DTARGET_OS_android=1 -DTYPE_DEPENDENT_DISPATCH=1 -D_X_OPEN_SOURCE=500 -D__ANDROID__=1 -D__ARM_ARCH_5TE__=1 -D__ARM_EABI__=1 -D__ARM__=1 -D__BUILT_WITH_SCONS_SDK__=1 -D__IPHONE_OS_VERSION_MIN_REQUIRED=60100 -D__LITTLE_ENDIAN__=1 '-D__PROJECT__="$projName"' -D__arm__=1 -D__compiler_offsetof=__builtin_offsetof -ISystem -Isysroot/common/usr/include -Isysroot/common/usr/include -Isysroot/android/armeabi/usr/include -Isysroot/android/armeabi/usr/include/c++/llvm -ISystem/Additions "$projRoot$InjectionBundle/BundleContents.m" && ../toolchain/macosx/android-ndk/toolchains/arm-linux-androideabi-4.7/prebuilt/darwin-x86/bin/arm-linux-androideabi-ld /tmp/injection_$ENV{USER}.o "Build/android-armeabi-debug/$prjName/apk/lib/armeabi/libverde.so" @{[map "sysroot/android/armeabi/usr/lib/lib$_.so", @syslibs]} -shared -o /tmp/injection_$ENV{USER}.so
+COMPILE
+
+    # print "$command";
+
+    0 == system( $command ) or error "Build failed";
+
+    print "Loading shared library..\n";
+    print "</tmp/injection_$ENV{USER}.so\n";
+    print "!>/data/data/$pkg/cache/$productName.so\n";
+    print "!/data/data/$pkg/cache/$productName.so\n";
+    print "Command sent to device.\n";
+    exit;
+}
 
 ############################################################################
 

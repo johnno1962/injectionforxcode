@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id$
+#  $Id: //depot/InjectionPluginLite/patchProject.pl#12 $
 #  Injection
 #
 #  Created by John Holdsworth on 15/01/2013.
@@ -34,15 +34,15 @@ $key
 #import "$resources/BundleInterface.h"
 #endif
 CODE
-} );
-
+    } );
 
 $ifdef .= "\n#define INJECTION_PORT $selectedFile" if $isAppCode;
 
-patchAll( "main.m", sub {
-    $_[0] =~ s/\n*($key.*)?$/<<CODE/es;
+if ( !-d "$projRoot$projName.approj" ) {
+    patchAll( "main.m", sub {
+        $_[0] =~ s/\n*($key.*)?$/<<CODE/es;
 
-
+    
 $key
 
 #ifdef $ifdef
@@ -53,7 +53,35 @@ static const char *_inIPAddresses[] = {@{[join ', ', map "\"$_\"", @ip4Addresses
 #import "$resources/BundleInjection.h"
 #endif
 CODE
-} );
+    } );
+}
+else {
+    patchAll( "main.m", sub {
+        $_[0] =~ s/\n+$key.*/\n/s;
+    } );
+
+    patchAll( "*AppDelegate.m", sub {
+        $_[0] =~ s/^/<<CODE/es and
+
+#define DEBUG 1 // for Apportable
+#ifdef $ifdef
+static char _inMainFilePath[] = __FILE__;
+static const char *_inIPAddresses[] = {@{[join ', ', map "\"$_\"", @ip4Addresses]}, NULL};
+
+#define INJECTION_ENABLED
+#import "$resources/BundleInjection.h"
+#endif
+
+// From start of file to here added by Injection Plugin //
+
+CODE
+    $_[0] =~ s/(didFinishLaunching.*?{[^\n]*\n)/<<CODE/sie;
+$1#ifdef DEBUG
+    [BundleInjection load];
+#endif
+CODE
+    } );
+}
 
 my $dontHideSymbols = "GCC_SYMBOLS_PRIVATE_EXTERN = NO;";
 patchAll( "project.pbxproj", sub {
