@@ -8,8 +8,9 @@ a couple of minor changes to your application's "main.m" and pre-compilation hea
 will connect to a server running inside Xcode during testing to receive commands to
 load bundles containing the code changes. 
 
-Stop Press: Injection has been refactored and no longer has to convert your classes into categories
-in order for it to work so no changes are made to your class source. It works for OS X and iOS projects
+Stop Press: Injection now learns how to build files in your project using an "xcodebuild -dry-run"
+so you should no longer have to edit the bundle project to take into account header
+include paths. It works for OS X and iOS projects
 in the simulator and on the device (if you add an extra "run script" build phase as instructed.)
 
 A quick demonstration video/tutorial of Injection in action is available here:
@@ -34,13 +35,13 @@ menu item "Product/Inject Source" to inject any changes you may have made into t
 
 On OS X remember to have your entitlements include "Allow outgoing connections". 
 
-### Note: Using Injection with Xcode 5 
+### Using Injection with Xcode 5 
 
-You must rebuild the plugin with ARC enabled for it to work with Xcode 5 or you will
+The plugin must be rebuilt with ARC enabled for it to work with Xcode 5 or you will
 experience random crashes as Xcode no longer uses garbage collection. You will also 
-need the new property "DVTPlugInCompatibilityUUIDs" in it's Info.plist. So I have 
-created a separate project file "InjectionXcode5.xcodeproj" and Info5.plist.
-This creates a separate plugin so it can be used safely on both Xcode 4 or 5.
+need the new property "DVTPlugInCompatibilityUUIDs" in it's Info.plist. I have 
+created a completely separate project file "InjectionXcode5.xcodeproj" and Info5.plist
+for this so it can be used safely on both Xcode 4 or 5.
 
 ## JetBrains AppCode IDE Support
 
@@ -60,6 +61,16 @@ Start small by injecting to the simulator then injecting to a device using the X
 plugin. Then try injecting to the device from AppCode. Don't forget to re-patch the
 project for injection in AppCode as it uses a different port than the Xcode plugin.
 
+## Using with [Apportable](http://www.apportable.com) 
+
+Injection can work on Android if you follow these steps: Convert your application
+by using "apportable load" from the command line inside your project. Unpatch and re-patch
+your project for injection as a different patch is applied when there is a ".approj" and 
+then run "apportable load" again and it should connect to Xcode. You should then
+be able to inject from the Xcode menu as before. Apportable does not support Xcode 5 
+at present so you may have to do a "sudo xcode-select -switch /Applications/Xcode4.app" 
+if you still have Xcode4 around.
+
 ## Storyboard Injection
 
 Injection will now inject UIViewController layouts in a storyboarded application. To do this
@@ -75,7 +86,7 @@ injected onto the UIViewControllers currently visible while the application is s
 achieved by reloading their "nib" onto the existing view controller and sending -viewDidLoad, 
 -viewWillAppear:YES and -viewDidAppear:YES to the view controller for it to redraw.
 This only works for applications with a single active Storyboard. See class method
-+reloadNibs in the file "BundleInjection.h".
++reloadNibs in the file "BundleInjection.h". Storyboard Injection will not work in Xcode 5.
 
 ## Shareware License
 
