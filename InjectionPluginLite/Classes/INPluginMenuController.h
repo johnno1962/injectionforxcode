@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.h#7 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.h#8 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -14,7 +14,7 @@
 #import "BundleInjection.h"
 #import <WebKit/WebKit.h>
 
-@interface INPluginMenuController : NSObject {
+@interface INPluginMenuController : NSObject <NSNetServiceDelegate> {
 
     // as you can see, I'm no fan of @properties
     // particularly in a GC or ARC environment

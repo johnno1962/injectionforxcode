@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#27 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#28 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -185,6 +185,9 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
     [self openURL:@"mailto:injection@johnholdsworth.com?subject=Injection%20Feedback"];
 }
                   
+- (IBAction)listDevice:sender {
+    [client runScript:@"listDevice.pl" withArg:@""];
+}
 - (IBAction)patchProject:sender {
     [client runScript:@"patchProject.pl" withArg:@""];
 }
@@ -213,87 +216,6 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 }
 
 #pragma mark - Injection Service
-
-#include <sys/ioctl.h>
-#include <net/if.h>
-
-- (void)startServer {
-    struct sockaddr_in serverAddr;
-
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_addr.s_addr = INADDR_ANY;
-    serverAddr.sin_port = htons(INJECTION_PORT);
-
-    int optval = 1;
-    if ( (serverSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0 )
-        [self error:@"Could not open service socket: %s", strerror( errno )];
-    else if ( setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval) < 0 )
-        [self error:@"Could not set socket option: %s", strerror( errno )];
-    else if ( setsockopt( serverSocket, IPPROTO_TCP, TCP_NODELAY, (void *)&optval, sizeof(optval)) < 0 )
-        [self error:@"Could not set socket option: %s", strerror( errno )];
-    else if ( bind( serverSocket, (struct sockaddr *)&serverAddr, sizeof serverAddr ) < 0 )
-        [self error:@"Could not bind service socket: %s", strerror( errno )];
-    else if ( listen( serverSocket, 5 ) < 0 )
-        [self error:@"Service socket would not listen: %s", strerror( errno )];
-    else
-        [self performSelectorInBackground:@selector(backgroundConnectionService) withObject:nil];
-
-}
-
-- (void)backgroundConnectionService {
-    INLog( @"Waiting for connections..." );
-    while ( TRUE ) {
-        struct sockaddr_in clientAddr;
-        socklen_t addrLen = sizeof clientAddr;
-
-        int appConnection = accept( serverSocket, (struct sockaddr *)&clientAddr, &addrLen );
-        if ( appConnection > 0 )
-            [client setConnection:appConnection];
-        else
-            [NSThread sleepForTimeInterval:.5];
-    }
-}
-
-- (NSArray *)serverAddresses {
-    NSMutableArray *addrs = [NSMutableArray array];
-    char buffer[1024];
-    struct ifconf ifc;
-    ifc.ifc_len = sizeof buffer;
-    ifc.ifc_buf = buffer;
-
-    if (ioctl(serverSocket, SIOCGIFCONF, &ifc) < 0)
-        [self error:@"ioctl error %s", strerror( errno )];
-    else
-        for ( char *ptr = buffer; ptr < buffer + ifc.ifc_len; ) {
-            struct ifreq *ifr = (struct ifreq *)ptr;
-            int len = MAX(sizeof(struct sockaddr), ifr->ifr_addr.sa_len);
-            ptr += sizeof(ifr->ifr_name) + len;	// for next one in buffer
-
-            if (ifr->ifr_addr.sa_family != AF_INET)
-                continue;	// ignore if not desired address family
-
-            struct sockaddr_in *iaddr = (struct sockaddr_in *)&ifr->ifr_addr;
-            [addrs addObject:[NSString stringWithUTF8String:inet_ntoa( iaddr->sin_addr )]];
-        }
-    
-    return addrs;
-}
-
-- (BOOL)windowShouldClose:(id)sender {
-    [sender orderOut:sender];
-    return NO;
-}
-
-#pragma mark - Licensing Code
-
-- (IBAction)license:sender{
-    [self setupLicensing];
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@cgi-bin/sale.cgi?vers=%s&inst=%d&ident=%@&lkey=%d",
-                                       kAppHome, INJECTION_VERSION, (int)installed, mac, licensed]];
-    webView.customUserAgent = @"040ccedcacacccedcacac";
-    [webView.mainFrame loadRequest:[NSURLRequest requestWithURL:url]];
-    [webView.window makeKeyAndOrderFront:self];
-}
 
 static CFDataRef copy_mac_address(void)
 {
@@ -339,8 +261,106 @@ static CFDataRef copy_mac_address(void)
 
 		IOObjectRelease(service);
 	}
-    
+
 	return macAddress;
+}
+
+- (NSString *)bonjourName {
+    static NSString *macaddr;
+    if ( !macaddr )
+        macaddr = [[INJECTION_BRIDGE(NSData *)copy_mac_address() description] substringWithRange:NSMakeRange(5, 9)];
+    return [NSString stringWithFormat:@"_%s_%@._tcp.",
+            INJECTION_APPNAME, [macaddr stringByReplacingOccurrencesOfString:@" " withString:@""]];
+}
+
+#include <sys/ioctl.h>
+#include <net/if.h>
+
+- (void)startServer {
+    struct sockaddr_in serverAddr;
+
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_addr.s_addr = INADDR_ANY;
+    serverAddr.sin_port = htons(INJECTION_PORT);
+
+    int optval = 1;
+    if ( (serverSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0 )
+        [self error:@"Could not open service socket: %s", strerror( errno )];
+    else if ( setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval) < 0 )
+        [self error:@"Could not set socket option: %s", strerror( errno )];
+    else if ( setsockopt( serverSocket, IPPROTO_TCP, TCP_NODELAY, (void *)&optval, sizeof(optval)) < 0 )
+        [self error:@"Could not set socket option: %s", strerror( errno )];
+    else if ( bind( serverSocket, (struct sockaddr *)&serverAddr, sizeof serverAddr ) < 0 )
+        [self error:@"Could not bind service socket: %s", strerror( errno )];
+    else if ( listen( serverSocket, 5 ) < 0 )
+        [self error:@"Service socket would not listen: %s", strerror( errno )];
+    else
+        [self performSelectorInBackground:@selector(backgroundConnectionService) withObject:nil];
+}
+
+- (void)backgroundConnectionService {
+
+    NSNetService *netService = [[NSNetService alloc] initWithDomain:@"" type:[self bonjourName]
+                                                               name:@"" port:INJECTION_PORT];
+    netService.delegate = self;
+    [netService publish];
+
+    INLog( @"Waiting for connections..." );
+    while ( TRUE ) {
+        struct sockaddr_in clientAddr;
+        socklen_t addrLen = sizeof clientAddr;
+
+        int appConnection = accept( serverSocket, (struct sockaddr *)&clientAddr, &addrLen );
+        if ( appConnection > 0 )
+            [client setConnection:appConnection];
+        else
+            [NSThread sleepForTimeInterval:.5];
+    }
+}
+
+-(void)netService:(NSNetService *)aNetService didNotPublish:(NSDictionary *)dict {
+    NSLog(@"%s failed to publish: %@", INJECTION_APPNAME, dict);
+}
+
+- (NSArray *)serverAddresses {
+    NSMutableArray *addrs = [NSMutableArray arrayWithObject:[self bonjourName]];
+    char buffer[1024];
+    struct ifconf ifc;
+    ifc.ifc_len = sizeof buffer;
+    ifc.ifc_buf = buffer;
+
+    if (ioctl(serverSocket, SIOCGIFCONF, &ifc) < 0)
+        [self error:@"ioctl error %s", strerror( errno )];
+    else
+        for ( char *ptr = buffer; ptr < buffer + ifc.ifc_len; ) {
+            struct ifreq *ifr = (struct ifreq *)ptr;
+            int len = MAX(sizeof(struct sockaddr), ifr->ifr_addr.sa_len);
+            ptr += sizeof(ifr->ifr_name) + len;	// for next one in buffer
+
+            if (ifr->ifr_addr.sa_family != AF_INET)
+                continue;	// ignore if not desired address family
+
+            struct sockaddr_in *iaddr = (struct sockaddr_in *)&ifr->ifr_addr;
+            [addrs addObject:[NSString stringWithUTF8String:inet_ntoa( iaddr->sin_addr )]];
+        }
+    
+    return addrs;
+}
+
+- (BOOL)windowShouldClose:(id)sender {
+    [sender orderOut:sender];
+    return NO;
+}
+
+#pragma mark - Licensing Code
+
+- (IBAction)license:sender{
+    [self setupLicensing];
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@cgi-bin/sale.cgi?vers=%s&inst=%d&ident=%@&lkey=%d",
+                                       kAppHome, INJECTION_VERSION, (int)installed, mac, licensed]];
+    webView.customUserAgent = @"040ccedcacacccedcacac";
+    [webView.mainFrame loadRequest:[NSURLRequest requestWithURL:url]];
+    [webView.window makeKeyAndOrderFront:self];
 }
 
 - (void)setupLicensing {

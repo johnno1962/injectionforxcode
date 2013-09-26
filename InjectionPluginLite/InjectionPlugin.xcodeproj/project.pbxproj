@@ -21,6 +21,7 @@
 		BB5DEF9C16A55E1800E97DD4 /* injectSource.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB5DEF9816A55E1800E97DD4 /* injectSource.pl */; };
 		BB5DEF9D16A55E1800E97DD4 /* openBundle.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB5DEF9916A55E1800E97DD4 /* openBundle.pl */; };
 		BB63E0FB160CA89800E95F5D /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB63E0F8160CA89800E95F5D /* IOKit.framework */; };
+		BB8D68AB17F1BB64009E02EE /* listDevice.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB8D68AA17F1BB64009E02EE /* listDevice.pl */; };
 		BB98CE5716DB5E3C00B90297 /* appcode.txt in Resources */ = {isa = PBXBuildFile; fileRef = BB98CE5616DB5E3C00B90297 /* appcode.txt */; };
 		BBEADCF616B12EAE003EF366 /* projectBuilt.pl in Resources */ = {isa = PBXBuildFile; fileRef = BBEADCF516B12EAE003EF366 /* projectBuilt.pl */; };
 		BBEC640216A756F700DC5E08 /* patchProject.pl in Resources */ = {isa = PBXBuildFile; fileRef = BBEC640016A756F600DC5E08 /* patchProject.pl */; };
@@ -48,6 +49,7 @@
 		BB5DEF9816A55E1800E97DD4 /* injectSource.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = injectSource.pl; sourceTree = "<group>"; };
 		BB5DEF9916A55E1800E97DD4 /* openBundle.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = openBundle.pl; sourceTree = "<group>"; };
 		BB63E0F8160CA89800E95F5D /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		BB8D68AA17F1BB64009E02EE /* listDevice.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = listDevice.pl; sourceTree = "<group>"; };
 		BB98CE5616DB5E3C00B90297 /* appcode.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = appcode.txt; sourceTree = "<group>"; };
 		BBEADCF516B12EAE003EF366 /* projectBuilt.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = projectBuilt.pl; sourceTree = "<group>"; };
 		BBEC640016A756F600DC5E08 /* patchProject.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = patchProject.pl; sourceTree = "<group>"; };
@@ -127,6 +129,7 @@
 		BB26EB8D160DE85B00A62DFC /* Scripts */ = {
 			isa = PBXGroup;
 			children = (
+				BB8D68AA17F1BB64009E02EE /* listDevice.pl */,
 				BB5DEF9616A55D2A00E97DD4 /* common.pm */,
 				BBEC640016A756F600DC5E08 /* patchProject.pl */,
 				BBEC640116A756F600DC5E08 /* revertProject.pl */,
@@ -203,6 +206,7 @@
 				BBEC640216A756F700DC5E08 /* patchProject.pl in Resources */,
 				BBEC640316A756F700DC5E08 /* revertProject.pl in Resources */,
 				BB5DEF9C16A55E1800E97DD4 /* injectSource.pl in Resources */,
+				BB8D68AB17F1BB64009E02EE /* listDevice.pl in Resources */,
 				BB5DEF9D16A55E1800E97DD4 /* openBundle.pl in Resources */,
 				BBEADCF616B12EAE003EF366 /* projectBuilt.pl in Resources */,
 				BB020F6E16B3CC2D00126E33 /* injectStoryboard.pl in Resources */,

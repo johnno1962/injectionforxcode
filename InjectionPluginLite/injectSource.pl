@@ -18,6 +18,11 @@ my $bundleProjectFile = "$InjectionBundle/InjectionBundle.xcodeproj/project.pbxp
 my $bundleProjectSource = -f $bundleProjectFile && loadFile( $bundleProjectFile );
 my $pbxFile = "$projName.xcodeproj/project.pbxproj";
 
+sub mtime {
+    my ($file) = @_;
+    return (stat $file)[9]||0;
+}
+
 if ( !$executable ) {
     print "Application is not connected.\n";
     exit 0;
@@ -55,10 +60,10 @@ CODE
             $bundleProjectSource =~ s/(explicitFileType = sourcecode).c.objc/$1.cpp.objcpp/;
         }
 
-        # FRAMEWORK_SEARCH_PATHS HEADER_SEARCH_PATHS USER_HEADER_SEARCH_PATHS
+        # FRAMEWORK_SEARCH_PATHS HEADER_SEARCH_PATHS USER_HEADER_SEARCH_PATHS GCC_VERSION
         # ARCHS VALID_ARCHS GCC_PREPROCESSOR_DEFINITIONS GCC_ENABLE_OBJC_EXCEPTIONS
         foreach my $parm (qw(MACOSX_DEPLOYMENT_TARGET IPHONEOS_DEPLOYMENT_TARGET
-                SDKROOT GCC_VERSION GCC_ENABLE_OBJC_GC CLANG_ENABLE_OBJC_ARC
+                ARCHS VALID_ARCHS SDKROOT GCC_ENABLE_OBJC_GC CLANG_ENABLE_OBJC_ARC
                 CLANG_CXX_LANGUAGE_STANDARD CLANG_CXX_LIBRARY)) {
             if ( my ($val) = $projectSource =~ /(\b$parm = [^;]*;)/ ) {
                 print "Inported setting $val\n";
@@ -67,6 +72,8 @@ CODE
         }
     }
 }
+
+############################################################################
 
 my ($localBinary, $identity) = ($executable);
 
@@ -85,12 +92,73 @@ if ( $localBinary && $bundleProjectSource =~ s/(BUNDLE_LOADER = )([^;]+;)/$1"$lo
     print "Patching bundle project to app path: $localBinary\n";
 }
 
-saveFile( $bundleProjectFile, $bundleProjectSource );
+############################################################################
+
+my $config = "-configuration Debug";
+$config .= " -sdk iphonesimulator" if $isSimulator;
+$config .= " -sdk iphoneos" if $isDevice;
+
+my $memory = "$InjectionBundle/compile_memory@{[$isDevice?'_device':'']}.gz";
+my $learn = "xcodebuild -dry-run -project \"$projName.xcodeproj\" $config";
+my $mainProjectChanged = mtime( $pbxFile ) > mtime( $memory );
+my $canLearn = !$isAndroid && 1;
+my %memory;
+
+if ( $canLearn ) {
+    if ( $mainProjectChanged ) {
+
+        print "Learning compilations for files in project: $learn\n";
+
+        my $build = IO::File->new( "rm -rf build; $learn 2>&1 |" );
+        my $learn = IO::File->new( "| gzip >$memory" );
+        my ($cmd, $type) = ('');
+
+        while ( defined (my $line = <$build>) ) {
+            if ( $line =~ /^([^ ]+) / ) {
+                $type = $1;
+                $cmd = '';
+                #print "-------- $type\n";
+            }
+            elsif ( $line =~ /^    cd (.*)/ ) {
+                $cmd .= "cd $1 && ";
+            }
+            elsif ( $line =~ /^    setenv (\w+) (.*)/ ) {
+                $cmd .= "export $1=$2 && ";
+            }
+            elsif ( $line =~ /^    (\/.* -c ("?)(.*)(\2))( -o .*)/ ) {
+                $cmd .= $1;
+                my $rest = $5;
+                if ( $type =~ /ProcessPCH(\+\+)?|CpHeader/ ) {
+                    0 == system $cmd.$rest or error "Could not precompile: $cmd.$rest";
+                }
+                elsif( $type eq 'CompileC' ) {
+                    (my $file = $3) =~ s/\\//g;
+                    $learn->print( "$file\n$cmd\n" );
+                }
+            }
+        }
+
+        $learn->close();
+        $build->close();
+    }
+
+    my @memory = loadFile( "gunzip <$memory |" );
+    for ( my $i=0 ; $i<@memory ; $i+=2 ) {
+        push @{$memory{$memory[$i]}}, $memory[$i+1];
+    }
+}
 
 ############################################################################
 
-my $changesFile = "$InjectionBundle/BundleContents.m";
 my @classes = unique loadFile( $selectedFile ) =~ /\@implementation\s+(\w+)\b/g;
+my $changesFile = "$InjectionBundle/BundleContents.m";
+my $learnt = $memory{$selectedFile};
+
+if ( $learnt ) {
+    IO::File->new( "> $changesFile" )
+        ->print( "// learnt compilation.\n" );
+    $changesFile = "$selectedFile.tmp";
+}
 
 my $changesSource = IO::File->new( "> $changesFile" )
     or error "Could not open changes source file as: $!";
@@ -114,7 +182,7 @@ $changesSource->print( <<CODE );
 #undef _inval
 #define _inval( _val... ) /* = _val */
 
-#import "BundleContents.h"
+@{[$learnt?'':'#import "BundleContents.h"']}
 
 \@interface $productName : NSObject
 \@end
@@ -127,7 +195,7 @@ $changesSource->print( <<CODE );
 
 \@end
 
-extern int injectionHook();
+extern int injectionHook(void);
 
 int injectionHook() {
     NSLog( \@"injectionHook():" );
@@ -144,6 +212,8 @@ $changesSource->close();
 ############################################################################
 
 if ( $isAndroid ) {
+    print "\nPerforming Android Build...\n";
+    
     my $pkg;
     patchAll( "*Info.plist", sub {
         $pkg ||= ($_[0] =~ m@<key>CFBundleIdentifier</key>\s*<string>([^<]*)<@s)[0];
@@ -153,11 +223,11 @@ if ( $isAndroid ) {
 
     (my $prjName = $projName) =~ s/ //g;
     my $so = "/data/data/$pkg/cache/$productName.so";
-    my @syslibs = qw(c m v cxx System objc pthread_workqueue dispatch ffi Foundation freetype CoreGraphics OpenAL BridgeKit GLESv1_CM GLESv2 dl);
+    my @syslibs = qw(c m v cxx System objc pthread_workqueue dispatch ffi Foundation freetype CoreGraphics OpenAL BridgeKit GLESv1_CM GLESv2);
     my $isARC = loadFile( $pbxFile ) =~ /CLANG_ENABLE_OBJC_ARC = YES/ ? "-fobjc-arc" : "-fno-objc-arc";
 
     my $command = <<COMPILE;
-cd ~/.apportable/SDK && export PATH=~/.apportable/SDK/toolchain/macosx/android-ndk/toolchains/arm-linux-androideabi-4.7/prebuilt/darwin-x86/bin:~/.apportable/SDK/bin:/opt/iOSOpenDev/bin:\$PATH && ./toolchain/macosx/clang/bin/clang -o /tmp/injection_$ENV{USER}.o -c -fpic -target arm-linux-androideabi -ccc-gcc-name arm-linux-androideabi-g++ -march=armv5te -mfloat-abi=soft -nostdinc -fsigned-char -isystem ~/.apportable/SDK/toolchain/macosx/clang/lib/clang/3.3/include -Xclang -mconstructor-aliases -fzero-initialized-in-bss -fobjc-runtime=ios-6.0.0 -fobjc-legacy-dispatch -mllvm -arm-reserve-r9 -fblocks -fobjc-call-cxx-cdtors -fstack-protector -fno-short-enums -Werror-return-type -Werror-objc-root-class -fconstant-string-class=NSConstantString -ffunction-sections -funwind-tables -Xclang -fobjc-default-synthesize-properties -Wno-c++11-narrowing -DNS_BLOCK_ASSERTIONS=1 -fwritable-strings -fasm-blocks -fno-asm -fpascal-strings $isARC -Wempty-body -Wno-deprecated-declarations -Wreturn-type -Wswitch -Wparentheses -Wformat -Wuninitialized -Wunused-value -Wunused-variable -iquote "Build/android-armeabi-debug/$projName-generated-files.hmap" -I "Build/android-armeabi-debug/$projName-own-target-headers.hmap" -I "Build/android-armeabi-debug/$projName-all-target-headers.hmap" -iquote "Build/android-armeabi-debug/$projName-project-headers.hmap" -include ~/.apportable/SDK/System/debug.pch -include "$projRoot$projName"/*Prefix.pch '-D__SHORT_FILE__="BundleContents.m"' -g -Wprotocol -std=gnu99 -fgnu-keywords -DANDROID=1 -DAPPORTABLE=1 -DGNUSTEP=1 -DGNUSTEP_TARGET_OS=unix -DNS_BLOCK_ASSERTIONS=1 -DTARGET_CPU_ARM=1 -DTARGET_IPHONE_SIMULATOR=0 -DTARGET_OS_ANDROID=1 -DTARGET_OS_IPHONE=1 -DTARGET_OS_android=1 -DTYPE_DEPENDENT_DISPATCH=1 -D_X_OPEN_SOURCE=500 -D__ANDROID__=1 -D__ARM_ARCH_5TE__=1 -D__ARM_EABI__=1 -D__ARM__=1 -D__BUILT_WITH_SCONS_SDK__=1 -D__IPHONE_OS_VERSION_MIN_REQUIRED=60100 -D__LITTLE_ENDIAN__=1 '-D__PROJECT__="$projName"' -D__arm__=1 -D__compiler_offsetof=__builtin_offsetof -ISystem -Isysroot/common/usr/include -Isysroot/common/usr/include -Isysroot/android/armeabi/usr/include -Isysroot/android/armeabi/usr/include/c++/llvm -ISystem/Additions "$projRoot$InjectionBundle/BundleContents.m" && ../toolchain/macosx/android-ndk/toolchains/arm-linux-androideabi-4.7/prebuilt/darwin-x86/bin/arm-linux-androideabi-ld /tmp/injection_$ENV{USER}.o "Build/android-armeabi-debug/$prjName/apk/lib/armeabi/libverde.so" @{[map "sysroot/android/armeabi/usr/lib/lib$_.so", @syslibs]} -shared -o /tmp/injection_$ENV{USER}.so
+cd ~/.apportable/SDK && export PATH=~/.apportable/SDK/toolchain/macosx/android-ndk/toolchains/arm-linux-androideabi-4.7/prebuilt/darwin-x86/bin:~/.apportable/SDK/bin:/opt/iOSOpenDev/bin:\$PATH && ./toolchain/macosx/clang/bin/clang -o /tmp/injection_$ENV{USER}.o -c -fpic -target arm-linux-androideabi -ccc-gcc-name arm-linux-androideabi-g++ -march=armv5te -mfloat-abi=soft -nostdinc -fsigned-char -isystem ~/.apportable/SDK/toolchain/macosx/clang/lib/clang/3.3/include -Xclang -mconstructor-aliases -fzero-initialized-in-bss -fobjc-runtime=ios-6.0.0 -fobjc-legacy-dispatch -mllvm -arm-reserve-r9 -fblocks -fobjc-call-cxx-cdtors -fstack-protector -fno-short-enums -Werror-return-type -Werror-objc-root-class -fconstant-string-class=NSConstantString -ffunction-sections -funwind-tables -Xclang -fobjc-default-synthesize-properties -Wno-c++11-narrowing -DNS_BLOCK_ASSERTIONS=1 -fwritable-strings -fasm-blocks -fno-asm -fpascal-strings $isARC -Wempty-body -Wno-deprecated-declarations -Wreturn-type -Wswitch -Wparentheses -Wformat -Wuninitialized -Wunused-value -Wunused-variable -iquote "Build/android-armeabi-debug/$projName-generated-files.hmap" -I "Build/android-armeabi-debug/$projName-own-target-headers.hmap" -I "Build/android-armeabi-debug/$projName-all-target-headers.hmap" -iquote "Build/android-armeabi-debug/$projName-project-headers.hmap" -include ~/.apportable/SDK/System/debug.pch -include "$projRoot$projName"/*Prefix.pch '-D__SHORT_FILE__="BundleContents.m"' -g -Wprotocol -std=gnu99 -fgnu-keywords -DDEBUG=1 -DANDROID=1 -DAPPORTABLE=1 -DGNUSTEP=1 -DGNUSTEP_TARGET_OS=unix -DNS_BLOCK_ASSERTIONS=1 -DTARGET_CPU_ARM=1 -DTARGET_IPHONE_SIMULATOR=0 -DTARGET_OS_ANDROID=1 -DTARGET_OS_IPHONE=1 -DTARGET_OS_android=1 -DTYPE_DEPENDENT_DISPATCH=1 -D_X_OPEN_SOURCE=500 -D__ANDROID__=1 -D__ARM_ARCH_5TE__=1 -D__ARM_EABI__=1 -D__ARM__=1 -D__BUILT_WITH_SCONS_SDK__=1 -D__IPHONE_OS_VERSION_MIN_REQUIRED=60100 -D__LITTLE_ENDIAN__=1 '-D__PROJECT__="$projName"' -D__arm__=1 -D__compiler_offsetof=__builtin_offsetof -ISystem -Isysroot/common/usr/include -Isysroot/common/usr/include -Isysroot/android/armeabi/usr/include -Isysroot/android/armeabi/usr/include/c++/llvm -ISystem/Additions "$projRoot$InjectionBundle/BundleContents.m" && arm-linux-androideabi-ld /tmp/injection_$ENV{USER}.o "Build/android-armeabi-debug/$prjName/apk/lib/armeabi/libverde.so" @{[map "sysroot/android/armeabi/usr/lib/lib$_.so", @syslibs]} -shared -o /tmp/injection_$ENV{USER}.so
 COMPILE
 
     # print "$command";
@@ -174,21 +244,41 @@ COMPILE
 
 ############################################################################
 
+my $obj = '';
+if ( $learnt ) {
+    print "Using learnt compilation.\n";
+
+    foreach my $compile (@$learnt) {
+        my ($arch) = $compile =~ / -arch (\w+) /;
+        $compile = "time $compile.tmp -o /tmp/injection_$ENV{USER}_$arch.o";
+        if ( system $compile ) {
+            unlink $memory;
+            system "$learn clean";
+            error "*** Learnt Compile Failed: $compile";
+        }
+    }
+
+    unlink "$learnt.tmp";
+    $obj = "\"/tmp/injection_$ENV{USER}_\$(CURRENT_ARCH).o\", ";
+}
+
+$bundleProjectSource =~ s/(OTHER_LDFLAGS = \().*?("-undefined)/$1$obj$2/sg;
+saveFile( $bundleProjectFile, $bundleProjectSource );
+
+############################################################################
+
 print "\nBuilding $InjectionBundle/InjectionBundle.xcodeproj\n";
 
-my $config = "Debug";
-$config .= " -sdk iphonesimulator" if $isSimulator;
-$config .= " -sdk iphoneos" if $isDevice;
 my $rebuild = 0;
 
 build:
-my $build = "xcodebuild -project InjectionBundle.xcodeproj -configuration $config";
+my $build = "xcodebuild -project InjectionBundle.xcodeproj $config";
 my $sdk = ($config =~ /-sdk (\w+)/)[0] || 'macosx';
 
 my $buildScript = "$InjectionBundle/compile_$sdk.sh";
 my ($recording, $recorded);
 
-if ( (stat $bundleProjectFile)[9] > ((stat $buildScript)[9] || 0) ) {
+if ( $mainProjectChanged || mtime( $bundleProjectFile ) > mtime( $buildScript ) ) {
     $recording = IO::File->new( "> $buildScript" )
         or die "Could not open '$buildScript' as: $!";
 }
@@ -202,7 +292,7 @@ open BUILD, "cd $InjectionBundle && $build 2>&1 |" or error "Build failed $!\n";
 my ($bundlePath, $warned);
 while ( my $line = <BUILD> ) {
 
-    if ( $recording && $line =~ m@/usr/bin/(clang|\S*gcc)@ ) {
+    if ( $recording && $line =~ m@/usr/bin/(clang|\S*gcc)@ & $line !~ /-header -arch/  ) {
         chomp (my $cmd = $line);
         $recording->print( "time $cmd 2>&1 &&\n" );
         $recorded++;
@@ -214,7 +304,7 @@ while ( my $line = <BUILD> ) {
         $recording->print( "echo && echo '$cmd' &&\n" ) if $recording;
     }
 
-    # support for Xcode 5 DP4-5
+    # support for Xcode 5 DP4-5+
     elsif ( $line =~ m@/dsymutil (.+/InjectionBundle.bundle)/InjectionBundle@ ) {
         ($bundlePath = $1) =~ s/\\//g;
         (my $cmd = "/usr/bin/touch -c \"$bundlePath\"") =~ s/'/'\\''/g;
@@ -241,7 +331,8 @@ while ( my $line = <BUILD> ) {
     if ( $line =~ /has been modified since the precompiled header was built/ ) {
         $rebuild++;
     }
-    print "$line";
+
+    print $line;
 }
 
 close BUILD;
@@ -253,7 +344,9 @@ if ( $rebuild++ == 1 ) {
     goto build;
 }
 
-error "Build Failed with status: @{[($?>>8)]}. You may need to open and edit the bundle project to resolve issues with either header include paths or Frameworks the bundle links against." if $?;
+if ( $? ) {
+    error "Build Failed with status: @{[($?>>8)]}. You may need to open and edit the bundle project to resolve issues with either header include paths or Frameworks the bundle links against.";
+}
 
 if ( $recording ) {
     $recording->print( "echo && echo '** COMPILE SUCCEEDED **' && echo;\n" );
@@ -275,7 +368,7 @@ $bundlePath = $newBundle;
 ############################################################################
 
 if ( $isDevice ) {
-    print "Codesigning for iOS device\n";
+    print "Codesigning with identity '$identity' for iOS device\n";
 
     0 == system "codesign -s '$identity' \"$bundlePath\""
         or error "Could not codesign as '$identity': $bundlePath";

@@ -1,5 +1,5 @@
 #
-#  $Id: //depot/InjectionPluginLite/common.pm#17 $
+#  $Id: //depot/InjectionPluginLite/common.pm#20 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -13,8 +13,8 @@ use strict;
 use Carp;
 
 use vars qw($resources $workspace $mainFile $executable $patchNumber $flags
-    $unlockCommand $addresses $selectedFile $isDevice $isSimulator $isIOS $isAppCode
-    $isAndroid $productName $appPackage $deviceRoot $projFile $projRoot $projName $projType
+    $unlockCommand $addresses $selectedFile $isDevice $isSimulator $isAndroid $isAppCode
+    $isIOS $productName $appPackage $deviceRoot $projFile $projRoot $projName $projType
     $InjectionBundle $template $header $appClass $appPackage $appName $RED);
 
 ($resources, $workspace, $mainFile, $executable, $patchNumber, $flags, $unlockCommand, $addresses, $selectedFile) = @ARGV;
@@ -26,9 +26,9 @@ $productName = "InjectionBundle$patchNumber";
 $isDevice = $executable =~ m@^/var/mobile/@;
 $isSimulator = $executable =~ m@/iPhone Simulator/@;
 $isAndroid = $executable =~ m@^/data/app/@;
+$isAppCode = $flags & 1<<4;
 
 $isIOS = $isDevice || $isSimulator || $isAndroid;
-$isAppCode = $flags & 1<<4;
 
 ($template, $header, $appClass) = $isIOS ?
     ("iOSBundleTemplate", "UIKit/UIKit.h", "UIApplication") :
@@ -48,12 +48,13 @@ $| = 1;
 ($projFile, $projRoot, $projName, $projType) = $workspace =~ m@^((.*?/)([^/]*)\.(xcodeproj|xcworkspace|idea/misc.xml))@
     or error "Could not parse workspace: $workspace";
 
-chdir $projRoot or error "Could not change to directory '$projRoot' as $!";
+chdir $projRoot or error "Could not change to directory '$projRoot' as: $!";
 
 sub loadFile {
     my ($path) = @_;
-    if ( my $fh = IO::File->new( "< $path" ) ) {
-        my $data = join '', $fh->getlines();
+    if ( my $fh = IO::File->new( $path ) ) {
+        local $/ = undef;
+        my $data = <$fh>;
         return wantarray() ? 
             split "\n", $data : $data;
     }
@@ -107,9 +108,11 @@ sub urlprep {
 sub unlock {
     my ($file) = @_;
     return if !-f $file || -w $file;
+
     print "Unlocking $file\n";
     $file =~ s@^./@@;
     $file = "$projRoot$file" if $file !~ m@^/@;
+
     print "Executing: $unlockCommand\n";
     my $command = sprintf $unlockCommand, map $file, 0..10;
     0 == system $command
@@ -118,15 +121,19 @@ sub unlock {
 
 sub patchAll {
     my ($pattern, $change) = @_;
+    my $changed = 0;
+
     foreach my $file (IO::File->new( "find . -name '$pattern' |" )->getlines()) {
         chomp $file;
         next if $file =~ /InjectionProject/;
         my $contents = loadFile( $file );
-        $change->( $contents );
+        $changed += $change->( $contents )||0;
         if( saveFile( $file, $contents ) ) {
             system "open '$file'";
         }
     }
+
+    return $changed;
 }
 
 sub unique {

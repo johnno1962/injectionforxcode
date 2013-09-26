@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/patchProject.pl#12 $
+#  $Id: //depot/InjectionPluginLite/patchProject.pl#13 $
 #  Injection
 #
 #  Created by John Holdsworth on 15/01/2013.
@@ -15,6 +15,7 @@ use lib $FindBin::Bin;
 use common;
 
 my @ip4Addresses = grep $_ !~ /:/, split " ", $addresses;
+shift @ip4Addresses; # bonjour address seems unreliable
 
 my $key = "// From here to end of file added by Injection Plugin //";
 my $ifdef = $projName =~ /UICatalog|(iOS|OSX)GLEssentials/ ?
@@ -42,7 +43,7 @@ if ( !-d "$projRoot$projName.approj" ) {
     patchAll( "main.m", sub {
         $_[0] =~ s/\n*($key.*)?$/<<CODE/es;
 
-    
+
 $key
 
 #ifdef $ifdef
@@ -53,7 +54,7 @@ static const char *_inIPAddresses[] = {@{[join ', ', map "\"$_\"", @ip4Addresses
 #import "$resources/BundleInjection.h"
 #endif
 CODE
-    } );
+    } ) or error "Could not match project's main.m";
 }
 else {
     patchAll( "main.m", sub {
@@ -76,7 +77,7 @@ static const char *_inIPAddresses[] = {@{[join ', ', map "\"$_\"", @ip4Addresses
 
 CODE
     $_[0] =~ s/(didFinishLaunching.*?{[^\n]*\n)/<<CODE/sie;
-$1#ifdef DEBUG
+        $1#ifdef DEBUG
     [BundleInjection load];
 #endif
 CODE

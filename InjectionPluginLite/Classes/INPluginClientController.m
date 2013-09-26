@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.m#24 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.m#25 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -332,7 +332,15 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
                         break;
                 }
                 break;
-            case '?':
+            case '%': {
+                NSDictionary *attr = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:NSUTF8StringEncoding], NSCharacterEncodingDocumentAttribute, nil];
+                NSAttributedString *as2 = [[NSAttributedString alloc]
+                                           initWithHTML:[NSData dataWithBytes:file length:strlen(file)]
+                                           options:attr documentAttributes:nil];
+                [consoleTextView performSelectorOnMainThread:@selector(insertText:) withObject:as2 waitUntilDone:YES];
+                break;
+            }
+           case '?':
                 NSLog( @"Error from script: %s", file );
                 [menuController error:@"%s", file];
                 break;

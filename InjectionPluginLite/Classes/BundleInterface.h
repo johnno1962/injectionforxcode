@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInterface.h#9 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInterface.h#10 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -12,6 +12,7 @@
 
 #ifdef __OBJC__
 
+#ifndef INJECTION_PLUGIN
 #define INJECTION_PLUGIN "com.johnholdsworth.InjectionPlugin"
 #define INJECTION_VERSION "3.4"
 
@@ -109,4 +110,5 @@ extern NSString *kINNotification; // bundle loaded
 #define INJECTION_WEAK
 #endif
 
+#endif
 #endif

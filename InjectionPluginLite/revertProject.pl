@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/revertProject.pl#7 $
+#  $Id: //depot/InjectionPluginLite/revertProject.pl#8 $
 #  Injection
 #
 #  Created by John Holdsworth on 15/01/2013.
@@ -28,5 +28,5 @@ patchAll( "*refix.pch", sub {
 
 patchAll( "*AppDelegate.m", sub {
     $_[0] =~ s@^.*// From start of file to here added by Injection Plugin //\s+@@es and
-    $_[0] =~ s/#ifdef DEBUG\s*\[BundleInjection load\];\s*#endif\n//s;
+    $_[0] =~ s/(#ifdef DEBUG\s*\[BundleInjection load\];\s*#endif\n)+//s;
 } );

@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#29 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#31 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -42,7 +42,6 @@ struct _in_header { int pathLength, dataLength; };
 + (void)loadedNotify:(BOOL)notify;
 #endif
 @end
-
 
 #import <netinet/tcp.h>
 #import <arpa/inet.h>
@@ -97,10 +96,6 @@ struct _in_header { int pathLength, dataLength; };
 
 #ifdef INJECTION_ENABLED
 
-+ (void)load {
-    [self performSelectorInBackground:@selector(bundleLoader) withObject:nil];
-}
-
 NSString *kINNotification = @"INJECTION_BUNDLE_NOTIFICATION";
 float INParameters[INJECTION_PARAMETERS] = {1,1,1,1,1};
 id INDelegates[INJECTION_PARAMETERS];
@@ -116,6 +111,55 @@ id INImageTarget;
 
 static char path[PATH_MAX], *file = &path[1];
 static int status, sbInjection;
+
+static NSNetServiceBrowser *browser;
+static NSNetService *service;
+
++ (void)load {
+    //INLog( @"+load: %s", _inIPAddresses[0] );
+    if ( _inIPAddresses[0][0] == '_' ) {
+        NSString *bonjourName = [NSString stringWithUTF8String:_inIPAddresses[0]];
+        _inIPAddresses[0] = _inIPAddresses[1];
+
+        browser = [NSNetServiceBrowser new];
+        browser.delegate = (id<NSNetServiceBrowserDelegate>)self;
+
+        INLog( @"%s looking for service: %@", INJECTION_APPNAME, bonjourName );
+        [browser searchForServicesOfType:bonjourName inDomain:@""];
+    }
+    else
+        [self performSelectorInBackground:@selector(bundleLoader) withObject:nil];
+}
+
++(void)netServiceBrowser:(NSNetServiceBrowser *)aBrowser didFindService:(NSNetService *)aService moreComing:(BOOL)more {
+    service = aService;
+#ifndef INJECTION_ISARC
+    [service retain];
+#endif
+    aService.delegate = (id<NSNetServiceDelegate>)self;
+    [aService resolveWithTimeout:0];
+}
+
++(void)netServiceBrowser:(NSNetServiceBrowser *)aBrowser didRemoveService:(NSNetService *)aService moreComing:(BOOL)more {
+}
+
++(void)netServiceDidResolveAddress:(NSNetService *)service {
+    for ( NSData *addr in service.addresses ) {
+        struct sockaddr_in *ip = (struct sockaddr_in *)[addr bytes];
+        if ( ip->sin_family == AF_INET ) {
+            _inIPAddresses[0] = strdup( inet_ntoa( ip->sin_addr ) );
+            NSLog( @"%s service on: %s", INJECTION_APPNAME, _inIPAddresses[0] );
+           break;
+        }
+    }
+
+    [self performSelectorInBackground:@selector(bundleLoader) withObject:nil];
+}
+
++(void)netService:(NSNetService *)service didNotResolve:(NSDictionary *)errorDict {
+    NSLog(@"%s could not resolve: %@", INJECTION_APPNAME, errorDict);
+    [self performSelectorInBackground:@selector(bundleLoader) withObject:nil];
+}
 
 #import <dirent.h>
 
@@ -153,7 +197,7 @@ static int status, sbInjection;
     INLog( @"%s attempting connection to: %s:%d (see project's main.m)", INJECTION_APPNAME, ipAddress, INJECTION_PORT );
 
     int loaderSocket, optval = 1;
-    if ( (loaderSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0 )
+    if ( (loaderSocket = socket(loaderAddr.sin_family, SOCK_STREAM, 0)) < 0 )
         NSLog( @"Could not open socket for injection: %s", strerror( errno ) );
     else if ( setsockopt( loaderSocket, IPPROTO_TCP, TCP_NODELAY, (void *)&optval, sizeof(optval)) < 0 )
         NSLog( @"Could not set TCP_NODELAY: %s", strerror( errno ) );
@@ -437,7 +481,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
     struct _elf {
         char e_ident[16];
         uint16_t e_type, e_machine;
-        uint32_t e_version, e_entry, e_phoff, e_shoff, e_flags;;
+        uint32_t e_version, e_entry, e_phoff, e_shoff, e_flags;
         uint16_t e_ehsize, e_phentsize, e_phnum, e_shentsize, e_shnum;
     } *hdr = (struct _elf *)buffer;
 
@@ -468,13 +512,13 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
     }
 
     if ( !offset )
-        return "Unable to locate selrefs segment";
+        return "Unable to locate selrefs section";
 
     Dl_info info;
     if ( !dladdr( hook, &info ) )
         return "Could not find load address";
-    SEL *sels = (SEL *)((char *)info.dli_fbase+offset);
 
+    SEL *sels = (SEL *)((char *)info.dli_fbase+offset);
     for ( unsigned i=0 ; i<nsels/sizeof *sels ; i++ )
         if ( (void *)sels[i] < info.dli_fbase )
             NSLog( @"Dud selector reference: %p - %.50s", sels[i],
@@ -549,7 +593,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
         IMP newIMPL = method_getImplementation(methods[i]);
         const char *type = method_getTypeEncoding(methods[i]);
 
-        INLog( @"Swizzling: %c[%s %s] %s to: %p", which, className, sel_getName(name), type, newIMPL );
+        //INLog( @"Swizzling: %c[%s %s] %s to: %p", which, className, sel_getName(name), type, newIMPL );
         class_replaceMethod(oldClass, name, newIMPL, type);
     }
     free(methods);
