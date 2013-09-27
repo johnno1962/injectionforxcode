@@ -98,14 +98,15 @@ my $config = "-configuration Debug";
 $config .= " -sdk iphonesimulator" if $isSimulator;
 $config .= " -sdk iphoneos" if $isDevice;
 
+my $learn = "xcodebuild -dry-run $config";
+$learn .= " -project \"$projName.xcodeproj\"" if $projName;
 my $memory = "$InjectionBundle/compile_memory@{[$isDevice?'_device':'']}.gz";
-my $learn = "xcodebuild -dry-run -project \"$projName.xcodeproj\" $config";
 my $mainProjectChanged = mtime( $pbxFile ) > mtime( $memory );
 my $canLearn = !$isAndroid && 1;
 my %memory;
 
 if ( $canLearn ) {
-    if ( $mainProjectChanged ) {
+    if ( !-f $memory || $mainProjectChanged ) {
 
         print "Learning compilations for files in project: $learn\n";
 
