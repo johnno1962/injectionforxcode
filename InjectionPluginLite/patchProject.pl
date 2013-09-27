@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/patchProject.pl#13 $
+#  $Id: //depot/InjectionPluginLite/patchProject.pl#14 $
 #  Injection
 #
 #  Created by John Holdsworth on 15/01/2013.
@@ -77,7 +77,7 @@ static const char *_inIPAddresses[] = {@{[join ', ', map "\"$_\"", @ip4Addresses
 
 CODE
     $_[0] =~ s/(didFinishLaunching.*?{[^\n]*\n)/<<CODE/sie;
-        $1#ifdef DEBUG
+$1#ifdef DEBUG
     [BundleInjection load];
 #endif
 CODE

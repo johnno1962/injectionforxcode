@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.m#25 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.m#26 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -29,14 +29,14 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     frontButton.state = [defaults boolForKey:kINOrderFront];
     storyButton.state = [defaults boolForKey:kINStoryBoard];
 
-    scriptPath = [[NSBundle bundleForClass:[self class]] resourcePath];
+    self.scriptPath = [[NSBundle bundleForClass:[self class]] resourcePath];
     if ( [[self implementionInDirectory:pluginAppResources]
-          isEqualTo:[self implementionInDirectory:scriptPath]] )
-        resourcePath = pluginAppResources;
+          isEqualTo:[self implementionInDirectory:self.scriptPath]] )
+        self.resourcePath = pluginAppResources;
     else
-        resourcePath = scriptPath;
+        self.resourcePath = self.scriptPath;
 
-    docTile = [[NSApplication sharedApplication] dockTile];
+    self.docTile = [[NSApplication sharedApplication] dockTile];
     [self logRTF:@"{\\rtf1\\ansi\\def0}\n"];
 }
 
@@ -66,7 +66,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 
 - (void)alert:(NSString *)msg {
     msgField.stringValue = msg;
-    [alertPanel orderFront:self];
+    [self.alertPanel orderFront:self];
 }
 
 #pragma mark - Misc
@@ -127,18 +127,18 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     if ( header.dataLength == INJECTION_MAGIC )
         [mainSourceLabel
          performSelectorOnMainThread:@selector(setStringValue:)
-         withObject:mainFilePath = [NSString stringWithUTF8String:path]
+         withObject:self.mainFilePath = [NSString stringWithUTF8String:path]
          waitUntilDone:NO];
     else {
-        identity = [NSString stringWithUTF8String:path];
+        self.identity = [NSString stringWithUTF8String:path];
 
         path[0] = '@';
         path[header.dataLength+1] = '\000';
         read( appConnection, path+1, header.dataLength );
-        productPath = [NSString stringWithUTF8String:path+1];
+        self.productPath = [NSString stringWithUTF8String:path+1];
 
         if ( self.connected && menuController.workspacePath )
-            [self runScript:@"injectStoryboard.pl" withArg:productPath];
+            [self runScript:@"injectStoryboard.pl" withArg:self.productPath];
 
         close( appConnection );
         return;
@@ -149,16 +149,16 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 
     [BundleInjection readHeader:&header forPath:path from:appConnection];
     if ( header.dataLength == INJECTION_MAGIC )
-        executablePath = [NSString stringWithUTF8String:path];
+        self.executablePath = [NSString stringWithUTF8String:path];
     else
         NSLog( @"Bogus connection attempt." );
 
     [self scriptText:[NSString stringWithFormat:@"Connection from: %@ (%d)",
-                      executablePath, appConnection]];
+                      self.executablePath, appConnection]];
 
     clientSocket = appConnection;
 
-    [docTile
+    [self.docTile
      performSelectorOnMainThread:@selector(setBadgeLabel:)
      withObject:@"1" waitUntilDone:NO];
 
@@ -188,12 +188,12 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     if ( !clientSocket )
         return;
 
-    [self scriptText:[@"Disconnected from: " stringByAppendingString:executablePath]];
+    [self scriptText:[@"Disconnected from: " stringByAppendingString:self.executablePath]];
     close( clientSocket );
     clientSocket = 0;
     patchNumber = 1;
 
-    [docTile
+    [self.docTile
      performSelectorOnMainThread:@selector(setBadgeLabel:)
      withObject:nil waitUntilDone:NO];
 }
@@ -208,17 +208,17 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 - (void)completed:error {
     if ( error ) {
         [self logRTF:error];
-        if ( !consolePanel.isVisible )
+        if ( !self.consolePanel.isVisible )
             autoOpened = YES;
-        [consolePanel orderFront:self];
-        [errorPanel orderFront:self];
+        [self.consolePanel orderFront:self];
+        [self.errorPanel orderFront:self];
     }
     else {
         [self logRTF:@"\\line Bundle loaded successfully.\\line"];
         if ( autoOpened )
-            [consolePanel orderOut:self];
-        [alertPanel orderOut:self];
-        [errorPanel orderOut:self];
+            [self.consolePanel orderOut:self];
+        [self.alertPanel orderOut:self];
+        [self.errorPanel orderOut:self];
         [self mapSimulator];
         autoOpened = NO;
     }
@@ -228,7 +228,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 }
 
 - (void)mapSimulator {
-    if ( frontButton.state && [executablePath rangeOfString:@"/iPhone Simulator/"].location != NSNotFound )
+    if ( frontButton.state && [self.executablePath rangeOfString:@"/iPhone Simulator/"].location != NSNotFound )
         [[NSWorkspace sharedWorkspace] openURL:[NSURL fileURLWithPath:@"/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Applications/iPhone Simulator.app"]];
 }
 
@@ -241,11 +241,11 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 - (void)runScript:(NSString *)script withArg:(NSString *)selectedFile {
     [menuController startProgress];
     if ( ![selectedFile length] )
-        [consolePanel orderFront:self];
+        [self.consolePanel orderFront:self];
     NSString *command = [NSString stringWithFormat:@"\"%@/%@\" "
                          "\"%@\" \"%@\" \"%@\" \"%@\" %d %d \"%@\" \"%@\" \"%@\" 2>&1",
-                         scriptPath, script, resourcePath, menuController.workspacePath,
-                         mainFilePath ? mainFilePath : @"", executablePath ? executablePath : @"", ++patchNumber,
+                         self.scriptPath, script, self.resourcePath, menuController.workspacePath,
+                         self.mainFilePath ? self.mainFilePath : @"", self.executablePath ? self.executablePath : @"", ++patchNumber,
                          (silentButton.state ? 0 : INJECTION_NOTSILENT) | (frontButton.state ? INJECTION_ORDERFRONT : 0),
                          [unlockField.stringValue stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""],
                          [[menuController serverAddresses] componentsJoinedByString:@" "],
@@ -404,7 +404,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 }
 
 - (void)openResource:(const char *)res {
-    [[NSWorkspace sharedWorkspace] openURL:[NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/%s", scriptPath, res]]];
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/%s", self.scriptPath, res]]];
 }
 
 - (IBAction)openOSXTemplate:sender {

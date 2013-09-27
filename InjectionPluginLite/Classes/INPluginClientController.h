@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.h#9 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.h#10 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -16,7 +16,7 @@
 
 @interface INPluginClientController : NSObject {
 
-	IBOutlet NSPanel *consolePanel, *paramsPanel, *alertPanel, *errorPanel;
+	//IBOutlet NSPanel *consolePanel, *paramsPanel, *alertPanel, *errorPanel;
     IBOutlet NSTextField *colorLabel, *mainSourceLabel, *msgField, *unlockField;
     IBOutlet NSButton *silentButton, *frontButton, *storyButton;
     IBOutlet INPluginMenuController *menuController;
@@ -25,13 +25,26 @@
     IBOutlet NSView *vals, *sliders, *maxs, *wells;
     IBOutlet NSImageView *imageWell;
 
-    NSString *scriptPath, *resourcePath, *mainFilePath, *executablePath, *productPath, *identity;
+    //NSString *scriptPath, *resourcePath, *mainFilePath, *executablePath, *productPath, *identity;
     int clientSocket, patchNumber, fdin, fdout, fdfile, lines, status;
     char buffer[1024*1024];
-    NSDockTile *docTile;
+    //NSDockTile *docTile;
     FILE *scriptOutput;
     BOOL autoOpened;
 }
+
+@property (nonatomic,retain) IBOutlet NSPanel *consolePanel;
+@property (nonatomic,retain) IBOutlet NSPanel *paramsPanel;
+@property (nonatomic,retain) IBOutlet NSPanel *alertPanel;
+@property (nonatomic,retain) IBOutlet NSPanel *errorPanel;
+@property (nonatomic,retain) NSDockTile *docTile;
+
+@property (nonatomic,retain) NSString *scriptPath;
+@property (nonatomic,retain) NSString *resourcePath;
+@property (nonatomic,retain) NSString *mainFilePath;
+@property (nonatomic,retain) NSString *executablePath;
+@property (nonatomic,retain) NSString *productPath;
+@property (nonatomic,retain) NSString *identity;
 
 - (void)alert:(NSString *)msg;
 - (void)setConnection:(int)clientConnection;

@@ -37,11 +37,7 @@ On OS X remember to have your entitlements include "Allow outgoing connections".
 
 ### Using Injection with Xcode 5 
 
-The plugin must be rebuilt with ARC enabled for it to work with Xcode 5 or you will
-experience random crashes as Xcode no longer uses garbage collection. You will also 
-need the new property "DVTPlugInCompatibilityUUIDs" in it's Info.plist. I have 
-created a completely separate project file "InjectionXcode5.xcodeproj" and Info5.plist
-for this so it can be used safely on both Xcode 4 or 5.
+The same plugin build plugin can now be used safely on Xcode 4 or 5.
 
 ## JetBrains AppCode IDE Support
 

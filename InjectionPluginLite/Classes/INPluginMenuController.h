@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.h#8 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.h#9 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -16,30 +16,35 @@
 
 @interface INPluginMenuController : NSObject <NSNetServiceDelegate> {
 
-    // as you can see, I'm no fan of @properties
-    // particularly in a GC or ARC environment
-
-    IBOutlet NSProgressIndicator *progressIndicator;
+    //IBOutlet NSProgressIndicator *progressIndicator;
     IBOutlet NSTextField *urlLabel;
-    IBOutlet NSPanel *webPanel;
+    //IBOutlet NSPanel *webPanel;
     IBOutlet WebView *webView;
-    IBOutlet NSMenu *subMenu;
+    //IBOutlet NSMenu *subMenu;
     IBOutlet NSMenuItem *subMenuItem, *introItem;
 
-    IBOutlet NSTextView *lastTextView;
-    IBOutlet INPluginClientController *client;
+    //IBOutlet NSTextView *lastTextView;
+    //IBOutlet INPluginClientController *client;
 
     Class DVTSourceTextView;
     Class IDEWorkspaceDocument;
 
-    NSUserDefaults *defaults;
+    //NSUserDefaults *defaults;
     int serverSocket;
 
-    NSMutableString *mac;
+    //NSMutableString *mac;
     time_t installed;
     int licensed;
     int refkey;
 }
+
+@property (nonatomic,retain) IBOutlet NSProgressIndicator *progressIndicator;
+@property (nonatomic,retain) IBOutlet INPluginClientController *client;
+@property (nonatomic,retain) IBOutlet NSPanel *webPanel;
+@property (nonatomic,retain) IBOutlet NSMenu *subMenu;
+@property (nonatomic,retain) NSTextView *lastTextView;
+@property (nonatomic,retain) NSUserDefaults *defaults;
+@property (nonatomic,retain) NSMutableString *mac;
 
 - (NSUserDefaults *)defaults;
 - (NSArray *)serverAddresses;

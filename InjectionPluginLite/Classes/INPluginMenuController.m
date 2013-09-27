@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#28 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#29 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -19,47 +19,29 @@
 
 + (void)pluginDidLoad:(NSBundle *)plugin {
 
-#ifndef INJECTION_ISARC
-    NSString *version = [[[NSBundle mainBundle] infoDictionary] valueForKey:@"CFBundleShortVersionString"];
-    if ( [version characterAtIndex:0] >= '5' ) {
-        if ( [[NSAlert alertWithMessageText:@"Injection Plugin Compatability"
-                              defaultButton:@"OK" alternateButton:@"Remove Plugin" otherButton:nil
-                  informativeTextWithFormat:@"Injection Plugin must be recompiled with ARC enabled and "
-               "GCC_ENABLE_OBJC_GC switched to unsupported for use with Xcode %@. Plugin disabled.", version] runModal]
-            == NSAlertAlternateReturn )
-            [[NSFileManager defaultManager] removeItemAtPath:[[NSBundle bundleForClass:[self class]] bundlePath]
-                                                       error:NULL];
-        return;
-    }
-#endif
-
     static INPluginMenuController *injectionPlugin;
 	static dispatch_once_t onceToken;
 	dispatch_once(&onceToken, ^{
 		injectionPlugin = [[self alloc] init];
-        NSLog( @"Preparing Injection: %@", injectionPlugin );
+        //NSLog( @"Preparing Injection: %@", injectionPlugin );
         [[NSNotificationCenter defaultCenter] addObserver:injectionPlugin
                                                  selector:@selector(applicationDidFinishLaunching:)
                                                      name:NSApplicationDidFinishLaunchingNotification object:nil];
 	});
 }
 
-- (NSUserDefaults *)defaults {
-    return defaults;
-}
-
 - (void)error:(NSString *)format, ... {
     va_list argp;
     va_start(argp, format);
     NSString *message = [[NSString alloc] initWithFormat:format arguments:argp];
-    [client performSelectorOnMainThread:@selector(alert:) withObject:message waitUntilDone:NO];
+    [self.client performSelectorOnMainThread:@selector(alert:) withObject:message waitUntilDone:NO];
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
     IDEWorkspaceDocument = NSClassFromString(@"IDEWorkspaceDocument");
     DVTSourceTextView = NSClassFromString(@"DVTSourceTextView");
-    defaults = [NSUserDefaults standardUserDefaults];
+    self.defaults = [NSUserDefaults standardUserDefaults];
 
     if ( ![NSBundle loadNibNamed:@"INPluginMenuController" owner:self] )
         NSLog( @"INPluginMenuController: Could not load interface." );
@@ -79,7 +61,7 @@
                                                        keyEquivalent:[NSString stringWithUTF8String:items[i].key]];
             //[menuItem setKeyEquivalentModifierMask:NSControlKeyMask];
             if ( i==0 )
-                [subMenuItem = menuItem setSubmenu:subMenu];
+                [subMenuItem = menuItem setSubmenu:self.subMenu];
             else
                 [menuItem setTarget:self];
             [productMenu addItem:menuItem];
@@ -94,7 +76,7 @@
     else
         [self error:@"InInjectionPlugin: Could not locate Product Menu."];
 
-    progressIndicator.frame = NSMakeRect(60, 20, 200, 10);
+    self.progressIndicator.frame = NSMakeRect(60, 20, 200, 10);
     webView.drawsBackground = NO;
     [self setProgress:@-1];
     [self startServer];
@@ -102,16 +84,16 @@
 
 - (void)setProgress:(NSNumber *)fraction {
     if ( [fraction floatValue] < 0 )
-        [progressIndicator setHidden:YES];
+        [self.progressIndicator setHidden:YES];
     else {
-        [progressIndicator setDoubleValue:[fraction floatValue]];
-        [progressIndicator setHidden:NO];
+        [self.progressIndicator setDoubleValue:[fraction floatValue]];
+        [self.progressIndicator setHidden:NO];
     }
 }
 
 - (void)startProgress {
-    NSView *scrollView = [[lastTextView superview] superview];
-    [scrollView addSubview:progressIndicator];
+    NSView *scrollView = [[self.lastTextView superview] superview];
+    [scrollView addSubview:self.progressIndicator];
 }
 
 #pragma mark - Text Selection Handling
@@ -121,11 +103,11 @@
 	if ([object isKindOfClass:DVTSourceTextView] &&
         [object isKindOfClass:[NSTextView class]] &&
         [[object delegate] respondsToSelector:@selector(document)])
-        lastTextView = object;
+        self.lastTextView = object;
 }
 
 - (NSString *)lastFileSaving:(BOOL)save {
-    NSDocument *doc = [(id)[lastTextView delegate] document];
+    NSDocument *doc = [(id)[self.lastTextView delegate] document];
     if ( save ) {
         [doc saveDocument:self];
         [self setupLicensing];
@@ -142,7 +124,7 @@
 - (NSString *)workspacePath {
     id delegate = [[NSApp keyWindow] delegate];
     if ( ![delegate respondsToSelector:@selector(document)] )
-        delegate = [[lastTextView window] delegate];
+        delegate = [[self.lastTextView window] delegate];
     NSDocument *workspace = [delegate document];
     return [workspace isKindOfClass:IDEWorkspaceDocument] ?
         [[workspace fileURL] path] : nil;
@@ -163,7 +145,7 @@
     if ( action == @selector(patchProject:) || action == @selector(revertProject:) )
         return [self workspacePath] != nil;
     else if ( [menuItem action] == @selector(openBundle:) )
-        return client.connected;
+        return self.client.connected;
     else
         return YES;
 }
@@ -186,33 +168,33 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 }
                   
 - (IBAction)listDevice:sender {
-    [client runScript:@"listDevice.pl" withArg:@""];
+    [self.client runScript:@"listDevice.pl" withArg:@""];
 }
 - (IBAction)patchProject:sender {
-    [client runScript:@"patchProject.pl" withArg:@""];
+    [self.client runScript:@"patchProject.pl" withArg:@""];
 }
 - (IBAction)revertProject:sender {
-    [client runScript:@"revertProject.pl" withArg:@""];
+    [self.client runScript:@"revertProject.pl" withArg:@""];
 }
 - (IBAction)openBundle:sender {
-    [client runScript:@"openBundle.pl" withArg:[self lastFileSaving:YES]];
+    [self.client runScript:@"openBundle.pl" withArg:[self lastFileSaving:YES]];
 }
 - (IBAction)injectSource:(id)sender {
     NSString *lastFile = [self lastFileSaving:YES];
     if ( ![self workspacePath] )
-        [client alert:@"No project is open. Make sure the project you are working on is the \"Key Window\"."];
-    else if ( !client.connected )
-        [client alert:@"No  application has connected to injection. "
+        [self.client alert:@"No project is open. Make sure the project you are working on is the \"Key Window\"."];
+    else if ( !self.client.connected )
+        [self.client alert:@"No  application has connected to injection. "
          "Patch the project and make sure DEBUG is #defined then run project again."];
     else if ( !lastFile )
-        [client alert:@"No source file is selected. "
+        [self.client alert:@"No source file is selected. "
          "Make sure that text is selected and the cursor is inside the file you have edited."];
     else if ( [lastFile rangeOfString:@"\\.mm?$"
                                 options:NSRegularExpressionSearch].location == NSNotFound )
-        [client alert:@"Only class implementations (.m or .mm files) can be injected. "
+        [self.client alert:@"Only class implementations (.m or .mm files) can be injected. "
          "Make sure that text is selected and the cursor is inside the file you have edited."];
     else
-        [client runScript:@"injectSource.pl" withArg:lastFile];
+        [self.client runScript:@"injectSource.pl" withArg:lastFile];
 }
 
 #pragma mark - Injection Service
@@ -312,7 +294,7 @@ static CFDataRef copy_mac_address(void)
 
         int appConnection = accept( serverSocket, (struct sockaddr *)&clientAddr, &addrLen );
         if ( appConnection > 0 )
-            [client setConnection:appConnection];
+            [self.client setConnection:appConnection];
         else
             [NSThread sleepForTimeInterval:.5];
     }
@@ -357,7 +339,7 @@ static CFDataRef copy_mac_address(void)
 - (IBAction)license:sender{
     [self setupLicensing];
     NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@cgi-bin/sale.cgi?vers=%s&inst=%d&ident=%@&lkey=%d",
-                                       kAppHome, INJECTION_VERSION, (int)installed, mac, licensed]];
+                                       kAppHome, INJECTION_VERSION, (int)installed, self.mac, licensed]];
     webView.customUserAgent = @"040ccedcacacccedcacac";
     [webView.mainFrame loadRequest:[NSURLRequest requestWithURL:url]];
     [webView.window makeKeyAndOrderFront:self];
@@ -368,10 +350,10 @@ static CFDataRef copy_mac_address(void)
     if ( refkey || stat( "/Applications/Injection Plugin.app/Contents/Resources/InjectionPluginLite", &tstat ) == 0 )
         return;
     time_t now = time(NULL);
-    installed = [defaults integerForKey:kInstalled];
+    installed = [self.defaults integerForKey:kInstalled];
     if ( !installed ) {
-        [defaults setInteger:installed = now forKey:kInstalled];
-        [defaults synchronize];
+        [self.defaults setInteger:installed = now forKey:kInstalled];
+        [self.defaults synchronize];
         //[self performSelector:@selector(openDemo:) withObject:self afterDelay:2.];
     }
 
@@ -379,15 +361,15 @@ static CFDataRef copy_mac_address(void)
     int skip = 2, len = [addr length]-skip;
     unsigned char *bytes = (unsigned char *)[addr bytes]+skip;
 
-    mac = [NSMutableString string];
+    self.mac = [NSMutableString string];
     for ( int i=0 ; i<len ; i++ ) {
-        [mac appendFormat:@"%02x", 0xff-bytes[i]];
-        refkey ^= (365-[mac characterAtIndex:i*2])<<i*6;
-        refkey ^= (365-[mac characterAtIndex:i*2+1])<<(i*6+3);
+        [self.mac appendFormat:@"%02x", 0xff-bytes[i]];
+        refkey ^= (365-[self.mac characterAtIndex:i*2])<<i*6;
+        refkey ^= (365-[self.mac characterAtIndex:i*2+1])<<(i*6+3);
     }
     CFRelease( INJECTION_BRIDGE(CFDataRef)addr );
 
-    licensed =  [defaults integerForKey:kLicensed];
+    licensed =  [self.defaults integerForKey:kLicensed];
     if ( licensed != refkey ) {
         // was 17 day eval period
         if ( now < installed + 17*24*60*60+60 )
@@ -404,8 +386,8 @@ static CFDataRef copy_mac_address(void)
     INLog(@"License install... %@ %@ %d", prompt, defaultText, refkey );
     if ( [@"license" isEqualToString:prompt] ) {
         [webView.window setStyleMask:webView.window.styleMask | NSClosableWindowMask];
-        [defaults setInteger:licensed = [defaultText intValue] forKey:kLicensed];
-        [defaults synchronize];
+        [self.defaults setInteger:licensed = [defaultText intValue] forKey:kLicensed];
+        [self.defaults synchronize];
     }
     return @"";
 }
@@ -427,7 +409,7 @@ static CFDataRef copy_mac_address(void)
 
 - (void)webView:(WebView *)aWebView didReceiveTitle:(NSString *)aTitle forFrame:(WebFrame *)frame {
     if ( frame == webView.mainFrame )
-        webPanel.title = aTitle;
+        self.webPanel.title = aTitle;
 }
 
 #pragma mark -
