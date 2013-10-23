@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.h#9 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.h#10 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -45,6 +45,7 @@
 @property (nonatomic,retain) NSTextView *lastTextView;
 @property (nonatomic,retain) NSUserDefaults *defaults;
 @property (nonatomic,retain) NSMutableString *mac;
+@property (nonatomic,retain) NSString *bonjourName;
 
 - (NSUserDefaults *)defaults;
 - (NSArray *)serverAddresses;

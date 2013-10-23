@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#29 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#30 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -248,11 +248,13 @@ static CFDataRef copy_mac_address(void)
 }
 
 - (NSString *)bonjourName {
-    static NSString *macaddr;
-    if ( !macaddr )
-        macaddr = [[INJECTION_BRIDGE(NSData *)copy_mac_address() description] substringWithRange:NSMakeRange(5, 9)];
-    return [NSString stringWithFormat:@"_%s_%@._tcp.",
-            INJECTION_APPNAME, [macaddr stringByReplacingOccurrencesOfString:@" " withString:@""]];
+    if ( !_bonjourName )
+        self.bonjourName = [NSString stringWithFormat:@"_IN_%@._tcp.",
+                       [[[INJECTION_BRIDGE(NSData *)copy_mac_address() description]
+                         substringWithRange:NSMakeRange(5, 9)]
+                        stringByReplacingOccurrencesOfString:@" " withString:@""]];
+    INLog( @"%@ %@", [INJECTION_BRIDGE(NSData *)copy_mac_address() description], _bonjourName);
+    return _bonjourName;
 }
 
 #include <sys/ioctl.h>
