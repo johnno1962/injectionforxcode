@@ -37,7 +37,11 @@ On OS X remember to have your entitlements include "Allow outgoing connections".
 
 ### Using Injection with Xcode 5 
 
-The same plugin build plugin can now be used safely on Xcode 4 or 5.
+The same plugin build can now be used safely on Xcode 4 or 5. If, however you see the
+following message when you restart Xcode5, use "Activity Monitor" to kill off any
+"ibtoold" daemon processes running that Xcode5 forks off and then restart.
+
+![Icon](http://injectionforxcode.johnholdsworth.com/socket.png)
 
 ## JetBrains AppCode IDE Support
 
