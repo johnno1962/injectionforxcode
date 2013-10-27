@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id$
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#34 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -75,14 +75,20 @@ CODE
 
 ############################################################################
 
+mkdir my $archDir = "$InjectionBundle/$arch";
+my $config = " -configuration Debug -arch $arch";
+$config .= " -sdk iphonesimulator" if $isSimulator;
+$config .= " -sdk iphoneos" if $isDevice;
+
 my ($localBinary, $identity) = ($executable);
 
 if ( $isDevice ) {
-    my $infoFile = "/tmp/$ENV{USER}.ident";
-    error "To inject to a device, please add the following \"Run Script, Build Phase\" to your project and rebuild:\\line ".
-            "echo \"\$CODESIGNING_FOLDER_PATH\" >/tmp/\"\$USER.ident\" && ".
-            "echo \"\$CODE_SIGN_IDENTITY\" >>/tmp/\"\$USER.ident\" && exit;\n"
-        if !-f $infoFile;
+    my $infoFile = "$InjectionBundle/identity.txt";
+
+    if ( !-f $infoFile ) {
+        my %VARS = `xcodebuild -showBuildSettings $config` =~ /    (\w+) = (.*)\n/g;
+        IO::File->new( "> $infoFile" )->print( "$VARS{CODESIGNING_FOLDER_PATH}\n$VARS{CODE_SIGN_IDENTITY}\n");
+    }
 
     ($localBinary, $identity) = loadFile( $infoFile );
     $localBinary =~ s@([^./]+).app@$1.app/$1@;
@@ -94,13 +100,9 @@ if ( $localBinary && $bundleProjectSource =~ s/(BUNDLE_LOADER = )([^;]+;)/$1"$lo
 
 ############################################################################
 
-my $config = "-configuration Debug";
-$config .= " -sdk iphonesimulator" if $isSimulator;
-$config .= " -sdk iphoneos" if $isDevice;
-
 my $learn = "xcodebuild -dry-run $config";
 $learn .= " -project \"$projName.xcodeproj\"" if $projName;
-my $memory = "$InjectionBundle/compile_memory@{[$isDevice?'_device':'']}.gz";
+my $memory = "$archDir/compile_memory.gz";
 my $mainProjectChanged = mtime( $pbxFile ) > mtime( $memory );
 my $canLearn = !$isAndroid && 1;
 my %memory;
@@ -273,10 +275,10 @@ print "\nBuilding $InjectionBundle/InjectionBundle.xcodeproj\n";
 my $rebuild = 0;
 
 build:
-my $build = "xcodebuild -project InjectionBundle.xcodeproj $config";
+my $build = "xcodebuild $config";
 my $sdk = ($config =~ /-sdk (\w+)/)[0] || 'macosx';
 
-my $buildScript = "$InjectionBundle/compile_$sdk.sh";
+my $buildScript = "$archDir/compile_commands.sh";
 my ($recording, $recorded);
 
 if ( $mainProjectChanged || mtime( $bundleProjectFile ) > mtime( $buildScript ) ) {
@@ -341,7 +343,7 @@ close BUILD;
 unlink $buildScript if $? || $recording && !$recorded;
 
 if ( $rebuild++ == 1 ) {
-    system "cd $InjectionBundle && xcodebuild -project InjectionBundle.xcodeproj -configuration $config clean";
+    system "cd $InjectionBundle && xcodebuild $config clean";
     goto build;
 }
 

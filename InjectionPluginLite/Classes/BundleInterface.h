@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInterface.h#10 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInterface.h#11 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -14,7 +14,7 @@
 
 #ifndef INJECTION_PLUGIN
 #define INJECTION_PLUGIN "com.johnholdsworth.InjectionPlugin"
-#define INJECTION_VERSION "3.4"
+#define INJECTION_VERSION "3.5"
 
 // scope macros
 #ifdef INJECTION_ENABLED

@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.h#10 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.h#11 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -45,6 +45,7 @@
 @property (nonatomic,retain) NSString *executablePath;
 @property (nonatomic,retain) NSString *productPath;
 @property (nonatomic,retain) NSString *identity;
+@property (nonatomic,retain) NSString *arch;
 
 - (void)alert:(NSString *)msg;
 - (void)setConnection:(int)clientConnection;

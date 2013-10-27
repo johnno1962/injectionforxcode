@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#31 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#32 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -211,6 +211,11 @@ static NSNetService *service;
 #import <objc/runtime.h>
 #import <sys/sysctl.h>
 
+#ifndef ANDROID
+#import <mach-o/dyld.h>
+#import <mach-o/arch.h>
+#endif
+
 + (void)bundleLoader {
 #ifndef INJECTION_ISARC
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
@@ -219,12 +224,23 @@ static NSNetService *service;
 #endif
 
         static char machine[64];
+        if ( machine[0] )
+            return;
+
         size_t size = sizeof machine;
         sysctlbyname("hw.machine", machine, &size, NULL, 0);
         machine[size] = '\000';
-        
+
         const char *localOnly[] = {"127.0.0.1", NULL},
             **addrSwitch = strcmp( machine, "x86_64" ) == 0 ? localOnly : _inIPAddresses;
+
+#ifndef ANDROID
+        const struct mach_header *header = _dyld_get_image_header(0);
+        const NXArchInfo *info = NXGetArchInfoFromCpuType(header->cputype, header->cpusubtype);
+        const char *arch = info->name;
+#else
+        const char *arch = "android";
+#endif
 
         int i;
         for ( i=0 ; i<100 ; i++ ) {
@@ -260,9 +276,10 @@ static NSNetService *service;
 
             NSString *executablePath = [[NSBundle mainBundle] executablePath];
             [executablePath getCString:path maxLength:sizeof path encoding:NSUTF8StringEncoding];
-            [self writeBytes:INJECTION_MAGIC withPath:path from:0 to:loaderSocket];
+            [self writeBytes:strlen(arch) withPath:path from:0 to:loaderSocket];
+            write( loaderSocket, arch, strlen(arch));
 
-            INLog( @"Connected to \"%s\" plugin, ready to load code.", INJECTION_APPNAME );
+            INLog( @"Connected to \"%s\" plugin, ready to load %s code.", INJECTION_APPNAME, arch );
 
             int fdout = 0;
             struct _in_header header;

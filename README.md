@@ -10,8 +10,8 @@ load bundles containing the code changes.
 
 Stop Press: Injection now learns how to build files in your project using an "xcodebuild -dry-run"
 so you should no longer have to edit the bundle project to take into account header
-include paths. It works for OS X and iOS projects
-in the simulator and on the device (if you add an extra "run script" build phase as instructed.)
+include paths for files in your main project. Injections works for 64bit OSX and iOS
+projects in the simulator and on the device.
 
 A quick demonstration video/tutorial of Injection in action is available here:
 
@@ -39,9 +39,13 @@ On OS X remember to have your entitlements include "Allow outgoing connections".
 
 The same plugin build can now be used safely on Xcode 4 or 5. If, however you see the
 following message when you restart Xcode5, use "Activity Monitor" to kill off any
-"ibtoold" daemon processes running that Xcode5 forks off and then restart.
+"ibtoold" daemon processes running that Xcode5 forks off and then restart. 
 
 ![Icon](http://injectionforxcode.johnholdsworth.com/socket.png)
+
+If you are using Injection to develop an OSX application you may need a "Run Script, Build Phase" of 
+"rm -rf $CODESIGNING_FOLDER_PATH/Contents/MacOS/InjectionBundle*", also
+Storyboard Injection no longer works in Xcode 5.
 
 ## JetBrains AppCode IDE Support
 
@@ -86,7 +90,7 @@ injected onto the UIViewControllers currently visible while the application is s
 achieved by reloading their "nib" onto the existing view controller and sending -viewDidLoad, 
 -viewWillAppear:YES and -viewDidAppear:YES to the view controller for it to redraw.
 This only works for applications with a single active Storyboard. See class method
-+reloadNibs in the file "BundleInjection.h". Storyboard Injection will not work in Xcode 5.
++reloadNibs in the file "BundleInjection.h".
 
 ## Shareware License
 
@@ -191,6 +195,8 @@ __$workspace__ Path to Xcode workspace document currently open.
 __$mainFile__ Path to main.m of application currently connected.
 
 __$executable__ Path to application binary connected to plugin for this project
+
+__$arch__ Architecture of application connected to Xcode
 
 __$patchNumber__ Incrementing counter for sequentially naming bundles
 

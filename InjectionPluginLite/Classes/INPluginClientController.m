@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.m#26 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.m#27 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -148,10 +148,11 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     write( appConnection, &status, sizeof status );
 
     [BundleInjection readHeader:&header forPath:path from:appConnection];
-    if ( header.dataLength == INJECTION_MAGIC )
-        self.executablePath = [NSString stringWithUTF8String:path];
-    else
-        NSLog( @"Bogus connection attempt." );
+    self.executablePath = [NSString stringWithUTF8String:path];
+
+    path[header.dataLength] = '\000';
+    read( appConnection, path, header.dataLength );
+    self.arch = [NSString stringWithUTF8String:path];
 
     [self scriptText:[NSString stringWithFormat:@"Connection from: %@ (%d)",
                       self.executablePath, appConnection]];
@@ -243,9 +244,10 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     if ( ![selectedFile length] )
         [self.consolePanel orderFront:self];
     NSString *command = [NSString stringWithFormat:@"\"%@/%@\" "
-                         "\"%@\" \"%@\" \"%@\" \"%@\" %d %d \"%@\" \"%@\" \"%@\" 2>&1",
+                         "\"%@\" \"%@\" \"%@\" \"%@\" \"%@\" %d %d \"%@\" \"%@\" \"%@\" 2>&1",
                          self.scriptPath, script, self.resourcePath, menuController.workspacePath,
-                         self.mainFilePath ? self.mainFilePath : @"", self.executablePath ? self.executablePath : @"", ++patchNumber,
+                         self.mainFilePath ? self.mainFilePath : @"",
+                         self.executablePath ? self.executablePath : @"", self.arch, ++patchNumber,
                          (silentButton.state ? 0 : INJECTION_NOTSILENT) | (frontButton.state ? INJECTION_ORDERFRONT : 0),
                          [unlockField.stringValue stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""],
                          [[menuController serverAddresses] componentsJoinedByString:@" "],
