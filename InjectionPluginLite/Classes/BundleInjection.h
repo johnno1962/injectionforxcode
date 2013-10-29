@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#32 $
+//  $Id$
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -235,8 +235,8 @@ static NSNetService *service;
             **addrSwitch = strcmp( machine, "x86_64" ) == 0 ? localOnly : _inIPAddresses;
 
 #ifndef ANDROID
-        const struct mach_header *header = _dyld_get_image_header(0);
-        const NXArchInfo *info = NXGetArchInfoFromCpuType(header->cputype, header->cpusubtype);
+        const struct mach_header *m_header = _dyld_get_image_header(0);
+        const NXArchInfo *info = NXGetArchInfoFromCpuType(m_header->cputype, m_header->cpusubtype);
         const char *arch = info->name;
 #else
         const char *arch = "android";
