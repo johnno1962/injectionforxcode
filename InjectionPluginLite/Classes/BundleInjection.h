@@ -1,5 +1,5 @@
 //
-//  $Id$
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#35 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -241,6 +241,7 @@ static NSNetService *service;
 #else
         const char *arch = "android";
 #endif
+        off_t alen = strlen(arch)+1;
 
         int i;
         for ( i=0 ; i<100 ; i++ ) {
@@ -276,8 +277,8 @@ static NSNetService *service;
 
             NSString *executablePath = [[NSBundle mainBundle] executablePath];
             [executablePath getCString:path maxLength:sizeof path encoding:NSUTF8StringEncoding];
-            [self writeBytes:strlen(arch) withPath:path from:0 to:loaderSocket];
-            write( loaderSocket, arch, strlen(arch));
+            [self writeBytes:alen withPath:path from:0 to:loaderSocket];
+            write( loaderSocket, arch, alen);
 
             INLog( @"Connected to \"%s\" plugin, ready to load %s code.", INJECTION_APPNAME, arch );
 

@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.m#27 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.m#28 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -150,12 +150,11 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     [BundleInjection readHeader:&header forPath:path from:appConnection];
     self.executablePath = [NSString stringWithUTF8String:path];
 
-    path[header.dataLength] = '\000';
     read( appConnection, path, header.dataLength );
     self.arch = [NSString stringWithUTF8String:path];
 
-    [self scriptText:[NSString stringWithFormat:@"Connection from: %@ (%d)",
-                      self.executablePath, appConnection]];
+    [self scriptText:[NSString stringWithFormat:@"Connection from: %@ %@ (%d)",
+                      self.executablePath, self.arch, appConnection]];
 
     clientSocket = appConnection;
 
