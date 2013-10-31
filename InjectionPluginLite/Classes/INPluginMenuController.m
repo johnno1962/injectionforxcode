@@ -59,7 +59,7 @@
             NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:items[i].item]
                                                               action:items[i].action
                                                        keyEquivalent:[NSString stringWithUTF8String:items[i].key]];
-            //[menuItem setKeyEquivalentModifierMask:NSControlKeyMask];
+            [menuItem setKeyEquivalentModifierMask:NSControlKeyMask];
             if ( i==0 )
                 [subMenuItem = menuItem setSubmenu:self.subMenu];
             else
