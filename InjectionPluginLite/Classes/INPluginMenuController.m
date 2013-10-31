@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#30 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#31 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -59,7 +59,7 @@
             NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:items[i].item]
                                                               action:items[i].action
                                                        keyEquivalent:[NSString stringWithUTF8String:items[i].key]];
-            //[menuItem setKeyEquivalentModifierMask:NSControlKeyMask];
+            [menuItem setKeyEquivalentModifierMask:NSControlKeyMask];
             if ( i==0 )
                 [subMenuItem = menuItem setSubmenu:self.subMenu];
             else
@@ -144,7 +144,7 @@
     }
     if ( action == @selector(patchProject:) || action == @selector(revertProject:) )
         return [self workspacePath] != nil;
-    else if ( [menuItem action] == @selector(openBundle:) )
+    else if ( [menuItem action] == @selector(openBundle:) || [menuItem action] == @selector(listDevice:) )
         return self.client.connected;
     else
         return YES;

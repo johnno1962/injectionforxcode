@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#34 $
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#35 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -257,7 +257,7 @@ if ( $learnt ) {
         if ( system $compile ) {
             unlink $memory;
             system "$learn clean";
-            error "*** Learnt Compile Failed: $compile";
+            error "*** Learnt Compile Failed: $compile\n\n** Build memory cleared, please try again. **\n\n";
         }
     }
 
