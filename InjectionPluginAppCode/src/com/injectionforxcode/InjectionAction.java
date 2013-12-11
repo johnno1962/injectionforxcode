@@ -96,9 +96,9 @@ public class InjectionAction extends AnAction {
                         try {
                             serviceClientApp(serverSocket.accept());
                         }
-                        catch ( Throwable e ) {
-                            error( "Error on accept", e );
-                        }
+                    catch ( Throwable e ) {
+                        error( "Error on accept", e );
+                    }
                 }
             } ).start();
         }
@@ -107,7 +107,7 @@ public class InjectionAction extends AnAction {
         }
     }
 
-    String mainFilePath = "", executablePath = "";
+    String mainFilePath = "", executablePath = "", arch = "";
     volatile OutputStream clientOutput;
 
     void serviceClientApp(final Socket socket) throws Throwable {
@@ -118,12 +118,12 @@ public class InjectionAction extends AnAction {
         clientOutput = socket.getOutputStream();
         patchNumber = 1;
 
-        mainFilePath = readPath( clientInput );
+        mainFilePath = readPath( clientInput, false );
 
         byte ok[] = new byte[] {1,0,0,0};
         clientOutput.write( ok );
 
-        executablePath = readPath( clientInput );
+        executablePath = readPath( clientInput, true );
 
         new Thread( new Runnable() {
             public void run() {
@@ -164,7 +164,7 @@ public class InjectionAction extends AnAction {
         try {
             if ( !new File(resourcesPath+"appcode.txt").exists() )
                 return alert( "Version 3.2 of the Xcode version of the Injection plugin"
-                        +" from http://injectionforxcode.com must also be installed." );
+                             +" from http://injectionforxcode.com must also be installed." );
 
             Project project = event.getData(PlatformDataKeys.PROJECT);
             VirtualFile vf = event.getData(PlatformDataKeys.VIRTUAL_FILE);
@@ -184,8 +184,8 @@ public class InjectionAction extends AnAction {
             FileDocumentManager.getInstance().saveAllDocuments();
 
             processScriptOutput(script, new String[]{resourcesPath + script, resourcesPath,
-                    project.getProjectFilePath(), mainFilePath, executablePath, "" + ++patchNumber,
-                    "" + flags, unlockCommand, serverAddresses(), selectedFile}, event);
+                project.getProjectFilePath(), mainFilePath, executablePath, arch, "" + ++patchNumber,
+                "" + flags, unlockCommand, serverAddresses(), selectedFile}, event);
         }
         catch ( Throwable e ) {
             error( "Run script error", e );
@@ -217,8 +217,8 @@ public class InjectionAction extends AnAction {
                             UIUtil.invokeAndWaitIfNeeded(new Runnable() {
                                 public void run() {
                                     if ( Messages.showYesNoDialog("Build Failed -- You may want to open "+
-                                            "Injection's bundle project to resolve the problem.", "Injection Plugin",
-                                            "OK", "Open Bundle Project", Messages.getInformationIcon()) == 1 )
+                                                                  "Injection's bundle project to resolve the problem.", "Injection Plugin",
+                                                                  "OK", "Open Bundle Project", Messages.getInformationIcon()) == 1 )
                                         runScript( "openBundle.pl", event );
                                 }
                             } );
@@ -294,17 +294,24 @@ public class InjectionAction extends AnAction {
         return unsign(bytes[0]) + (unsign(bytes[1])<<8) + (unsign(bytes[2])<<16) + (unsign(bytes[3])<<24);
     }
 
-    static String readPath( InputStream s ) throws IOException {
-        int pathLength = readInt( s );
-        if ( readInt( s ) != INJECTION_MAGIC )
-            alert("Bad connection magic");
-        if ( pathLength < 0 )
-            alert("-ve path len: " + pathLength);
-
+    String readString( InputStream s, int pathLength ) throws IOException {
         byte buffer[] = new byte[pathLength];
         if ( s.read(buffer) != pathLength )
             alert("Bad path read");
         return new String( buffer, 0, pathLength-1, CHARSET );
+    }
+
+    String readPath( InputStream s, boolean setArch ) throws IOException {
+        int pathLength = readInt( s ), dataLength = readInt( s );
+        if ( pathLength < 0 )
+            alert("-ve path len: " + pathLength);
+
+        String path = readString( s, pathLength );
+        if ( setArch )
+            arch = readString( s, dataLength );
+        else if ( dataLength != INJECTION_MAGIC )
+            alert("Bad connection magic");
+        return path;
     }
 
     static void writeCommand( OutputStream s, String path, int dataLength ) throws IOException {
@@ -326,5 +333,5 @@ public class InjectionAction extends AnAction {
         bytes[7] = (byte) (i2 >> 24);
         s.write( bytes );
     }
-
+    
 }
