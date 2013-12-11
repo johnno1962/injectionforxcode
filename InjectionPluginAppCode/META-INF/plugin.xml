@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>com.injectionforxcode.injection.plugin.id</id>
   <name>Injection for AppCode</name>
-  <version>3.2</version>
+  <version>3.5</version>
   <vendor email="support@injectionforxcode.com" url="http://www.injectionforxcode.com">Injection for Xcode</vendor>
 
   <description><![CDATA[
