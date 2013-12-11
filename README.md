@@ -55,7 +55,9 @@ AppCode IDE. To use, install the file Injection.jar into directory
 of the "Run" menu when you restart AppCode. For it to work you must also have the most 
 recent version of the Xcode plugin installed as they share some of the same scripts. 
 
-For some reason there is a very long delay when the client first connects to the plugin.
+As the AppCode plugin runs on a different port you need to unpatch and then repatch
+your project for injection each time you switch IDE or edit "main.m". Also, for some 
+reason there is  a very long delay when the client first connects to the plugin. 
 This seems to be Java specific. If anyone has any ideas how to fix this, get in touch!
 
 All the code to perform injection direct to a device is included but this is always
