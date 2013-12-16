@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.m#28 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.m#29 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -108,6 +108,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 - (NSString *)formatColor:(NSColor *)color {
     CGFloat r=1., g=1., b=1., a=1.;
     @try {
+        color = [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
         [color getRed:&r green:&g blue:&b alpha:&a];
     }
     @catch (NSException *e) {

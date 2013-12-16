@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInterface.h#11 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInterface.h#12 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -46,6 +46,7 @@ extern NSColor *INColors[INJECTION_PARAMETERS];
 
 extern id INColorTargets[INJECTION_PARAMETERS];
 extern SEL INColorActions[INJECTION_PARAMETERS];
+extern id INColorDelegate;
 extern id INImageTarget; // action is setImage:
 
 extern NSString *kINNotification; // bundle loaded
@@ -62,6 +63,7 @@ extern NSString *kINNotification; // bundle loaded
 
 @interface NSObject(INParameterDelegate)
 - (void)inParameter:(int)tag hasChanged:(float)value;
+- (void)inColor:(int)tag hasChanged:(id)value;
 - (void)injectionBundleLoaded:(NSNotification *)notification;
 @end
 

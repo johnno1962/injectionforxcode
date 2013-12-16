@@ -1,5 +1,5 @@
 //
-//  $Id$
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#37 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -107,6 +107,7 @@ NSColor *INColors[INJECTION_PARAMETERS];
 #endif
 id INColorTargets[INJECTION_PARAMETERS];
 SEL INColorActions[INJECTION_PARAMETERS];
+id INColorDelegate;
 id INImageTarget;
 
 static char path[PATH_MAX], *file = &path[1];
@@ -408,11 +409,13 @@ static NSNetService *service;
                             int tag = path[0]-'0';
                             if ( tag < 5 ) {
                                 INParameters[tag] = atof( file );
+                                INLog( @"Param #%d -> %f", tag, INParameters[tag] );
                                 [INDelegates[tag] inParameter:tag hasChanged:INParameters[tag]];
                             }
                             else if ( (tag -= 5) < 5 ) {
                                 float r, g, b, a;
                                 sscanf( file, "%f,%f,%f,%f", &r, &g, &b, &a );
+                                INLog( @"Color #%d -> %f,%f,%f,%f", tag, r, g, b, a );
 #ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
                                 UIColor *col = [UIColor colorWithRed:r green:g
                                                                 blue:b alpha:a];
@@ -435,6 +438,8 @@ static NSNetService *service;
 
                                 if ( [target respondsToSelector:@selector(setNeedsDisplay)] )
                                     [target setNeedsDisplay];
+                                if ( [INColorDelegate respondsToSelector:@selector(inColor:hasChanged:)] )
+                                    [INColorDelegate inColor:tag hasChanged:col];
                             }
                                 
                         }

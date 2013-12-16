@@ -64,8 +64,7 @@ All the code to perform injection direct to a device is included but this is alw
 a "challenge" to get going. It requires an extra build phase to run a script and
 the client app has to find it's way over Wi-Fi to connect back to the plugin.
 Start small by injecting to the simulator then injecting to a device using the Xcode 
-plugin. Then try injecting to the device from AppCode. Don't forget to re-patch the
-project for injection in AppCode as it uses a different port than the Xcode plugin.
+plugin. Then try injecting to the device from AppCode after re-patching the project.
 
 ## Using with [Apportable](http://www.apportable.com) 
 
