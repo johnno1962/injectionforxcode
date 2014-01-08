@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#37 $
+//  $Id$
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -239,6 +239,10 @@ static NSNetService *service;
         const struct mach_header *m_header = _dyld_get_image_header(0);
         const NXArchInfo *info = NXGetArchInfoFromCpuType(m_header->cputype, m_header->cpusubtype);
         const char *arch = info->name;
+#ifndef __IPHONE_OS_VERSION_MIN_REQUIRED
+        if ( strcmp( arch, "i386" ) == 0 )
+            NSLog( @"\n\n**** Injection does not work with 32 bit \"legacy\" OS X Objective-C runtime. ****\n\n" );
+#endif
 #else
         const char *arch = "android";
 #endif

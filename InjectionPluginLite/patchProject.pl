@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/patchProject.pl#14 $
+#  $Id$
 #  Injection
 #
 #  Created by John Holdsworth on 15/01/2013.
@@ -32,8 +32,9 @@ $key
 
 #ifdef $ifdef
 #define INJECTION_ENABLED
-#import "$resources/BundleInterface.h"
 #endif
+
+#import "$resources/BundleInterface.h"
 CODE
     } );
 
