@@ -2,6 +2,8 @@
 
 Copyright (c) John Holdsworth 2012
 
+Now in the Mac AppStore: [https://itunes.apple.com/app/objective-c++/id551718707?ls=1&mt=12](https://itunes.apple.com/app/objective-c++/id551718707?ls=1&mt=12)
+
 Injection is a plugin for Xcode that allows you to "inject" Objective-C code changes into a
 running application without having to restart it during development and testing. After making
 a couple of minor changes to your application's "main.m" and pre-compilation header it
