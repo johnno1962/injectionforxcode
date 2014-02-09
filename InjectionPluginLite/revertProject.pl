@@ -18,15 +18,15 @@ my $key = "// From here to end of file added by Injection Plugin //";
 
 print "\\b Reverting project contained in: $projRoot\n";
 
-patchAll( "main.m", sub {
+patchAll( "main.(m|mm)", sub {
     $_[0] =~ s/\n+$key.*/\n/s;
 } );
 
-patchAll( "*refix.pch", sub {
+patchAll( "refix.pch", sub {
     $_[0] =~ s/\n+$key.*/\n/s;
 } );
 
-patchAll( "*AppDelegate.m", sub {
+patchAll( "AppDelegate.(m|mm)", sub {
     $_[0] =~ s@^.*// From start of file to here added by Injection Plugin //\s+@@es and
     $_[0] =~ s/(#ifdef DEBUG\s*\[BundleInjection load\];\s*#endif\n)+//s;
 } );

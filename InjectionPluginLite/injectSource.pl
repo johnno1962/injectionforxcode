@@ -218,7 +218,7 @@ if ( $isAndroid ) {
     print "\nPerforming Android Build...\n";
     
     my $pkg;
-    patchAll( "*Info.plist", sub {
+    patchAll( "Info.plist", sub {
         $pkg ||= ($_[0] =~ m@<key>CFBundleIdentifier</key>\s*<string>([^<]*)<@s)[0];
     } );
     $pkg =~ s/\${PRODUCT_NAME:rfc1034identifier}/$projName/;

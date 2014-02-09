@@ -6,7 +6,7 @@
 //  Copyright (c) 2012 John Holdsworth. All rights reserved.
 //
 //  Client application interface to Code Injection system.
-//  Added to program's main.m to connect to the Injection app.
+//  Added to program's main.(m|mm) to connect to the Injection app.
 //
 //  This file is copyright and may not be re-distributed, whole or in part.
 //
@@ -195,7 +195,7 @@ static NSNetService *service;
 	inet_aton( ipAddress, &loaderAddr.sin_addr );
 	loaderAddr.sin_port = htons(INJECTION_PORT);
 
-    INLog( @"%s attempting connection to: %s:%d (see project's main.m)", INJECTION_APPNAME, ipAddress, INJECTION_PORT );
+    INLog( @"%s attempting connection to: %s:%d (see project's main.(m|mm)", INJECTION_APPNAME, ipAddress, INJECTION_PORT );
 
     int loaderSocket, optval = 1;
     if ( (loaderSocket = socket(loaderAddr.sin_family, SOCK_STREAM, 0)) < 0 )

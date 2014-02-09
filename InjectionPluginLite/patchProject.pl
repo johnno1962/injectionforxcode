@@ -24,7 +24,7 @@ my $ifdef = $projName =~ /UICatalog|(iOS|OSX)GLEssentials/ ?
 
 print "\\b Patching project contained in: $projRoot\n";
 
-patchAll( "*refix.pch", sub {
+patchAll( "refix.pch", sub {
     $_[0] =~ s/\n*($key.*)?$/<<CODE/es;
 
 
@@ -41,7 +41,7 @@ CODE
 $ifdef .= "\n#define INJECTION_PORT $selectedFile" if $isAppCode;
 
 if ( !-d "$projRoot$projName.approj" ) {
-    patchAll( "main.m", sub {
+    patchAll( "main.(m|mm)", sub {
         $_[0] =~ s/\n*($key.*)?$/<<CODE/es;
 
 
@@ -55,14 +55,14 @@ static const char *_inIPAddresses[] = {@{[join ', ', map "\"$_\"", @ip4Addresses
 #import "$resources/BundleInjection.h"
 #endif
 CODE
-    } ) or error "Could not match project's main.m";
+    } ) or error "Could not match project's main.(m|mm)";
 }
 else {
-    patchAll( "main.m", sub {
+    patchAll( "main.(m|mm)", sub {
         $_[0] =~ s/\n+$key.*/\n/s;
     } );
 
-    patchAll( "*AppDelegate.m", sub {
+    patchAll( "AppDelegate.(m|mm)", sub {
         $_[0] =~ s/^/<<CODE/es and
 
 #define DEBUG 1 // for Apportable

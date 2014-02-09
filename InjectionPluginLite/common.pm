@@ -123,7 +123,7 @@ sub patchAll {
     my ($pattern, $change) = @_;
     my $changed = 0;
 
-    foreach my $file (IO::File->new( "find . -name '$pattern' |" )->getlines()) {
+    foreach my $file (IO::File->new( "find . | grep -E '$pattern\$' |" )->getlines()) {
         chomp $file;
         next if $file =~ /InjectionProject/;
         my $contents = loadFile( $file );
