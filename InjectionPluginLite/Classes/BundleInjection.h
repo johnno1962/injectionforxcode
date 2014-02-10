@@ -1,5 +1,5 @@
 //
-//  $Id$
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#40 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -39,7 +39,7 @@ struct _in_header { int pathLength, dataLength; };
 + (BOOL)writeBytes:(off_t)bytes withPath:(const char *)path from:(int)fdin to:(int)fdout;
 #ifdef INJECTION_BUNDLE
 + (void)loadedClass:(Class)newClass notify:(BOOL)notify;
-+ (void)loadedNotify:(BOOL)notify;
++ (void)loadedNotify:(BOOL)notify hook:(void *)hook;
 #endif
 @end
 
@@ -211,10 +211,12 @@ static NSNetService *service;
 
 #import <objc/runtime.h>
 #import <sys/sysctl.h>
+#import <dlfcn.h>
 
 #ifndef ANDROID
 #import <mach-o/dyld.h>
 #import <mach-o/arch.h>
+#import <mach-o/getsect.h>
 #endif
 
 + (void)bundleLoader {
@@ -488,8 +490,6 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 
 #else
 
-#import <dlfcn.h>
-
 + (const char *)registerSelectorsInFile:(const char *)file containing:(void *)hook {
 
     struct stat st;
@@ -661,7 +661,35 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 #endif
 }
 
-+ (void)loadedNotify:(BOOL)notify {
++ (void)loadedNotify:(BOOL)notify hook:(void *)hook {
+#ifndef ANDROID
+    Dl_info info;
+    if ( !dladdr( hook, &info ) )
+        NSLog( @"Could not find load address" );
+
+#ifndef __LP64__
+    uint32_t size = 0;
+    char *referencesSection = getsectdatafromheader((struct mach_header *)info.dli_fbase,
+                                                    "__DATA", "__objc_classrefs", &size );
+#else
+    uint64_t size = 0;
+    char *referencesSection = getsectdatafromheader_64((struct mach_header_64 *)info.dli_fbase,
+                                                       "__DATA", "__objc_classrefs", &size );
+#endif
+
+    if ( referencesSection ) {
+        Class *classReferences = (Class *)(void *)((char *)info.dli_fbase+(uint64_t)referencesSection);
+        for ( int i=0 ; i<size/sizeof *classReferences ; i++ ) {
+            const char *className = class_getName(classReferences[i]);
+            Class originalClass = objc_getClass( className );
+            if ( classReferences[i] != originalClass ) {
+                INLog( @"Fixing references to class: %s %p -> %p", className, classReferences[i], originalClass );
+                classReferences[i] = originalClass;
+            }
+        }
+    }
+#endif
+
     INLog( @"Bundle \"%s\" loaded successfully.", strrchr( path, '/' )+1 );
 #ifndef __IPHONE_OS_VERSION_MIN_REQUIRED
     if ( notify & INJECTION_ORDERFRONT )

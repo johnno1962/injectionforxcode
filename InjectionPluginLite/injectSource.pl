@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#35 $
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#36 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -187,18 +187,18 @@ $changesSource->print( <<CODE );
 
 @{[$learnt?'':'#import "BundleContents.h"']}
 
+extern int injectionHook(void);
+
 \@interface $productName : NSObject
 \@end
 \@implementation $productName
 
 + (void)load {
     Class bundleInjection = NSClassFromString(@"BundleInjection");
-@{[join '', map "    extern Class OBJC_CLASS_\$_$_;\n\t[bundleInjection loadedClass:INJECTION_BRIDGE(Class)(void *)&OBJC_CLASS_\$_$_ notify:$flags];\n", @classes]}    [bundleInjection loadedNotify:$flags];
+@{[join '', map "    extern Class OBJC_CLASS_\$_$_;\n\t[bundleInjection loadedClass:INJECTION_BRIDGE(Class)(void *)&OBJC_CLASS_\$_$_ notify:$flags];\n", @classes]}    [bundleInjection loadedNotify:$flags hook:(void *)injectionHook];
 }
 
 \@end
-
-extern int injectionHook(void);
 
 int injectionHook() {
     NSLog( \@"injectionHook():" );
