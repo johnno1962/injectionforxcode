@@ -1,5 +1,5 @@
 //
-//  $Id$
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#40 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -199,14 +199,14 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
     }
     else if ( !self.client.connected ) {
 
-        // unpatched injection
+        // "unpatched" injection
         if ( sender ) {
             self.lastFile = lastFile;
             self.lastWin = [self.lastTextView window];
             [self findConsole:[self.lastWin contentView]];
-            [self.pauseResume performClick:self];
             [self.lastWin makeFirstResponder:self.debugger];
             [self performSelector:@selector(findLLDB) withObject:nil afterDelay:.5];
+            [self.pauseResume performClick:self];
         }
         else
             [self performSelector:@selector(injectSource:) withObject:nil afterDelay:.1];
@@ -240,12 +240,8 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 
 - (void)findLLDB {
     float after = 0;
-    if ( [[self.debugger string] rangeOfString:@"(lldb)"].location == NSNotFound ) {
-        [self performSelector:@selector(findLLDB) withObject:nil afterDelay:.1];
-        return;
-    }
 
-    // ensure lldb is listening
+    // do we have lldb's attention?
     if ( [[self.debugger string] rangeOfString:@"27359872639733"].location == NSNotFound ) {
         [self performSelector:@selector(findLLDB) withObject:nil afterDelay:.5];
         [self keyEvent:@"p 27359872639632+101" code:0 after:after+=.1];
@@ -271,7 +267,8 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
                                  modifierFlags:0 timestamp:0 windowNumber:0 context:0
                                     characters:str charactersIgnoringModifiers:nil
                                      isARepeat:YES keyCode:code];
-    [self.debugger performSelector:@selector(keyDown:) withObject:event afterDelay:delay];
+    if ( [[self.debugger window] firstResponder] == self.debugger )
+        [self.debugger performSelector:@selector(keyDown:) withObject:event afterDelay:delay];
 }
 
 #pragma mark - Injection Service

@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#41 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#43 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -380,8 +380,8 @@ static NSNetService *service;
                         int j;
                         for ( j=0 ; j<len ; )
                             j += read( loaderSocket, buff+j, j+block < len ? block : len-j );
-                        NSData *data = [NSData dataWithBytesNoCopy:buff length:len freeWhenDone:YES];
 #ifndef INJECTION_AUTOLOAD
+                        NSData *data = [NSData dataWithBytesNoCopy:buff length:len freeWhenDone:YES];
 #ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
                         UIImage *img = [[UIImage alloc] initWithData:data];
 #else
@@ -392,6 +392,8 @@ static NSNetService *service;
 #ifndef INJECTION_ISARC
                         [img release];
 #endif
+#else
+                        NSLog( @"Image injection not available in \"unpatched\" Injection" );
 #endif
                     }
                         break;
@@ -404,7 +406,7 @@ static NSNetService *service;
                         else
                             NSLog( @"'Inject StoryBds' must be enabled on the Tunable Parameters panel." );
 #else
-                        NSLog( @"Storyboard injection only available for iOS." );
+                        NSLog( @"Storyboard injection only available for iOS in Xcode 4." );
 #endif
                         break;
 
@@ -421,10 +423,10 @@ static NSNetService *service;
                                 [INDelegates[tag] inParameter:tag hasChanged:INParameters[tag]];
                             }
                             else if ( (tag -= 5) < 5 ) {
+#ifndef INJECTION_AUTOLOAD
                                 float r, g, b, a;
                                 sscanf( file, "%f,%f,%f,%f", &r, &g, &b, &a );
                                 INLog( @"Color #%d -> %f,%f,%f,%f", tag, r, g, b, a );
-#ifndef INJECTION_AUTOLOAD
 #ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
                                 UIColor *col = [UIColor colorWithRed:r green:g
                                                                 blue:b alpha:a];
@@ -449,6 +451,10 @@ static NSNetService *service;
                                     [target setNeedsDisplay];
                                 if ( [INColorDelegate respondsToSelector:@selector(inColor:hasChanged:)] )
                                     [INColorDelegate inColor:tag hasChanged:col];
+#else
+                                static int warned;
+                                if ( !warned++ )
+                                    NSLog( @"Color tuning not available in \"unpatched\" Injection" );
 #endif
                             }
                                 

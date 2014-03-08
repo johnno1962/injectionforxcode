@@ -16,6 +16,16 @@ your lldb console to load a small bootstrap bundle into your app then works
 as before. You might still want to patch your project if you want to
 avoid this slight delay or inject code onto an iOS device.
 
+The unpatched version of Injection now includes "Xtrace" which will allow
+you to log all messages sent to a class or instance using the following commands:
+
+    (lldb) p [UITableView xtrace] // all table view instances
+    or
+    (lldb) p [tableView xtrace] // trace a particular instance
+    
+This means to build the plugin from source you will also need the Xtrace project
+from github [https://github.com/johnno1962/Xtrace](https://github.com/johnno1962/Xtrace).
+
 A quick demonstration video/tutorial of Injection in action is available here:
 
 https://vimeo.com/50137444

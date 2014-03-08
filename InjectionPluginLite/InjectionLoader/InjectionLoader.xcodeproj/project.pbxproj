@@ -1,0 +1,282 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		BB0B1F8F18CB98A900402F4D /* Xtrace.mm in Sources */ = {isa = PBXBuildFile; fileRef = BB0B1F8E18CB98A900402F4D /* Xtrace.mm */; };
+		BBC7A4A216A57FCB00B90868 /* BundleContents.m in Sources */ = {isa = PBXBuildFile; fileRef = BBC7A4A116A57FCB00B90868 /* BundleContents.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		BB0B1F8D18CB98A900402F4D /* Xtrace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Xtrace.h; path = ../../../Xtrace/Xray/Xtrace.h; sourceTree = "<group>"; };
+		BB0B1F8E18CB98A900402F4D /* Xtrace.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = Xtrace.mm; path = ../../../Xtrace/Xray/Xtrace.mm; sourceTree = "<group>"; };
+		BB2B840417DD31CD0061BBB6 /* BundleContents.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BundleContents.h; sourceTree = SOURCE_ROOT; };
+		BBC55D8A14C4ED1500C41CA1 /* InjectionLoader.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = InjectionLoader.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
+		BBC55D9514C4ED1500C41CA1 /* InjectionBundle-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "InjectionBundle-Info.plist"; sourceTree = "<group>"; };
+		BBC55D9914C4ED1500C41CA1 /* InjectionBundle-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "InjectionBundle-Prefix.pch"; sourceTree = "<group>"; };
+		BBC7A4A116A57FCB00B90868 /* BundleContents.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.objc; fileEncoding = 4; path = BundleContents.m; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		BBC55D8714C4ED1500C41CA1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		BBC55D7F14C4ED1500C41CA1 = {
+			isa = PBXGroup;
+			children = (
+				BBC55D9314C4ED1500C41CA1 /* InjectionBundle */,
+				BBC55D8C14C4ED1500C41CA1 /* Frameworks */,
+				BBC55D8B14C4ED1500C41CA1 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		BBC55D8B14C4ED1500C41CA1 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BBC55D8A14C4ED1500C41CA1 /* InjectionLoader.bundle */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BBC55D8C14C4ED1500C41CA1 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				BBC55D8F14C4ED1500C41CA1 /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		BBC55D8F14C4ED1500C41CA1 /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		BBC55D9314C4ED1500C41CA1 /* InjectionBundle */ = {
+			isa = PBXGroup;
+			children = (
+				BB0B1F8D18CB98A900402F4D /* Xtrace.h */,
+				BB0B1F8E18CB98A900402F4D /* Xtrace.mm */,
+				BB2B840417DD31CD0061BBB6 /* BundleContents.h */,
+				BBC7A4A116A57FCB00B90868 /* BundleContents.m */,
+				BBC55D9414C4ED1500C41CA1 /* Supporting Files */,
+			);
+			path = InjectionBundle;
+			sourceTree = "<group>";
+		};
+		BBC55D9414C4ED1500C41CA1 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				BBC55D9514C4ED1500C41CA1 /* InjectionBundle-Info.plist */,
+				BBC55D9914C4ED1500C41CA1 /* InjectionBundle-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BBC55D8914C4ED1500C41CA1 /* InjectionBundle */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BBC55D9C14C4ED1500C41CA1 /* Build configuration list for PBXNativeTarget "InjectionBundle" */;
+			buildPhases = (
+				BBC55D8614C4ED1500C41CA1 /* Sources */,
+				BBC55D8714C4ED1500C41CA1 /* Frameworks */,
+				BBC55D8814C4ED1500C41CA1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = InjectionBundle;
+			productName = InjectionBundle;
+			productReference = BBC55D8A14C4ED1500C41CA1 /* InjectionLoader.bundle */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BBC55D8114C4ED1500C41CA1 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0420;
+			};
+			buildConfigurationList = BBC55D8414C4ED1500C41CA1 /* Build configuration list for PBXProject "InjectionLoader" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = BBC55D7F14C4ED1500C41CA1;
+			productRefGroup = BBC55D8B14C4ED1500C41CA1 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BBC55D8914C4ED1500C41CA1 /* InjectionBundle */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BBC55D8814C4ED1500C41CA1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BBC55D8614C4ED1500C41CA1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB0B1F8F18CB98A900402F4D /* Xtrace.mm in Sources */,
+				BBC7A4A216A57FCB00B90868 /* BundleContents.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		BBC55D9A14C4ED1500C41CA1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
+				CLANG_CXX_LIBRARY = "compiler-default";
+				CLANG_ENABLE_OBJC_ARC = NO;
+				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = "../**";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+					INJECTION_AUTOLOAD,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = "";
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../**",
+					$SDKROOT/usr/include/libxml2,
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = (
+					"-undefined",
+					dynamic_lookup,
+				);
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = ..;
+			};
+			name = Debug;
+		};
+		BBC55D9B14C4ED1500C41CA1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
+				CLANG_CXX_LIBRARY = "compiler-default";
+				CLANG_ENABLE_OBJC_ARC = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				FRAMEWORK_SEARCH_PATHS = "../**";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_VERSION = "";
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../**",
+					$SDKROOT/usr/include/libxml2,
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = (
+					"-undefined",
+					dynamic_lookup,
+				);
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = ..;
+			};
+			name = Release;
+		};
+		BBC55D9D14C4ED1500C41CA1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "InjectionBundle-Prefix.pch";
+				INFOPLIST_FILE = "InjectionBundle-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				PRODUCT_NAME = InjectionLoader;
+				WRAPPER_EXTENSION = bundle;
+			};
+			name = Debug;
+		};
+		BBC55D9E14C4ED1500C41CA1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "InjectionBundle-Prefix.pch";
+				INFOPLIST_FILE = "InjectionBundle-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				PRODUCT_NAME = InjectionLoader;
+				WRAPPER_EXTENSION = bundle;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BBC55D8414C4ED1500C41CA1 /* Build configuration list for PBXProject "InjectionLoader" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BBC55D9A14C4ED1500C41CA1 /* Debug */,
+				BBC55D9B14C4ED1500C41CA1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BBC55D9C14C4ED1500C41CA1 /* Build configuration list for PBXNativeTarget "InjectionBundle" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BBC55D9D14C4ED1500C41CA1 /* Debug */,
+				BBC55D9E14C4ED1500C41CA1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = BBC55D8114C4ED1500C41CA1 /* Project object */;
+}
