@@ -10,10 +10,11 @@ a couple of minor changes to your application's "main.m" and pre-compilation hea
 will connect to a server running inside Xcode during testing to receive commands to
 load bundles containing the code changes. 
 
-Stop Press: Injection now learns how to build files in your project using an "xcodebuild -dry-run"
-so you should no longer have to edit the bundle project to take into account header
-include paths for files in your main project. Injections works for 64bit OSX and iOS
-projects in the simulator and on the device.
+Stop Press: Injection no longer needs to patch your project to operate and is
+ready to use on any project at any time. To do this it inserts commands into
+your lldb console to load a small bootstrap bundle into your app then works 
+as before. You might still want to patch your project if you want to
+avoid this slight delay or inject code onto an iOS device.
 
 A quick demonstration video/tutorial of Injection in action is available here:
 
@@ -22,18 +23,20 @@ https://vimeo.com/50137444
 Announcements of major commits to the repo will be made on twitter [@Injection4Xcode](https://twitter.com/#!/@Injection4Xcode).
 
 To use Injection, open the InjectionPluginLite project, build it and restart Xcode.
-Alternatively you can download a small installer app "Injection Plugin.app" from 
+You must build the "InjectionPlugin" target selecting to build for the simulator.
+Alternatively, you can download a small installer app "Injection Plugin.app" from 
 [http://injectionforxcode.com](http://injectionforxcode.com) and use the menu item 
 "File/Install Plugin" then restart Xcode (This also installs the AppCode plugin.)
 This should add a submenu and an "Inject Source" item to Xcode's "Product" menu.
 If at first it doesn't appear, try restarting Xcode again.
 
-Open a simple example project such as UICatalog or GLEssentials from Apple and use the 
-"Product/Injection Plugin/Patch Project for Injection" menu item to prepare the project
-and rebuild it (Be sure to #define DEBUG.) When you run the project it should connect
+Open a simple example project such as UICatalog or GLEssentials from Apple. At this
+point you can use the  "Product/Injection Plugin/Patch Project for Injection" menu item
+to pre-prepare the project then rebuild it. If you have patched the project it should connect
 to Xcode which will display a red badge on it's dock icon showing the application is
-prepared to load patch bundles. Select text in a class source file and use
-menu item "Product/Inject Source" to inject any changes you may have made into the app.
+prepared to load patch bundles. Otherwise, select text in a class source file and use
+menu item "Product/Inject Source" to inject any changes you have made into the app
+and it will connect to Xcode and load your changes.
 
 On OS X remember to have your entitlements include "Allow outgoing connections". 
 

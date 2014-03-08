@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#36 $
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#37 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -35,7 +35,7 @@ if ( ! -d $InjectionBundle ) {
         or error "Could not copy injection bundle.";
 
     my $bundlePCH = "$InjectionBundle/InjectionBundle-Prefix.pch";
-    if ( my ($projectPCH) = split "\n", `find . -name "$projName-Prefix.pch"` ) {
+    if ( 0 and my ($projectPCH) = split "\n", `find . -name "$projName-Prefix.pch"` ) {
         print "Linking to pre-compilation header: $projectPCH\n";
         unlink $bundlePCH;
         symlink "../$projectPCH", $bundlePCH

@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.h#10 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.h#11 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -28,6 +28,7 @@
 
     Class DVTSourceTextView;
     Class IDEWorkspaceDocument;
+    Class IDEConsoleTextView;
 
     //NSUserDefaults *defaults;
     int serverSocket;
@@ -46,6 +47,11 @@
 @property (nonatomic,retain) NSUserDefaults *defaults;
 @property (nonatomic,retain) NSMutableString *mac;
 @property (nonatomic,retain) NSString *bonjourName;
+
+@property (nonatomic,retain) NSButton *pauseResume;
+@property (nonatomic,retain) NSTextView *debugger;
+@property (nonatomic,retain) NSString *lastFile;
+@property (nonatomic,retain) NSWindow *lastWin;
 
 - (NSUserDefaults *)defaults;
 - (NSArray *)serverAddresses;

@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#40 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#41 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -51,7 +51,7 @@ struct _in_header { int pathLength, dataLength; };
 
 #ifndef INJECTION_NOIMPL
 
-#ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
+#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_AUTOLOAD)
 @interface UINib(BundleInjection)
 - (NSArray *)inInstantiateWithOwner:(id)ownerOrNil options:(NSDictionary *)optionsOrNil;
 @end
@@ -273,7 +273,7 @@ static NSNetService *service;
                 return;
             }
 
-#if __IPHONE_OS_VERSION_MIN_REQUIRED
+#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_AUTOLOAD)
             if ( (sbInjection = status & 2) )
                 method_exchangeImplementations(
                    class_getInstanceMethod([UINib class], @selector(instantiateWithOwner:options:)),
@@ -381,6 +381,7 @@ static NSNetService *service;
                         for ( j=0 ; j<len ; )
                             j += read( loaderSocket, buff+j, j+block < len ? block : len-j );
                         NSData *data = [NSData dataWithBytesNoCopy:buff length:len freeWhenDone:YES];
+#ifndef INJECTION_AUTOLOAD
 #ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
                         UIImage *img = [[UIImage alloc] initWithData:data];
 #else
@@ -390,6 +391,7 @@ static NSNetService *service;
                                                         withObject:img waitUntilDone:NO];
 #ifndef INJECTION_ISARC
                         [img release];
+#endif
 #endif
                     }
                         break;
@@ -422,6 +424,7 @@ static NSNetService *service;
                                 float r, g, b, a;
                                 sscanf( file, "%f,%f,%f,%f", &r, &g, &b, &a );
                                 INLog( @"Color #%d -> %f,%f,%f,%f", tag, r, g, b, a );
+#ifndef INJECTION_AUTOLOAD
 #ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
                                 UIColor *col = [UIColor colorWithRed:r green:g
                                                                 blue:b alpha:a];
@@ -446,6 +449,7 @@ static NSNetService *service;
                                     [target setNeedsDisplay];
                                 if ( [INColorDelegate respondsToSelector:@selector(inColor:hasChanged:)] )
                                     [INColorDelegate inColor:tag hasChanged:col];
+#endif
                             }
                                 
                         }
@@ -490,7 +494,14 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 
 #else
 
-+ (const char *)registerSelectorsInFile:(const char *)file containing:(void *)hook {
+// Apportable's Objective-C data structures ...
+struct _in_objc_ivars { int twenty, count; struct { long *offsetPtr; char *name, *type; int align, size; } ivars[1]; };
+struct _in_objc_ronly { int z1, offsetStart; int offsetEnd, z2; char *className; void *methods, *skip2; struct _in_objc_ivars *ivars; };
+struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_ronly *internal; };
+
+#import <elf.h>
+
++ (const char *)registerSelectorsInLibrary:(const char *)file containing:(void *)hook {
 
     struct stat st;
     if ( stat( file, &st ) < 0 )
@@ -505,31 +516,24 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
         return "Could not read file";
     fclose( fp );
 
-    struct _elf {
-        char e_ident[16];
-        uint16_t e_type, e_machine;
-        uint32_t e_version, e_entry, e_phoff, e_shoff, e_flags;
-        uint16_t e_ehsize, e_phentsize, e_phnum, e_shentsize, e_shnum;
-    } *hdr = (struct _elf *)buffer;
+    Elf32_Ehdr *hdr = (Elf32_Ehdr *)buffer;
 
     //NSLog( @"Offsets: %lld %d %d %d %d", st.st_size, hdr->e_phoff, hdr->e_shoff, hdr->e_shentsize, hdr->e_shnum );
 
     if ( hdr->e_shoff > st.st_size )
         return "Bad segment header offset";
 
-    struct _section {
-        uint32_t sh_name, sh_type, sh_flags, sh_addr, sh_offset,
-            sh_size, sh_link, sh_info, sh_addralign, sh_entsize;
-    } *sections = (struct _section *)(buffer+hdr->e_shoff);
+    Elf32_Shdr *sections = (Elf32_Shdr *)(buffer+hdr->e_shoff);
 
-    if ( sections[hdr->e_shnum-1].sh_offset > st.st_size )
+    // assumes names section is last...
+    const char *names = buffer+sections[hdr->e_shnum-1].sh_offset;
+    if ( names > buffer + st.st_size )
         return "Bad section name table offset";
 
-    const char *names = buffer+sections[hdr->e_shnum-1].sh_offset;
     unsigned offset = 0, nsels = 0;
 
     for ( int i=0 ; i<hdr->e_shnum ; i++ ) {
-        struct _section *sect = &sections[i];
+        Elf32_Shdr *sect = &sections[i];
         const char *name = names+sect->sh_name;
         //NSLog( @"Section: %s 0x%x[%d] %d %d", name, sect->sh_offset, sect->sh_size, sect->sh_addr, sect->sh_addralign );
         if ( strcmp( name, "__DATA, __objc_selrefs, literal_pointers, no_dead_strip" ) == 0 ) {
@@ -547,11 +551,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 
     SEL *sels = (SEL *)((char *)info.dli_fbase+offset);
     for ( unsigned i=0 ; i<nsels/sizeof *sels ; i++ )
-        if ( (void *)sels[i] < info.dli_fbase )
-            NSLog( @"Dud selector reference: %p - %.50s", sels[i],
-                  *(char **)&sels[i]+((char *)info.dli_fbase-(char *)0) );
-        else
-            sels[i] = sel_registerName( (const char *)(void *)sels[i] );
+        sels[i] = sel_registerName( (const char *)(void *)sels[i] );
 
     free( buffer );
     return NULL;
@@ -567,22 +567,18 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
         if ( !hook )
             NSLog( @"Unable to locate injectionHook() in: %s", path );
         else {
-            const char *err = [self registerSelectorsInFile:path containing:hook];
+            const char *err = [self registerSelectorsInLibrary:path containing:hook];
             if ( err )
-                NSLog( @"registerSelectors: %s", err );
+                NSLog( @"registerSelectorsInLibrary: %s", err );
             status = hook( path );
         }
     }
 }
 
-// a little inside knowledge of Objective-C data structures for the new version of the class ...
-struct _in_objc_ivars { int twenty, count; struct { long *offsetPtr; char *name, *type; int align, size; } ivars[1]; };
-struct _in_objc_ronly { int z1, offsetStart; int offsetEnd, z2; char *className; void *methods, *skip2; struct _in_objc_ivars *ivars; };
-struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_ronly *internal; };
-
 #endif
 
 + (void)alignIvarsOf:(Class)newClass to:(Class)oldClass {
+    // this used to be necessary due to the vagaries of clang
     // new version of class must not have been messaged at this point
     // i.e. the new version must not have a "+ (void)load" method
     struct _in_objc_class *nc = INJECTION_BRIDGE(struct _in_objc_class *)newClass;
@@ -591,15 +587,21 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 
     // align ivars in new class with original
     for ( int i=0 ; ivars && i<ivars->count ; i++ ) {
-        Ivar ivar = class_getInstanceVariable(oldClass, ivars->ivars[i].name);
+        const char *ivarName = ivars->ivars[i].name;
+        Ivar ivar = class_getInstanceVariable(oldClass, ivarName);
         if ( !ivar )
-            NSLog( @"*** Please re-run your application to add ivar '%s' ***",
-                  ivars->ivars[i].name );
+            NSLog( @"*** Please re-run your application to add ivar '%s' ***", ivarName );
         else {
-            if ( strcmp( ivar_getTypeEncoding( ivar ), ivars->ivars[i].type ) )
+            if ( strcmp( ivar_getTypeEncoding( ivar ), ivars->ivars[i].type ) != 0 )
                 NSLog( @"*** Ivar '%s' has changed type, re-run application. ***",
                       ivars->ivars[i].name );
-            *ivars->ivars[i].offsetPtr = ivar_getOffset(ivar);
+
+            long *newOffsetPtr = ivars->ivars[i].offsetPtr, oldOffset = ivar_getOffset(ivar);
+            if ( *newOffsetPtr != oldOffset ) {
+                NSLog( @"Aligning ivar: %s.%s as %ld != %ld",
+                      class_getName(oldClass), ivarName, *newOffsetPtr, oldOffset );
+                *newOffsetPtr = oldOffset;
+            }
         }
     }
 }
@@ -642,7 +644,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
     [self dumpIvars:oldClass];
     [self dumpIvars:newClass];
 #endif
-#ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
+#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_AUTOLOAD)
     if ( notify & INJECTION_NOTSILENT ) {
         NSString *msg = [[NSString alloc] initWithFormat:@"Class '%s' injected.", className];
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Bundle Loaded"
@@ -682,7 +684,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
         for ( int i=0 ; i<size/sizeof *classReferences ; i++ ) {
             const char *className = class_getName(classReferences[i]);
             Class originalClass = objc_getClass( className );
-            if ( classReferences[i] != originalClass ) {
+            if ( originalClass && classReferences[i] != originalClass ) {
                 INLog( @"Fixing references to class: %s %p -> %p", className, classReferences[i], originalClass );
                 classReferences[i] = originalClass;
             }
@@ -702,7 +704,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 
 #endif
 
-#if __IPHONE_OS_VERSION_MIN_REQUIRED
+#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_AUTOLOAD)
 
 static NSMutableDictionary *nibsByNibName, *optionsByVC;
 

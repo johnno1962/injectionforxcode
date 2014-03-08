@@ -41,6 +41,8 @@
 {
     IDEWorkspaceDocument = NSClassFromString(@"IDEWorkspaceDocument");
     DVTSourceTextView = NSClassFromString(@"DVTSourceTextView");
+    IDEConsoleTextView = NSClassFromString(@"IDEConsoleTextView");
+
     self.defaults = [NSUserDefaults standardUserDefaults];
 
     if ( ![NSBundle loadNibNamed:@"INPluginMenuController" owner:self] )
@@ -125,6 +127,8 @@
     id delegate = [[NSApp keyWindow] delegate];
     if ( ![delegate respondsToSelector:@selector(document)] )
         delegate = [[self.lastTextView window] delegate];
+    if ( ![delegate respondsToSelector:@selector(document)] )
+        delegate = [self.lastWin delegate];
     NSDocument *workspace = [delegate document];
     return [workspace isKindOfClass:IDEWorkspaceDocument] ?
         [[workspace fileURL] path] : nil;
@@ -179,22 +183,95 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 - (IBAction)openBundle:sender {
     [self.client runScript:@"openBundle.pl" withArg:[self lastFileSaving:YES]];
 }
+
 - (IBAction)injectSource:(id)sender {
-    NSString *lastFile = [self lastFileSaving:YES];
+    NSString *lastFile = sender ? [self lastFileSaving:YES] : self.lastFile;
+    if ( !lastFile ) {
+        [self.client alert:@"No source file is selected. "
+         "Make sure that text is selected and the cursor is inside the file you have edited."];
+        return;
+    }
+    else if ( [lastFile rangeOfString:@"\\.mm?$"
+                              options:NSRegularExpressionSearch].location == NSNotFound ) {
+        [self.client alert:@"Only class implementations (.m or .mm files) can be injected. "
+         "Make sure that text is selected and the cursor is inside the file you have edited."];
+        return;
+    }
+    else if ( !self.client.connected ) {
+
+        // unpatched injection
+        if ( sender ) {
+            self.lastFile = lastFile;
+            self.lastWin = [self.lastTextView window];
+            [self findConsole:[self.lastWin contentView]];
+            [self.pauseResume performClick:self];
+            [self.lastWin makeFirstResponder:self.debugger];
+            [self performSelector:@selector(findLLDB) withObject:nil afterDelay:.5];
+        }
+        else
+            [self performSelector:@selector(injectSource:) withObject:nil afterDelay:.1];
+
+        return;
+    }
+
     if ( ![self workspacePath] )
         [self.client alert:@"No project is open. Make sure the project you are working on is the \"Key Window\"."];
     else if ( !self.client.connected )
         [self.client alert:@"No  application has connected to injection. "
          "Patch the project and make sure DEBUG is #defined then run project again."];
-    else if ( !lastFile )
-        [self.client alert:@"No source file is selected. "
-         "Make sure that text is selected and the cursor is inside the file you have edited."];
-    else if ( [lastFile rangeOfString:@"\\.mm?$"
-                                options:NSRegularExpressionSearch].location == NSNotFound )
-        [self.client alert:@"Only class implementations (.m or .mm files) can be injected. "
-         "Make sure that text is selected and the cursor is inside the file you have edited."];
     else
         [self.client runScript:@"injectSource.pl" withArg:lastFile];
+
+    self.pauseResume = nil;
+    self.debugger = nil;
+    self.lastWin = nil;
+}
+
+- (void)findConsole:(NSView *)view {
+    for ( NSView *subview in [view subviews] ) {
+        if ( [subview isKindOfClass:[NSButton class]] &&
+            [(NSButton *)subview action] == @selector(pauseOrResume:) )
+            self.pauseResume = (NSButton *)subview;
+        if ( [subview class] == IDEConsoleTextView )
+            self.debugger = (NSTextView *)subview;
+        [self findConsole:subview];
+    }
+}
+
+- (void)findLLDB {
+    float after = 0;
+    if ( [[self.debugger string] rangeOfString:@"(lldb)"].location == NSNotFound ) {
+        [self performSelector:@selector(findLLDB) withObject:nil afterDelay:.1];
+        return;
+    }
+
+    // ensure lldb is listening
+    if ( [[self.debugger string] rangeOfString:@"27359872639733"].location == NSNotFound ) {
+        [self performSelector:@selector(findLLDB) withObject:nil afterDelay:.5];
+        [self keyEvent:@"p 27359872639632+101" code:0 after:after+=.1];
+        [self keyEvent:@"\r" code:36 after:after+=.1];
+        return;
+    }
+
+    [NSObject cancelPreviousPerformRequestsWithTarget:self.debugger];
+    NSString *loader = [NSString stringWithFormat:@"p (void)[[NSBundle bundleWithPath:@\""
+                        "%@/InjectionLoader.bundle\"] load]", self.client.scriptPath];
+
+    [self keyEvent:loader code:0 after:after+=.1];
+    [self keyEvent:@"\r" code:36 after:after+=.1];
+    [self keyEvent:@"c" code:0 after:after+=.5];
+    [self keyEvent:@"\r" code:36 after:after+=.1];
+
+    [[self.lastTextView window] makeFirstResponder:self.lastTextView];
+    [self performSelector:@selector(injectSource:) withObject:nil afterDelay:after+=.5];
+}
+
+- (void)keyEvent:(NSString *)str code:(unsigned short)code after:(float)delay {
+    NSEvent *event = [NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0, 0)
+                                 modifierFlags:0 timestamp:0 windowNumber:0 context:0
+                                    characters:str charactersIgnoringModifiers:nil
+                                     isARepeat:YES keyCode:code];
+    [self.debugger performSelector:@selector(keyDown:) withObject:event afterDelay:delay];
 }
 
 #pragma mark - Injection Service

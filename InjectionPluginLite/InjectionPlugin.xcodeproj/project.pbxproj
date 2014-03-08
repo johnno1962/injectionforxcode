@@ -29,6 +29,23 @@
 		DA1B5D020E64686800921439 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 089C1672FE841209C02AAC07 /* Foundation.framework */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		BBC2900718CA703D003436A9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BBC2900018CA6F46003436A9 /* InjectionLoader.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = BBC55D8914C4ED1500C41CA1;
+			remoteInfo = InjectionBundle;
+		};
+		BBC2900A18CA703D003436A9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BBC2900018CA6F46003436A9 /* InjectionLoader.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = BBC55D8A14C4ED1500C41CA1;
+			remoteInfo = InjectionBundle;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		089C1672FE841209C02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		7F2EB899145057EA00E97A87 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -51,6 +68,7 @@
 		BB63E0F8160CA89800E95F5D /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		BB8D68AA17F1BB64009E02EE /* listDevice.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = listDevice.pl; sourceTree = "<group>"; };
 		BB98CE5616DB5E3C00B90297 /* appcode.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = appcode.txt; sourceTree = "<group>"; };
+		BBC2900018CA6F46003436A9 /* InjectionLoader.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = InjectionLoader.xcodeproj; path = InjectionLoader/InjectionLoader.xcodeproj; sourceTree = "<group>"; };
 		BBEADCF516B12EAE003EF366 /* projectBuilt.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = projectBuilt.pl; sourceTree = "<group>"; };
 		BBEC640016A756F600DC5E08 /* patchProject.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = patchProject.pl; sourceTree = "<group>"; };
 		BBEC640116A756F600DC5E08 /* revertProject.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = revertProject.pl; sourceTree = "<group>"; };
@@ -73,6 +91,7 @@
 		089C166AFE841209C02AAC07 /* QuietXcode */ = {
 			isa = PBXGroup;
 			children = (
+				BBC2900018CA6F46003436A9 /* InjectionLoader.xcodeproj */,
 				7F411B0C15FABAC6002F77B6 /* Classes */,
 				089C167CFE841241C02AAC07 /* Resources */,
 				BB26EB8D160DE85B00A62DFC /* Scripts */,
@@ -141,6 +160,14 @@
 			name = Scripts;
 			sourceTree = "<group>";
 		};
+		BBC2900118CA6F46003436A9 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BBC2900B18CA703D003436A9 /* InjectionLoader.bundle */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -156,6 +183,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				BBC2900818CA703D003436A9 /* PBXTargetDependency */,
 			);
 			name = InjectionPlugin;
 			productInstallPath = "$(HOME)/Library/Bundles";
@@ -184,12 +212,28 @@
 			);
 			mainGroup = 089C166AFE841209C02AAC07 /* QuietXcode */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = BBC2900118CA6F46003436A9 /* Products */;
+					ProjectRef = BBC2900018CA6F46003436A9 /* InjectionLoader.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				8D5B49AC048680CD000E48DA /* InjectionPlugin */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		BBC2900B18CA703D003436A9 /* InjectionLoader.bundle */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = InjectionLoader.bundle;
+			remoteRef = BBC2900A18CA703D003436A9 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		BB5251F8160A2EF700276EB3 /* Resources */ = {
@@ -228,7 +272,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "chmod +x \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"/*.pl\n\n";
+			shellScript = "chmod +x \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"/*.pl\ncp -r \"$BUILD_DIR/Debug-iphonesimulator/InjectionLoader.bundle\" \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -243,6 +287,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		BBC2900818CA703D003436A9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = InjectionBundle;
+			targetProxy = BBC2900718CA703D003436A9 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1DEB913B08733D840010E9CD /* Debug */ = {
