@@ -7,7 +7,7 @@
 //
 //  Repo: https://github.com/johnno1962/Xtrace
 //
-//  $Id: //depot/Xtrace/Xray/Xtrace.mm#51 $
+//  $Id: //depot/Xtrace/Xray/Xtrace.mm#52 $
 //
 //  The above copyright notice and this permission notice shall be
 //  included in all copies or substantial portions of the Software.
@@ -194,7 +194,7 @@ static int indent;
                          [nameStr isEqualToString:@"description"] )
                     ; // best avoided
 
-#if !defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_AUTOLOAD)
+#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_AUTOLOAD)
                 else if ( aClass == [UIView class] && [nameStr isEqualToString:@"drawRect:"] )
                     ; // no idea why this is a problem...
 #endif
