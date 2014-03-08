@@ -23,9 +23,6 @@ you to log all messages sent to a class or instance using the following commands
     or
     (lldb) p [tableView xtrace] // trace a particular instance
     
-This means to build the plugin from source you will also need the Xtrace project
-from github [https://github.com/johnno1962/Xtrace](https://github.com/johnno1962/Xtrace).
-
 A quick demonstration video/tutorial of Injection in action is available here:
 
 https://vimeo.com/50137444
