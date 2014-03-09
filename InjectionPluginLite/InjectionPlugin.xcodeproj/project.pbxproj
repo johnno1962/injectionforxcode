@@ -31,13 +31,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		BBC2900718CA703D003436A9 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BBC2900018CA6F46003436A9 /* InjectionLoader.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = BBC55D8914C4ED1500C41CA1;
-			remoteInfo = InjectionBundle;
-		};
 		BBC2900A18CA703D003436A9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = BBC2900018CA6F46003436A9 /* InjectionLoader.xcodeproj */;
@@ -180,6 +173,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1DEB913A08733D840010E9CD /* Build configuration list for PBXNativeTarget "InjectionPlugin" */;
 			buildPhases = (
+				BBA4081518CCA63E005CE183 /* ShellScript */,
 				8D5B49B1048680CD000E48DA /* Sources */,
 				8D5B49B3048680CD000E48DA /* Frameworks */,
 				BB5251F8160A2EF700276EB3 /* Resources */,
@@ -188,7 +182,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				BBC2900818CA703D003436A9 /* PBXTargetDependency */,
 			);
 			name = InjectionPlugin;
 			productInstallPath = "$(HOME)/Library/Bundles";
@@ -277,7 +270,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "chmod +x \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"/*.pl\ncp -r \"$BUILD_DIR\"/*-iphonesimulator/InjectionLoader.bundle \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\n";
+			shellScript = "chmod +x \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"/*.pl\ncp -r InjectionLoader/build/*-iphonesimulator/InjectionLoader.bundle \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\n";
+		};
+		BBA4081518CCA63E005CE183 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd InjectionLoader && xcodebuild -sdk iphonesimulator";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -293,14 +299,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		BBC2900818CA703D003436A9 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = InjectionBundle;
-			targetProxy = BBC2900718CA703D003436A9 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1DEB913B08733D840010E9CD /* Debug */ = {
