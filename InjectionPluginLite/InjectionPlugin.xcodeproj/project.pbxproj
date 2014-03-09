@@ -270,7 +270,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "chmod +x \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"/*.pl\ncp -r InjectionLoader/build/*-iphonesimulator/InjectionLoader.bundle \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\n";
+			shellScript = "chmod +x \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"/*.pl &&\ncp -r Classes/Xtrace.* InjectionLoader/build/*-iphonesimulator/InjectionLoader.bundle \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\n";
 		};
 		BBA4081518CCA63E005CE183 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
