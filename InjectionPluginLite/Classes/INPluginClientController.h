@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.h#11 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.h#12 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -11,6 +11,7 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import "Xtrace.h"
 
 @class INPluginMenuController;
 

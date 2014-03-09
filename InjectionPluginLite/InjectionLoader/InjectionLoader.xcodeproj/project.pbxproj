@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		BBC7A4A216A57FCB00B90868 /* BundleContents.m in Sources */ = {isa = PBXBuildFile; fileRef = BBC7A4A116A57FCB00B90868 /* BundleContents.m */; };
-		BBC8E1C518CBAC3900985DAD /* Xtrace.mm in Sources */ = {isa = PBXBuildFile; fileRef = BBC8E1C418CBAC3900985DAD /* Xtrace.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -16,9 +15,7 @@
 		BBC55D8A14C4ED1500C41CA1 /* InjectionLoader.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = InjectionLoader.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		BBC55D9514C4ED1500C41CA1 /* InjectionBundle-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "InjectionBundle-Info.plist"; sourceTree = "<group>"; };
 		BBC55D9914C4ED1500C41CA1 /* InjectionBundle-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "InjectionBundle-Prefix.pch"; sourceTree = "<group>"; };
-		BBC7A4A116A57FCB00B90868 /* BundleContents.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.objc; fileEncoding = 4; path = BundleContents.m; sourceTree = SOURCE_ROOT; };
-		BBC8E1C318CBAC3900985DAD /* Xtrace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Xtrace.h; sourceTree = SOURCE_ROOT; };
-		BBC8E1C418CBAC3900985DAD /* Xtrace.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Xtrace.mm; sourceTree = SOURCE_ROOT; };
+		BBC7A4A116A57FCB00B90868 /* BundleContents.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = BundleContents.m; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,8 +64,6 @@
 		BBC55D9314C4ED1500C41CA1 /* InjectionBundle */ = {
 			isa = PBXGroup;
 			children = (
-				BBC8E1C318CBAC3900985DAD /* Xtrace.h */,
-				BBC8E1C418CBAC3900985DAD /* Xtrace.mm */,
 				BB2B840417DD31CD0061BBB6 /* BundleContents.h */,
 				BBC7A4A116A57FCB00B90868 /* BundleContents.m */,
 				BBC55D9414C4ED1500C41CA1 /* Supporting Files */,
@@ -145,7 +140,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BBC8E1C518CBAC3900985DAD /* Xtrace.mm in Sources */,
 				BBC7A4A216A57FCB00B90868 /* BundleContents.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -167,11 +161,7 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-					INJECTION_AUTOLOAD,
-				);
+				GCC_PREPROCESSOR_DEFINITIONS = DEBUG;
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_VERSION = "";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -208,7 +198,7 @@
 				FRAMEWORK_SEARCH_PATHS = "../**";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				GCC_PREPROCESSOR_DEFINITIONS = INJECTION_AUTOLOAD;
+				GCC_PREPROCESSOR_DEFINITIONS = DEBUG;
 				GCC_VERSION = "";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;

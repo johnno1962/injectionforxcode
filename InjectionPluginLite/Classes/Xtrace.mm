@@ -7,7 +7,7 @@
 //
 //  Repo: https://github.com/johnno1962/Xtrace
 //
-//  $Id: //depot/Xtrace/Xray/Xtrace.mm#52 $
+//  $Id: //depot/Xtrace/Xray/Xtrace.mm#56 $
 //
 //  The above copyright notice and this permission notice shall be
 //  included in all copies or substantial portions of the Software.
@@ -30,6 +30,10 @@
 
 @implementation NSObject(Xtrace)
 
++ (void)xdump {
+    [Xtrace dumpClass:self];
+}
+
 + (void)notrace {
     [Xtrace dontTrace:self];
 }
@@ -42,8 +46,8 @@
     [Xtrace traceInstance:self];
 }
 
-- (void)untrace {
-    [Xtrace untrace:self];
+- (void)notrace {
+    [Xtrace notrace:self];
 }
 
 @end
@@ -74,32 +78,8 @@ static id delegate;
     describeValues = desc;
 }
 
-static NSRegularExpression *includeMethods, *excludeMethods, *excludeTypes;
-
-+ (BOOL)includeMethods:(NSString *)pattern {
-    return (includeMethods = [self getRegexp:pattern]) != NULL;
-}
-
-+ (BOOL)excludeMethods:(NSString *)pattern {
-    return (excludeMethods = [self getRegexp:pattern]) != NULL;
-}
-
-+ (BOOL)excludeTypes:(NSString *)pattern {
-    return (excludeTypes = [self getRegexp:pattern]) != NULL;
-}
-
-+ (NSRegularExpression *)getRegexp:(NSString *)pattern {
-    if ( !pattern )
-        return nil;
-    NSError *error = nil;
-    NSRegularExpression *regexp = [[NSRegularExpression alloc] initWithPattern:pattern options:0 error:&error];
-    if ( error )
-        NSLog( @"Xtrace: Filter compilation error: %@, in pattern: \"%@\"", [error localizedDescription], pattern );
-    return regexp;
-}
-
+static std::map<Class,BOOL> tracedClasses, swizzledClasses, excludedClasses;
 static std::map<Class,std::map<SEL,struct _xtrace_info> > originals;
-static std::map<Class,BOOL> tracedClasses, excludedClasses;
 static std::map<XTRACE_UNSAFE id,BOOL> tracedInstances;
 static BOOL tracingInstances;
 static int indent;
@@ -126,7 +106,7 @@ static int indent;
     tracingInstances = YES;
 }
 
-+ (void)untrace:(id)instance {
++ (void)notrace:(id)instance {
     auto i = tracedInstances.find(instance);
     if ( i != tracedInstances.end() )
         tracedInstances.erase(i);
@@ -161,8 +141,33 @@ static int indent;
     return depth;
 }
 
+static NSRegularExpression *includeMethods, *excludeMethods, *excludeTypes;
+
++ (BOOL)includeMethods:(NSString *)pattern {
+    return (includeMethods = [self getRegexp:pattern]) != NULL;
+}
+
++ (BOOL)excludeMethods:(NSString *)pattern {
+    return (excludeMethods = [self getRegexp:pattern]) != NULL;
+}
+
++ (BOOL)excludeTypes:(NSString *)pattern {
+    return (excludeTypes = [self getRegexp:pattern]) != NULL;
+}
+
++ (NSRegularExpression *)getRegexp:(NSString *)pattern {
+    if ( !pattern )
+        return nil;
+    NSError *error = nil;
+    NSRegularExpression *regexp = [[NSRegularExpression alloc] initWithPattern:pattern options:0 error:&error];
+    if ( error )
+        NSLog( @"Xtrace: Filter compilation error: %@, in pattern: \"%@\"", [error localizedDescription], pattern );
+    return regexp;
+}
+
 + (void)traceClass:(Class)aClass mtype:(const char *)mtype levels:(int)levels {
-    tracedClasses[aClass] = 0;
+    swizzledClasses[aClass] = 0;
+    tracedClasses[aClass] = 1;
 
     // yes, this is a hack
     if ( !excludeMethods )
@@ -171,7 +176,7 @@ static int indent;
     int depth = [self depth:aClass];
     for ( int l=0 ; l<levels ; l++ ) {
 
-        if ( !tracedClasses[aClass] && excludedClasses.find(aClass) == excludedClasses.end() ) {
+        if ( !swizzledClasses[aClass] && excludedClasses.find(aClass) == excludedClasses.end() ) {
             unsigned mc = 0;
             const char *className = class_getName(aClass);
             Method *methods = class_copyMethodList(aClass, &mc);
@@ -188,10 +193,9 @@ static int indent;
                 else if ( (excludeTypes && [self string:[NSString stringWithUTF8String:type] matches:excludeTypes]) )
                     NSLog( @"Xtrace: type filter excludes: %s[%s %s] %s", mtype, className, name, type );
 
-                else if ( name[0] == '.' || // [nameStr hasPrefix:@"init"] || //
+                else if ( name[0] == '.' || [nameStr isEqualToString:@"description"] ||
                          [nameStr isEqualToString:@"retain"] || [nameStr isEqualToString:@"release"] ||
-                         [nameStr isEqualToString:@"dealloc"] || [nameStr hasPrefix:@"_dealloc"] ||
-                         [nameStr isEqualToString:@"description"] )
+                         [nameStr isEqualToString:@"dealloc"] || [nameStr hasPrefix:@"_dealloc"] )
                     ; // best avoided
 
 #if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_AUTOLOAD)
@@ -203,7 +207,7 @@ static int indent;
                     [self intercept:aClass method:methods[i] mtype:mtype depth:depth];
             }
 
-            tracedClasses[aClass] = 1;
+            swizzledClasses[aClass] = 1;
             free( methods );
         }
 
@@ -251,7 +255,7 @@ static BOOL formatValue( const char *type, void *valptr, va_list *argp, NSMutabl
         // but how does one suppress them??
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wall"
-        APPEND_TYPE( 'B', @"%d", BOOL )
+        APPEND_TYPE( 'B', @"%d", bool )
         APPEND_TYPE( 'c', @"%d", char )
         APPEND_TYPE( 'C', @"%d", unsigned char )
         APPEND_TYPE( 's', @"%d", short )
@@ -463,7 +467,7 @@ static _type XTRACE_RETAINED intercept( id obj, SEL sel, ARG_DEFS ) {
     IMP newImpl = NULL;
     switch ( type[0] == 'r' ? type[1] : type[0] ) {
 
-#define IMPL_COUNT 5
+#define IMPL_COUNT 10
 #define IMPLS( _func, _type ) \
 switch ( depth%IMPL_COUNT ) { \
     case 0: newImpl = (IMP)_func<_type,0>; break; \
@@ -471,6 +475,11 @@ switch ( depth%IMPL_COUNT ) { \
     case 2: newImpl = (IMP)_func<_type,2>; break; \
     case 3: newImpl = (IMP)_func<_type,3>; break; \
     case 4: newImpl = (IMP)_func<_type,4>; break; \
+    case 5: newImpl = (IMP)_func<_type,5>; break; \
+    case 6: newImpl = (IMP)_func<_type,6>; break; \
+    case 7: newImpl = (IMP)_func<_type,7>; break; \
+    case 8: newImpl = (IMP)_func<_type,8>; break; \
+    case 9: newImpl = (IMP)_func<_type,9>; break; \
 }
         case 'V':
         case 'v': IMPLS( vintercept, void ); break;
@@ -538,8 +547,8 @@ switch ( depth%IMPL_COUNT ) { \
         if ( mtype )
             orig.mtype = mtype;
 
-        [self extractSelector:name into:orig.args];
-        [self extractOffsets:type into:orig.args];
+        [self extractSelector:name into:orig.args maxargs:XTRACE_ARGS_SUPPORTED];
+        [self extractOffsets:type into:orig.args maxargs:XTRACE_ARGS_SUPPORTED];
 
         IMP impl = method_getImplementation(method);
         if ( impl != newImpl ) {
@@ -555,9 +564,9 @@ switch ( depth%IMPL_COUNT ) { \
 }
 
 // break up selector by argument
-+ (int)extractSelector:(const char *)name into:(struct _xtrace_arg *)args {
++ (int)extractSelector:(const char *)name into:(struct _xtrace_arg *)args maxargs:(int)maxargs {
 
-    for ( int i=0 ; i<XTRACE_ARGS_SUPPORTED ; i++ ) {
+    for ( int i=0 ; i<maxargs ; i++ ) {
         args->name = name;
         const char *next = index( name, ':' );
         if ( next ) {
@@ -577,10 +586,10 @@ switch ( depth%IMPL_COUNT ) { \
 
 #if 1 // original version using information in method type encoding
 
-+ (int)extractOffsets:(const char *)type into:(struct _xtrace_arg *)args {
++ (int)extractOffsets:(const char *)type into:(struct _xtrace_arg *)args maxargs:(int)maxargs {
     int frameLen = -1;
 
-    for ( int i=0 ; i<XTRACE_ARGS_SUPPORTED ; i++ ) {
+    for ( int i=0 ; i<maxargs ; i++ ) {
         args->type = type;
         while ( !isdigit(*type) )
             type++;
@@ -604,12 +613,12 @@ switch ( depth%IMPL_COUNT ) { \
 
 #else // alternate "NSGetSizeAndAlignment()" version
 
-+ (int)extractOffsets:(const char *)type into:(struct _xtrace_arg *)args {
++ (int)extractOffsets:(const char *)type into:(struct _xtrace_arg *)args maxargs:(int)maxargs {
     NSUInteger size, align, offset = 0;
 
     type = NSGetSizeAndAlignment( type, &size, &align );
 
-    for ( int i=0 ; i<XTRACE_ARGS_SUPPORTED ; i++ ) {
+    for ( int i=0 ; i<maxargs ; i++ ) {
         while ( isdigit(*type) )
             type++;
         args->type = type;
@@ -629,5 +638,117 @@ switch ( depth%IMPL_COUNT ) { \
 }
 
 #endif
+
++ (void)dumpClass:(Class)aClass {
+    NSMutableString *str = [NSMutableString string];
+    [str appendFormat:@"@interface %s : %s {\n", class_getName(aClass), class_getName(class_getSuperclass(aClass))];
+
+    unsigned c;
+    Ivar *ivars = class_copyIvarList(aClass, &c);
+    for ( unsigned i=0 ; i<c ; i++ ) {
+        const char *type = ivar_getTypeEncoding(ivars[i]);
+        [str appendFormat:@"    %@ %s; // %s\n", [self xtype:type], ivar_getName(ivars[i]), type];
+    }
+    free( ivars );
+    [str appendString:@"}\n\n"];
+
+    objc_property_t *props = class_copyPropertyList(aClass, &c);
+    for ( unsigned i=0 ; i<c ; i++ ) {
+        const char *attrs = property_getAttributes(props[i]);
+        [str appendFormat:@"@property () %@ %s // %s\n", [self xtype:attrs+1], property_getName(props[i]), attrs];
+    }
+    free( props );
+
+    [self dumpMethodType:"+" forClass:object_getClass(aClass) into:str];
+    [self dumpMethodType:"-" forClass:aClass into:str];
+    printf( "%s\n@end\n\n", [str UTF8String] );
+}
+
++ (void)dumpMethodType:(const char *)mtype forClass:(Class)aClass into:(NSMutableString *)str {
+    [str appendString:@"\n"];
+    unsigned mc;
+    Method *methods = class_copyMethodList(aClass, &mc);
+    for ( unsigned i=0 ; i<mc ; i++ ) {
+        const char *name = sel_getName(method_getName(methods[i]));
+        const char *type = method_getTypeEncoding(methods[i]);
+        [str appendFormat:@"%s (%@)", mtype, [self xtype:type]];
+
+#define MAXARGS 99
+        struct _xtrace_arg args[MAXARGS+1];
+        [self extractSelector:name into:args maxargs:MAXARGS];
+        [self extractOffsets:type into:args maxargs:MAXARGS];
+
+        for ( int a=0 ; a<MAXARGS ; a++ ) {
+            if ( !args[a].name[0] )
+                break;
+            [str appendFormat:@"%.*s", (int)(args[a+1].name-args[a].name), args[a].name];
+            if ( !args[a].type )
+                break;
+            [str appendFormat:@"(%@)a%d ", [self xtype:args[a].type], a];
+        }
+
+        [str appendFormat:@" // %s\n", type];
+    }
+
+    free( methods );
+}
+
++ (NSString *)xtype:(const char *)type {
+    switch ( type[0] ) {
+        case 'V': return @"oneway void";
+        case 'v': return @"void";
+        case 'B': return @"bool";
+        case 'c': return @"char";
+        case 'C': return @"unsigned char";
+        case 's': return @"short";
+        case 'S': return @"unsigned short";
+        case 'i': return @"int";
+        case 'I': return @"unsigned";
+        case 'f': return @"float";
+        case 'd': return @"double";
+#ifndef __LP64__
+        case 'q': return @"long long";
+#else
+        case 'q':
+#endif
+        case 'l': return @"long";
+#ifndef __LP64__
+        case 'Q': return @"unsigned long long";
+#else
+        case 'Q':
+#endif
+        case 'L': return @"unsigned long";
+        case ':': return @"SEL";
+        case '#': return @"Class";
+        case '@': return [self xtype:type+1 star:" *"];
+        case '^': return [self xtype:type+1 star:" *"];
+        case '{': return [self xtype:type star:""];
+        case 'r':
+            return [@"const " stringByAppendingString:[self xtype:type+1]];
+        case '*': return @"char *";
+        default:
+            return @"id";
+    }
+}
+
++ (NSString *)xtype:(const char *)type star:(const char *)star {
+    if ( type[-1] == '@' ) {
+        if ( type[0] != '"' )
+            return @"id";
+        else if ( type[1] == '<' )
+            type++;
+    }
+    if ( type[-1] == '^' && type[0] != '{' )
+        return [[self xtype:type] stringByAppendingString:@" *"];
+
+    const char *end = ++type;
+    while ( isalpha(*end) || *end == '_' )
+        end++;
+    if ( end[0] == '>' )
+        return [NSString stringWithFormat:@"id<%.*s>", (int)(end-type), type];
+    else
+        return [NSString stringWithFormat:@"%.*s%s", (int)(end-type), type, star];
+}
+
 @end
 #endif

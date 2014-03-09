@@ -7,7 +7,7 @@
 //
 //  Repo: https://github.com/johnno1962/Xtrace
 //
-//  $Id: //depot/Xtrace/Xray/Xtrace.h#17 $
+//  $Id: //depot/Xtrace/Xray/Xtrace.h#18 $
 //
 //  Class to intercept messages sent to a class or object.
 //  Swizzles generic logging implemntation in place of the
@@ -52,6 +52,9 @@
 
 @interface NSObject(Xtrace)
 
+// dump class
++ (void)xdump;
+
 // avoid a class
 + (void)notrace;
 
@@ -62,7 +65,7 @@
 - (void)xtrace;
 
 // stop tacing "
-- (void)untrace;
+- (void)notrace;
 
 @end
 
@@ -105,7 +108,10 @@
 + (void)traceInstance:(id)instance;
 
 // stop tracing messages to instance
-+ (void)untrace:(id)instance;
++ (void)notrace:(id)instance;
+
+// dump runtime class info
++ (void)dumpClass:(Class)aClass;
 
 // before, replacement and after callbacks
 + (void)forClass:(Class)aClass before:(SEL)sel callback:(SEL)callback;
