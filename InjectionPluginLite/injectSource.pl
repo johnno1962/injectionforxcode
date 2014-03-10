@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#37 $
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#38 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -35,20 +35,11 @@ if ( ! -d $InjectionBundle ) {
         or error "Could not copy injection bundle.";
 
     my $bundlePCH = "$InjectionBundle/InjectionBundle-Prefix.pch";
-    if ( 0 and my ($projectPCH) = split "\n", `find . -name "$projName-Prefix.pch"` ) {
+    if ( my ($projectPCH) = split "\n", `find . -name "$projName-Prefix.pch"` ) {
         print "Linking to pre-compilation header: $projectPCH\n";
         unlink $bundlePCH;
         symlink "../$projectPCH", $bundlePCH
             or error "Could not link main preprocessor header as: $!";
-    }
-    else {
-        IO::File->new( ">> $bundlePCH" )->print( <<CODE );
-
-#ifdef DEBUG
-    #define INJECTION_ENABLED
-    #import "$resources/BundleInterface.h"
-#endif
-CODE
     }
 
     $bundleProjectSource = loadFile( $bundleProjectFile );
@@ -102,7 +93,7 @@ if ( $localBinary && $bundleProjectSource =~ s/(BUNDLE_LOADER = )([^;]+;)/$1"$lo
 
 my $learn = "xcodebuild -dry-run $config";
 $learn .= " -project \"$projName.xcodeproj\"" if $projName;
-my $memory = "$archDir/compile_memory.gz";
+my $memory = "$archDir/compile_memory.txt.gz";
 my $mainProjectChanged = mtime( $pbxFile ) > mtime( $memory );
 my $canLearn = !$isAndroid && 1;
 my %memory;
@@ -174,6 +165,7 @@ $changesSource->print( <<CODE );
 #define INJECTION_NOIMPL
 #define INJECTION_BUNDLE $productName
 
+#define INJECTION_ENABLED
 #import "$resources/BundleInjection.h"
 
 #undef _instatic
@@ -253,7 +245,8 @@ if ( $learnt ) {
 
     foreach my $compile (@$learnt) {
         my ($arch) = $compile =~ / -arch (\w+) /;
-        $compile = "time $compile.tmp -o /tmp/injection_$ENV{USER}_$arch.o";
+        $compile = "time $compile.tmp -o $InjectionBundle/$arch/injecting_class.o";
+        print "$compile\n";
         if ( system $compile ) {
             unlink $memory;
             system "$learn clean";
@@ -262,7 +255,7 @@ if ( $learnt ) {
     }
 
     unlink "$learnt.tmp";
-    $obj = "\"/tmp/injection_$ENV{USER}_\$(CURRENT_ARCH).o\", ";
+    $obj = "\"\$(CURRENT_ARCH)/injecting_class.o\", ";
 }
 
 $bundleProjectSource =~ s/(OTHER_LDFLAGS = \().*?("-undefined)/$1$obj$2/sg;
@@ -286,7 +279,7 @@ if ( $mainProjectChanged || mtime( $bundleProjectFile ) > mtime( $buildScript ) 
         or die "Could not open '$buildScript' as: $!";
 }
 else {
-    $build = "bash ../$buildScript # $build";
+    $build = "bash -x ../$buildScript # $build";
 }
 
 print "$build\n\n";

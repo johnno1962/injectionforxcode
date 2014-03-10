@@ -11,5 +11,5 @@ static const char *_inIPAddresses[] = {"127.0.0.1", NULL};
 
 #define INJECTION_ENABLED
 #define INJECTION_AUTOLOAD
-#import "../Classes/BundleInjection.h"
 #import "../Classes/Xtrace.mm"
+#import "../Classes/BundleInjection.h"

@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#43 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#46 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -629,7 +629,13 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
         const char *type = method_getTypeEncoding(methods[i]);
 
         //INLog( @"Swizzling: %c[%s %s] %s to: %p", which, className, sel_getName(name), type, newIMPL );
-        class_replaceMethod(oldClass, name, newIMPL, type);
+#ifdef INJECTION_AUTOLOAD
+        if ( originals.find(oldClass) != originals.end() &&
+            originals[oldClass].find(name) != originals[oldClass].end() )
+            originals[oldClass][name].original = (VIMP)newIMPL;
+        else
+#endif
+            class_replaceMethod(oldClass, name, newIMPL, type);
     }
     free(methods);
 }
