@@ -17,12 +17,14 @@ as before. You might still want to patch your project if you want to
 avoid this slight delay, use with AppCode or Apportable or inject code
 onto an iOS device.
 
-The unpatched version of Injection now includes "Xtrace" which will allow
+![Icon](http://injectionforxcode.johnholdsworth.com/overview.png)
+
+The "unpatched" version of Injection now includes "Xtrace" which will allow
 you to log all messages sent to a class or instance using the following commands:
 
-    (lldb) p [UITableView xtrace] // all table view instances
+    (lldb) p [UITableView xtrace] // trace all table view instances
     or
-    (lldb) p [tableView xtrace] // trace a particular instance
+    (lldb) p [tableView xtrace] // trace a particular instance only
     
 A quick demonstration video/tutorial of Injection in action is available here:
 
