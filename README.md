@@ -14,7 +14,8 @@ Stop Press: Injection no longer needs to patch your project to operate and is
 ready to use on any project at any time. To do this it inserts commands into
 your lldb console to load a small bootstrap bundle into your app then works 
 as before. You might still want to patch your project if you want to
-avoid this slight delay or inject code onto an iOS device.
+avoid this slight delay, use with AppCode or Apportable or inject code
+onto an iOS device.
 
 The unpatched version of Injection now includes "Xtrace" which will allow
 you to log all messages sent to a class or instance using the following commands:
@@ -56,8 +57,7 @@ following message when you restart Xcode5, use "Activity Monitor" to kill off an
 ![Icon](http://injectionforxcode.johnholdsworth.com/socket.png)
 
 If you are using Injection to develop an OSX application you may need a "Run Script, Build Phase" of 
-"rm -rf $CODESIGNING_FOLDER_PATH/Contents/MacOS/InjectionBundle*", also
-Storyboard Injection no longer works in Xcode 5.
+"rm -rf $CODESIGNING_FOLDER_PATH/Contents/MacOS/InjectionBundle*".
 
 ## JetBrains AppCode IDE Support
 
@@ -103,7 +103,7 @@ injected onto the UIViewControllers currently visible while the application is s
 achieved by reloading their "nib" onto the existing view controller and sending -viewDidLoad, 
 -viewWillAppear:YES and -viewDidAppear:YES to the view controller for it to redraw.
 This only works for applications with a single active Storyboard. See class method
-+reloadNibs in the file "BundleInjection.h".
++reloadNibs in the file "BundleInjection.h". Storyboard Injection no longer works in Xcode 5.
 
 ## Shareware License
 
