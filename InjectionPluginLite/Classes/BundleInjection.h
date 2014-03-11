@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#46 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#48 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -9,6 +9,17 @@
 //  Added to program's main.(m|mm) to connect to the Injection app.
 //
 //  This file is copyright and may not be re-distributed, whole or in part.
+//
+//  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+//  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+//  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+//  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+//  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+//  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+//  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+//  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+//  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+//  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
 #import "BundleInterface.h"
@@ -51,7 +62,7 @@ struct _in_header { int pathLength, dataLength; };
 
 #ifndef INJECTION_NOIMPL
 
-#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_AUTOLOAD)
+#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_LOADER)
 @interface UINib(BundleInjection)
 - (NSArray *)inInstantiateWithOwner:(id)ownerOrNil options:(NSDictionary *)optionsOrNil;
 @end
@@ -273,7 +284,7 @@ static NSNetService *service;
                 return;
             }
 
-#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_AUTOLOAD)
+#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_LOADER)
             if ( (sbInjection = status & 2) )
                 method_exchangeImplementations(
                    class_getInstanceMethod([UINib class], @selector(instantiateWithOwner:options:)),
@@ -380,7 +391,7 @@ static NSNetService *service;
                         int j;
                         for ( j=0 ; j<len ; )
                             j += read( loaderSocket, buff+j, j+block < len ? block : len-j );
-#ifndef INJECTION_AUTOLOAD
+#ifndef INJECTION_LOADER
                         NSData *data = [NSData dataWithBytesNoCopy:buff length:len freeWhenDone:YES];
 #ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
                         UIImage *img = [[UIImage alloc] initWithData:data];
@@ -423,7 +434,7 @@ static NSNetService *service;
                                 [INDelegates[tag] inParameter:tag hasChanged:INParameters[tag]];
                             }
                             else if ( (tag -= 5) < 5 ) {
-#ifndef INJECTION_AUTOLOAD
+#ifndef INJECTION_LOADER
                                 float r, g, b, a;
                                 sscanf( file, "%f,%f,%f,%f", &r, &g, &b, &a );
                                 INLog( @"Color #%d -> %f,%f,%f,%f", tag, r, g, b, a );
@@ -629,7 +640,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
         const char *type = method_getTypeEncoding(methods[i]);
 
         //INLog( @"Swizzling: %c[%s %s] %s to: %p", which, className, sel_getName(name), type, newIMPL );
-#ifdef INJECTION_AUTOLOAD
+#ifdef INJECTION_LOADER
         if ( originals.find(oldClass) != originals.end() &&
             originals[oldClass].find(name) != originals[oldClass].end() )
             originals[oldClass][name].original = (VIMP)newIMPL;
@@ -656,7 +667,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
     [self dumpIvars:oldClass];
     [self dumpIvars:newClass];
 #endif
-#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_AUTOLOAD)
+#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_LOADER)
     if ( notify & INJECTION_NOTSILENT ) {
         NSString *msg = [[NSString alloc] initWithFormat:@"Class '%s' injected.", className];
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Bundle Loaded"
@@ -716,7 +727,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 
 #endif
 
-#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_AUTOLOAD)
+#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_LOADER)
 
 static NSMutableDictionary *nibsByNibName, *optionsByVC;
 

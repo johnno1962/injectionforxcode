@@ -7,20 +7,23 @@
 //
 //  Repo: https://github.com/johnno1962/Xtrace
 //
-//  $Id: //depot/Xtrace/Xray/Xtrace.mm#56 $
+//  $Id: //depot/Xtrace/Xray/Xtrace.mm#59 $
 //
 //  The above copyright notice and this permission notice shall be
 //  included in all copies or substantial portions of the Software.
 //
 //  Your milage will vary.. This is definitely a case of:
 //
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-//  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-//  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-//  CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-//  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-//  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+//  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+//  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+//  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+//  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+//  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+//  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+//  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+//  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+//  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
 #ifdef DEBUG
@@ -198,7 +201,7 @@ static NSRegularExpression *includeMethods, *excludeMethods, *excludeTypes;
                          [nameStr isEqualToString:@"dealloc"] || [nameStr hasPrefix:@"_dealloc"] )
                     ; // best avoided
 
-#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_AUTOLOAD)
+#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_LOADER)
                 else if ( aClass == [UIView class] && [nameStr isEqualToString:@"drawRect:"] )
                     ; // no idea why this is a problem...
 #endif
@@ -338,6 +341,7 @@ static id nullImpl( id obj, SEL sel, ... ) {
 static struct _xtrace_info &findOriginal( struct _xtrace_depth *info, SEL sel, ... ) {
     va_list argp; va_start(argp, sel);
     Class aClass = object_getClass( info->obj );
+    const char *className = class_getName( aClass );
 
     while ( aClass && (originals[aClass].find(sel) == originals[aClass].end() ||
                        originals[aClass][sel].depth != info->depth) )
@@ -346,7 +350,8 @@ static struct _xtrace_info &findOriginal( struct _xtrace_depth *info, SEL sel, .
     struct _xtrace_info &orig = originals[aClass][sel];
 
     if ( !aClass ) {
-        NSLog( @"Xtrace: could not find original implementation for %s", sel_getName(info->sel) );
+        NSLog( @"Xtrace: could not find original implementation for [%s %s]",
+              className, sel_getName(info->sel) );
         orig.original = (VIMP)nullImpl;
     }
 
@@ -356,8 +361,8 @@ static struct _xtrace_info &findOriginal( struct _xtrace_depth *info, SEL sel, .
            tracedInstances.find(info->obj) != tracedInstances.end())) ) {
         NSMutableString *args = [NSMutableString string];
 
-        [args appendFormat:@"%*s%s[<%s %p>", indent++, "",
-         orig.mtype, class_getName(aClass), info->obj];
+        [args appendFormat:@"%*s%s[<%s %p>",
+         indent++, "", orig.mtype, className, info->obj];
 
         if ( !showArguments )
             [args appendFormat:@" %s", orig.name];

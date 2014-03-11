@@ -48,16 +48,21 @@ and it will connect to Xcode and load your changes.
 
 On OS X remember to have your entitlements include "Allow outgoing connections". 
 
-### Using Injection with Xcode 5 
+### Using Injection with Xcode 4/5 
 
-The same plugin build can now be used safely on Xcode 4 or 5. If, however you see the
-following message when you restart Xcode5, use "Activity Monitor" to kill off any
-"ibtoold" daemon processes running that Xcode5 forks off and then restart. 
+The same plugin build can be used safely on Xcode 4 or 5. Xcode 5.1 however, no longer
+supports building for garbage collection which is required by Xcode 4. So, if you still
+need to use it with Xcode 4 you will need to use Xcode versions up to 5.0.2 to build it
+and change the change the GC_ENABLE_OBJC_GC to "supported". For Xcode 5.0+ you can simply
+build off github.
+
+If you see the following message when you restart Xcode5, use "Activity Monitor" to
+kill off any "ibtoold" daemon processes running that Xcode5 forks off and then restart. 
 
 ![Icon](http://injectionforxcode.johnholdsworth.com/socket.png)
 
-If you are using Injection to develop an OSX application you may need a "Run Script, Build Phase" of 
-"rm -rf $CODESIGNING_FOLDER_PATH/Contents/MacOS/InjectionBundle*".
+If you are using Injection to develop an OS X application you may need a "Run Script, 
+Build Phase" of  "rm -rf $CODESIGNING_FOLDER_PATH/Contents/MacOS/InjectionBundle*".
 
 ## JetBrains AppCode IDE Support
 
