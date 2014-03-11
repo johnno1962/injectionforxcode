@@ -30,7 +30,7 @@ if ( !$executable ) {
 
 ############################################################################
 #
-# If project has not been injected before copy template bundle project
+# If project has not been injected before, copy template bundle project
 # and bring across key parameters also setting header include path.
 #
 
@@ -54,7 +54,7 @@ if ( ! -d $InjectionBundle ) {
         print "Migrating project parameters to bundle..\n";
         my $mainProjectSource = loadFile( $mainProjectFile );
 
-        # has Objective-C++ been used?
+        # has Objective-C++ been used in the main project?
         if ( $mainProjectSource =~ /sourcecode.cpp.objcpp/ ) {
             $bundleProjectSource =~ s/(explicitFileType = sourcecode).c.objc/$1.cpp.objcpp/;
         }
@@ -74,8 +74,8 @@ if ( ! -d $InjectionBundle ) {
 
     # set include path from list of directories containing headers in the main project
     # This should allow injection to work for all classes in this project but you may
-    # still mean you need to subsequently open the injection bundle project to add to
-    # this path if you are injecting classes in frameworks.
+    # still mean you need to open the injection bundle project to add to this path if
+    # you are injecting classes in frameworks.
     if ( my @includePath = loadFile( "find . -name '*.h' | sed -e 's!/[^/]*\$!!' | sort -u | grep -v InjectionProject |" ) ) {
         $bundleProjectSource =~ s!(HEADER_SEARCH_PATHS = \(\n)(\s+)"../\*\*",!
             $1.join "\n", map "$2\".$_\",", @includePath;
@@ -117,7 +117,7 @@ if ( $localBinary && $bundleProjectSource =~ s/(BUNDLE_LOADER = )([^;]+;)/$1"$lo
 # This section is about learning the compile commands for classes in the
 # main project using "xcodebuild -dry-run". This helps avoid issues with
 # header include paths or specific compileation options used by the main
-# project. They are stored in a "memory" file by architecture.
+# project. They are stored in a "memory" file - by architecture.
 #
 
 my $learn = "xcodebuild -dry-run $config";
@@ -175,8 +175,9 @@ if ( $canLearn ) {
 #
 # Create the "changes" file which #imports the source being injected so it
 # can be built into the bundle project. If the compile command is "learnt"
-# this will be <calssfile>.m.tmp in it's original directory. Otherwise the
-# source will be #imported in "BundleContents.m" in the injection project.
+# this will be <calssfile>.m.tmp in the class's original directory and a
+# temporaray object file XXXInjectionPoeject/<arch>/injecting_class.o used.
+# Otherwise the source will be #imported in "BundleContents.m" for use.
 #
 
 my @classes = unique loadFile( $selectedFile ) =~ /\@implementation\s+(\w+)\b/g;
@@ -241,8 +242,8 @@ $changesSource->close();
 
 ############################################################################
 #
-# At this point basic support has been patched in for an Apportable build of
-# Android devices where a .approj file is present. This is experimental.
+# At this point basic support has been patched in for an Apportable build on
+# Android devices where a .approj file is present. Your milage may vary...
 #
 
 if ( $isAndroid ) {
@@ -279,8 +280,8 @@ COMPILE
 ############################################################################
 #
 # This is where the learnt compilation is actually used. It's compiled into
-# the file XXXInjectionProject/<arch>/injecting_class.o and linnked and the
-# bundle project file patched to link it into the bundle binary.
+# the file XXXInjectionProject/<arch>/injecting_class.o and linked and the
+# bundle project file patched to link "$obj" into the bundle binary.
 #
 
 my $obj = '';
@@ -300,7 +301,7 @@ if ( $learnt ) {
     }
 
     unlink "$learnt.tmp";
-    $obj = "\"\$(CURRENT_ARCH)/injecting_class.o\", ";
+    $obj = "\"$arch/injecting_class.o\", ";
 }
 
 $bundleProjectSource =~ s/(OTHER_LDFLAGS = \().*?("-undefined)/$1$obj$2/sg;
@@ -387,7 +388,7 @@ close BUILD;
 
 unlink $buildScript if $? || $recording && !$recorded;
 
-# If there has been a .pch file change it is worth trying again once
+# If there has been a .pch file change it's worth trying again once
 if ( $rebuild++ == 1 ) {
     system "cd $InjectionBundle && xcodebuild $config clean";
     goto build;
