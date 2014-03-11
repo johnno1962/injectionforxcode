@@ -7,7 +7,7 @@
 //
 //  Repo: https://github.com/johnno1962/Xtrace
 //
-//  $Id: //depot/Xtrace/Xray/Xtrace.h#19 $
+//  $Id: //depot/Xtrace/Xray/Xtrace.h#20 $
 //
 //  Class to intercept messages sent to a class or object.
 //  Swizzles generic logging implemntation in place of the
@@ -59,7 +59,10 @@
 #define XTRACE_RETAINED
 #endif
 
-#define XTRACE_EXCLUSIONS "^(allocWithZone:|initWithCoder:|_UIAppearance_|_hasBaseline|timeIntervalSinceReferenceDate)|WithObjects(AndKeys)?:$"
+#define XTRACE_EXCLUSIONS \
+    "^(allocWithZone:|initWithCoder:|_UIAppearance_|_hasBaseline|"\
+    "_(initializeFor|performUpdatesForPossibleChangesOf)Idiom:|"\
+    "timeIntervalSinceReferenceDate)|WithObjects(AndKeys)?:$"
 
 @interface NSObject(Xtrace)
 
