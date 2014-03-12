@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#42 $
+//  $Id$
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -216,17 +216,16 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 
         // "unpatched" injection
         if ( sender ) {
-            if ( !self.debugger ) {
-                self.lastFile = lastFile;
-                self.lastWin = [self.lastTextView window];
-                [self findConsole:[self.lastWin contentView]];
-                [self.lastWin makeFirstResponder:self.debugger];
-                if ( ![[[self.pauseResume target] class] respondsToSelector:@selector(iconImage_pause)] ||
-                        [self.pauseResume image] == [[[self.pauseResume target] class] iconImage_pause] )
-                    [self.pauseResume performClick:self];
-                [self performSelector:@selector(findLLDB) withObject:nil afterDelay:.5];
-                //[Xtrace dumpClass:[self.debugger class]];
-            }
+            self.lastFile = lastFile;
+            self.lastWin = [self.lastTextView window];
+            [self findConsole:[self.lastWin contentView]];
+            [self.lastWin makeFirstResponder:self.debugger];
+            if ( ![[[self.pauseResume target] class] respondsToSelector:@selector(iconImage_pause)] ||
+                    [self.pauseResume image] == [[[self.pauseResume target] class] iconImage_pause] )
+                [self.pauseResume performClick:self];
+            [NSObject cancelPreviousPerformRequestsWithTarget:self];
+            [self performSelector:@selector(findLLDB) withObject:nil afterDelay:.5];
+            //[Xtrace dumpClass:[self.debugger class]];
         }
         else
             [self performSelector:@selector(injectSource:) withObject:nil afterDelay:.1];
@@ -267,7 +266,7 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
         return;
     }
 
-    [NSObject cancelPreviousPerformRequestsWithTarget:self.debugger];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
     NSString *loader = [NSString stringWithFormat:@"p (void)[[NSBundle bundleWithPath:@\""
                         "%@/InjectionLoader.bundle\"] load]", self.client.scriptPath];
 
