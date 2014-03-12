@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#48 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#49 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -667,7 +667,8 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
     [self dumpIvars:oldClass];
     [self dumpIvars:newClass];
 #endif
-#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_LOADER)
+#ifndef INJECTION_LOADER
+#ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
     if ( notify & INJECTION_NOTSILENT ) {
         NSString *msg = [[NSString alloc] initWithFormat:@"Class '%s' injected.", className];
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Bundle Loaded"
@@ -683,6 +684,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
     }
 #else
     INLog( @" ...ignore any warning, Injection has swizzled class '%s'", className );
+#endif
 #endif
 }
 

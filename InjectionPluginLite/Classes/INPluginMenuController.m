@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#41 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#42 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -23,6 +23,10 @@
 
 #import "INPluginMenuController.h"
 #import "INPluginClientController.h"
+
+@interface NSObject(INMethodsUsed)
++ (NSImage *)iconImage_pause;
+@end
 
 @implementation INPluginMenuController
 
@@ -212,12 +216,17 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 
         // "unpatched" injection
         if ( sender ) {
-            self.lastFile = lastFile;
-            self.lastWin = [self.lastTextView window];
-            [self findConsole:[self.lastWin contentView]];
-            [self.lastWin makeFirstResponder:self.debugger];
-            [self performSelector:@selector(findLLDB) withObject:nil afterDelay:.5];
-            [self.pauseResume performClick:self];
+            if ( !self.debugger ) {
+                self.lastFile = lastFile;
+                self.lastWin = [self.lastTextView window];
+                [self findConsole:[self.lastWin contentView]];
+                [self.lastWin makeFirstResponder:self.debugger];
+                if ( ![[[self.pauseResume target] class] respondsToSelector:@selector(iconImage_pause)] ||
+                        [self.pauseResume image] == [[[self.pauseResume target] class] iconImage_pause] )
+                    [self.pauseResume performClick:self];
+                [self performSelector:@selector(findLLDB) withObject:nil afterDelay:.5];
+                //[Xtrace dumpClass:[self.debugger class]];
+            }
         }
         else
             [self performSelector:@selector(injectSource:) withObject:nil afterDelay:.1];
@@ -250,13 +259,11 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 }
 
 - (void)findLLDB {
-    float after = 0;
 
     // do we have lldb's attention?
     if ( [[self.debugger string] rangeOfString:@"27359872639733"].location == NSNotFound ) {
         [self performSelector:@selector(findLLDB) withObject:nil afterDelay:.5];
-        [self keyEvent:@"p 27359872639632+101" code:0 after:after+=.1];
-        [self keyEvent:@"\r" code:36 after:after+=.1];
+        [self keyEvent:@"p 27359872639632+101" code:0 after:.1];
         return;
     }
 
@@ -264,10 +271,10 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
     NSString *loader = [NSString stringWithFormat:@"p (void)[[NSBundle bundleWithPath:@\""
                         "%@/InjectionLoader.bundle\"] load]", self.client.scriptPath];
 
-    [self keyEvent:loader code:0 after:after+=.1];
-    [self keyEvent:@"\r" code:36 after:after+=.1];
+    float after = 0;
+    [self keyEvent:loader code:0 after:after+=.5];
+    [self keyEvent:loader code:0 after:after+=.5];
     [self keyEvent:@"c" code:0 after:after+=.5];
-    [self keyEvent:@"\r" code:36 after:after+=.1];
 
     [[self.lastTextView window] makeFirstResponder:self.lastTextView];
     [self performSelector:@selector(injectSource:) withObject:nil afterDelay:after+=.5];
@@ -279,7 +286,15 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
                                     characters:str charactersIgnoringModifiers:nil
                                      isARepeat:YES keyCode:code];
     if ( [[self.debugger window] firstResponder] == self.debugger )
-        [self.debugger performSelector:@selector(keyDown:) withObject:event afterDelay:delay];
+        [self performSelector:@selector(keyEvent:) withObject:event afterDelay:delay];
+    if ( code == 0 )
+        [self keyEvent:@"\r" code:36 after:delay+.1];
+}
+
+- (void)keyEvent:(NSEvent *)event {
+    [[self.debugger window] makeFirstResponder:self.debugger];
+    if ( [[self.debugger window] firstResponder] == self.debugger )
+        [self.debugger keyDown:event];
 }
 
 #pragma mark - Injection Service
@@ -338,7 +353,7 @@ static CFDataRef copy_mac_address(void)
                        [[[INJECTION_BRIDGE(NSData *)copy_mac_address() description]
                          substringWithRange:NSMakeRange(5, 9)]
                         stringByReplacingOccurrencesOfString:@" " withString:@""]];
-    INLog( @"%@ %@", [INJECTION_BRIDGE(NSData *)copy_mac_address() description], _bonjourName);
+    //INLog( @"%@ %@", [INJECTION_BRIDGE(NSData *)copy_mac_address() description], _bonjourName);
     return _bonjourName;
 }
 
@@ -374,7 +389,7 @@ static CFDataRef copy_mac_address(void)
     netService.delegate = self;
     [netService publish];
 
-    INLog( @"Waiting for connections..." );
+    INLog( @"Injection: Waiting for connections..." );
     while ( TRUE ) {
         struct sockaddr_in clientAddr;
         socklen_t addrLen = sizeof clientAddr;

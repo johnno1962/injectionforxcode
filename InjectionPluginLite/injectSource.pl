@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id$
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#43 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -290,7 +290,7 @@ if ( $learnt ) {
 
     foreach my $compile (@$learnt) {
         my ($arch) = $compile =~ / -arch (\w+) /;
-        $compile = "time $compile.tmp -o $projRoot$InjectionBundle/$arch/injecting_class.o";
+        $compile = "time $compile.tmp -o \"$projRoot$InjectionBundle/$arch/injecting_class.o\"";
         print "$compile\n";
         if ( system $compile ) {
             unlink $memory;
@@ -347,7 +347,7 @@ while ( my $line = <BUILD> ) {
         $recorded++;
     }
 
-    if ( $line =~ m@(/usr/bin/touch -c ("([^"]+)"|(\S+)))@ ) {
+    if ( $line =~ m@(/usr/bin/touch -c ("([^"]+)"|(\S+(\\ \S*)*)))@ ) {
         $bundlePath = $3 || $4;
         (my $cmd = $1) =~ s/'/'\\''/g;
         $recording->print( "echo && echo '$cmd' &&\n" ) if $recording;
@@ -415,8 +415,9 @@ print "Renaming bundle so it reloads..\n";
 my ($bundleRoot) = $bundlePath =~ m@^\"?(.*)/([^/]*)$@;
 my $newBundle = $isIOS ? "$bundleRoot/$productName.bundle" : "$appPackage/$productName.bundle";
 
-0 == system "rm -rf \"$newBundle\" && cp -r \"$bundlePath\" \"$newBundle\""
-    or error "Could not copy bundle to: $newBundle";
+my $command = "rm -rf \"$newBundle\" && cp -r \"$bundlePath\" \"$newBundle\"";
+print "$command\n";
+0 == system $command or error "Could not copy bundle to: $newBundle";
 
 $bundlePath = $newBundle;
 
