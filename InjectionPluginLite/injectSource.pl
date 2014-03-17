@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#43 $
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#44 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -294,13 +294,12 @@ if ( $learnt ) {
         print "$compile\n";
         if ( system $compile ) {
             unlink $memory;
-            unlink "$learnt.tmp";
             system "$learn clean";
             error "*** Learnt Compile Failed: $compile\n\n** Build memory cleared, please try again. **\n\n";
         }
     }
 
-    unlink "$learnt.tmp";
+    unlink $changesFile;
     $obj = "\"$arch/injecting_class.o\", ";
 }
 

@@ -7,7 +7,7 @@
 //
 //  Repo: https://github.com/johnno1962/Xtrace
 //
-//  $Id: //depot/Xtrace/Xray/Xtrace.mm#59 $
+//  $Id: //depot/Xtrace/Xray/Xtrace.mm#60 $
 //
 //  The above copyright notice and this permission notice shall be
 //  included in all copies or substantial portions of the Software.
@@ -381,7 +381,7 @@ static struct _xtrace_info &findOriginal( struct _xtrace_depth *info, SEL sel, .
         }
 
         // add custom filtering of logging here..
-        [args appendFormat:@"] %.50s %p", orig.type, orig.original];
+        [args appendFormat:@"] %.100s %p", orig.type, orig.original];
         [logToDelegate ? delegate : [Xtrace class] xtraceLog:args];
     }
 
@@ -393,25 +393,30 @@ static struct _xtrace_info &findOriginal( struct _xtrace_depth *info, SEL sel, .
 }
 
 // log returning value
-static void returning( struct _xtrace_info &orig, ... ) {
+static void returning( struct _xtrace_info *orig, ... ) {
     va_list argp; va_start(argp, orig);
     indent && indent--;
 
-    if ( orig.logged && !hideReturns ) {
+    if ( orig->logged && !hideReturns ) {
         NSMutableString *val = [NSMutableString string];
         [val appendFormat:@"%*s-> ", indent, ""];
-        if ( formatValue(orig.type, NULL, &argp, val) ) {
-            [val appendFormat:@" (%s)", orig.name];
+        if ( formatValue(orig->type, NULL, &argp, val) ) {
+            [val appendFormat:@" (%s)", orig->name];
             [logToDelegate ? delegate : [Xtrace class] xtraceLog:val];
         }
     }
 
-    orig.stats.elapsed = [NSDate timeIntervalSinceReferenceDate] - orig.stats.entered;
+    orig->stats.elapsed = [NSDate timeIntervalSinceReferenceDate] - orig->stats.entered;
 }
 
 #define ARG_SIZE sizeof(id) + sizeof(SEL) + sizeof(void *)*9 // something may be aligned
+#ifdef __LP64__
+#define ARG_DEFS void *a0, void *a1, void *a2, void *a3, void *a4, void *a5, void *a6, void *a7, void *a8, void *a9, double d0, double d1, double d2, double d3, double d4, double d5, double d6, double d7
+#define ARG_COPY a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, d0, d1, d2, d3, d4, d5, d6, d7
+#else
 #define ARG_DEFS void *a0, void *a1, void *a2, void *a3, void *a4, void *a5, void *a6, void *a7, void *a8, void *a9
 #define ARG_COPY a0, a1, a2, a3, a4, a5, a6, a7, a8, a9
+#endif
 
 // replacement implmentations "swizzled" onto class
 // "_depth" is number of levels down from NSObject
@@ -435,7 +440,7 @@ static void vintercept( id obj, SEL sel, ARG_DEFS ) {
         orig.callingBack = NO;
     }
 
-    returning( orig );
+    returning( &orig );
 }
 
 template <typename _type, int _depth>
@@ -459,7 +464,7 @@ static _type XTRACE_RETAINED intercept( id obj, SEL sel, ARG_DEFS ) {
         orig.callingBack = NO;
     }
 
-    returning( orig, out );
+    returning( &orig, out );
     return out;
 }
 
