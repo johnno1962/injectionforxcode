@@ -7,7 +7,7 @@
 //
 //  Repo: https://github.com/johnno1962/Xtrace
 //
-//  $Id: //depot/Xtrace/Xray/Xtrace.mm#60 $
+//  $Id: //depot/Xtrace/Xray/Xtrace.mm#61 $
 //
 //  The above copyright notice and this permission notice shall be
 //  included in all copies or substantial portions of the Software.
@@ -406,7 +406,7 @@ static void returning( struct _xtrace_info *orig, ... ) {
         }
     }
 
-    orig->stats.elapsed = [NSDate timeIntervalSinceReferenceDate] - orig->stats.entered;
+    orig->stats.elapsed += [NSDate timeIntervalSinceReferenceDate] - orig->stats.entered;
 }
 
 #define ARG_SIZE sizeof(id) + sizeof(SEL) + sizeof(void *)*9 // something may be aligned
