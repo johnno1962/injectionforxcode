@@ -7,7 +7,7 @@
 //
 //  Repo: https://github.com/johnno1962/Xtrace
 //
-//  $Id: //depot/Xtrace/Xray/Xtrace.h#20 $
+//  $Id: //depot/Xtrace/Xray/Xtrace.h#23 $
 //
 //  Class to intercept messages sent to a class or object.
 //  Swizzles generic logging implemntation in place of the
@@ -64,6 +64,44 @@
     "_(initializeFor|performUpdatesForPossibleChangesOf)Idiom:|"\
     "timeIntervalSinceReferenceDate)|WithObjects(AndKeys)?:$"
 
+// for use with "XcodeColours" plugin
+// https://github.com/robbiehanson/XcodeColors
+
+#define XTRACE_FG "\033[fg"
+#define XTRACE_BG "\033[fg"
+
+#define XTRACE_RED   XTRACE_FG"255,0,0;"
+#define XTRACE_GREEN XTRACE_FG"0,255,0;"
+#define XTRACE_BLUE  XTRACE_FG"0,0,255;"
+
+// internal information
+#define XTRACE_ARGS_SUPPORTED 10
+
+typedef void (*VIMP)( XTRACE_UNSAFE id obj, SEL sel, ... );
+
+struct _xtrace_arg {
+    const char *name, *type;
+    int stackOffset;
+};
+
+// information about original implementations
+struct _xtrace_info {
+    int depth;
+    void *caller;
+    Method method;
+    const char *color;
+    XTRACE_UNSAFE id lastObj;
+    VIMP before, original, after;
+    const char *name, *type, *mtype;
+    struct _xtrace_arg args[XTRACE_ARGS_SUPPORTED+1];
+
+    struct _stats {
+        NSTimeInterval entered, elapsed;
+        unsigned callCount;
+    } stats;
+    BOOL callingBack;
+};
+
 @interface NSObject(Xtrace)
 
 // dump class
@@ -84,7 +122,12 @@
 @end
 
 // implementing class
-@interface Xtrace : NSObject
+@interface Xtrace : NSObject {
+@package
+    Class aClass;
+    NSTimeInterval elapsed;
+    const struct _xtrace_info *info;
+}
 
 // delegate for callbacks
 + (void)setDelegate:delegate;
@@ -105,6 +148,12 @@
 + (BOOL)includeMethods:(NSString *)pattern;
 + (BOOL)excludeMethods:(NSString *)pattern;
 + (BOOL)excludeTypes:(NSString *)pattern;
+
+// color subsequent traces
++ (void)useColor:(const char *)color;
+
+// finer grain control of color
++ (void)useColor:(const char *)color forClass:(Class)aClass;
 
 // don't trace this class e.g. [UIView notrace]
 + (void)dontTrace:(Class)aClass;
@@ -127,39 +176,18 @@
 // dump runtime class info
 + (void)dumpClass:(Class)aClass;
 
-// before, replacement and after callbacks
+// before, replacement and after callbacks to delegate
 + (void)forClass:(Class)aClass before:(SEL)sel callback:(SEL)callback;
 + (void)forClass:(Class)aClass replace:(SEL)sel callback:(SEL)callback;
 + (void)forClass:(Class)aClass after:(SEL)sel callback:(SEL)callback;
 
-// internal information
-#define XTRACE_ARGS_SUPPORTED 10
-
-typedef void (*VIMP)( id obj, SEL sel, ... );
-
-struct _xtrace_arg {
-    const char *name, *type;
-    int stackOffset;
-};
-
-// information about original implementations
-struct _xtrace_info {
-    int depth;
-    Method method;
-    XTRACE_UNSAFE id lastObj;
-    VIMP before, original, after;
-    const char *name, *type, *mtype;
-    struct _xtrace_arg args[XTRACE_ARGS_SUPPORTED+1];
-
-    struct _stats {
-        NSTimeInterval entered, elapsed;
-        unsigned callCount;
-    } stats;
-    BOOL logged, callingBack;
-};
-
 // includes argument info and recorded stats
 + (struct _xtrace_info *)infoFor:(Class)aClass sel:(SEL)sel;
++ (const char *)callerFor:(Class)aClass sel:(SEL)sel;
+
+// simple profiling interface
++ (NSArray *)profile;
++ (void)dumpProfile:(int)count dp:(int)decimalPlaces;
 
 @end
 #endif

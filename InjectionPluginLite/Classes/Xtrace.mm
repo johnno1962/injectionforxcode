@@ -7,7 +7,7 @@
 //
 //  Repo: https://github.com/johnno1962/Xtrace
 //
-//  $Id: //depot/Xtrace/Xray/Xtrace.mm#61 $
+//  $Id: //depot/Xtrace/Xray/Xtrace.mm#67 $
 //
 //  The above copyright notice and this permission notice shall be
 //  included in all copies or substantial portions of the Software.
@@ -28,8 +28,13 @@
 
 #ifdef DEBUG
 
+#import <Foundation/Foundation.h>
 #import "Xtrace.h"
 #import <map>
+
+#ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
+#import <UIKit/UIKit.h>
+#endif
 
 @implementation NSObject(Xtrace)
 
@@ -81,7 +86,8 @@ static id delegate;
     describeValues = desc;
 }
 
-static std::map<Class,BOOL> tracedClasses, swizzledClasses, excludedClasses;
+static std::map<Class,const char *> tracedClasses; // also color
+static std::map<Class,BOOL> swizzledClasses, excludedClasses;
 static std::map<Class,std::map<SEL,struct _xtrace_info> > originals;
 static std::map<XTRACE_UNSAFE id,BOOL> tracedInstances;
 static BOOL tracingInstances;
@@ -168,9 +174,22 @@ static NSRegularExpression *includeMethods, *excludeMethods, *excludeTypes;
     return regexp;
 }
 
+static const char *traceColor = "";
+
++ (void)useColor:(const char *)color {
+    traceColor = color ? color : "";
+}
+
++ (void)useColor:(const char *)color forClass:(Class)aClass {
+    Class metaClass = object_getClass(aClass);
+    tracedClasses[metaClass] = color;
+    tracedClasses[aClass] = color;
+}
+
 + (void)traceClass:(Class)aClass mtype:(const char *)mtype levels:(int)levels {
-    swizzledClasses[aClass] = 0;
-    tracedClasses[aClass] = 1;
+    if ( !tracedClasses[aClass] )
+        tracedClasses[aClass] = traceColor;
+    swizzledClasses[aClass] = NO;
 
     // yes, this is a hack
     if ( !excludeMethods )
@@ -184,7 +203,7 @@ static NSRegularExpression *includeMethods, *excludeMethods, *excludeTypes;
             const char *className = class_getName(aClass);
             Method *methods = class_copyMethodList(aClass, &mc);
 
-           for( int i=0; methods && i<mc; i++ ) {
+           for( unsigned i=0; methods && i<mc; i++ ) {
                 const char *type = method_getTypeEncoding(methods[i]);
                 const char *name = sel_getName(method_getName(methods[i]));
                 NSString *nameStr = [NSString stringWithUTF8String:name];
@@ -197,8 +216,8 @@ static NSRegularExpression *includeMethods, *excludeMethods, *excludeTypes;
                     NSLog( @"Xtrace: type filter excludes: %s[%s %s] %s", mtype, className, name, type );
 
                 else if ( name[0] == '.' || [nameStr isEqualToString:@"description"] ||
-                         [nameStr isEqualToString:@"retain"] || [nameStr isEqualToString:@"release"] ||
-                         [nameStr isEqualToString:@"dealloc"] || [nameStr hasPrefix:@"_dealloc"] )
+                         [nameStr isEqualToString:@"retain"] || [nameStr isEqualToString:@"release"] /*||
+                         [nameStr isEqualToString:@"dealloc"] || [nameStr hasPrefix:@"_dealloc"]*/ )
                     ; // best avoided
 
 #if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_LOADER)
@@ -210,7 +229,7 @@ static NSRegularExpression *includeMethods, *excludeMethods, *excludeTypes;
                     [self intercept:aClass method:methods[i] mtype:mtype depth:depth];
             }
 
-            swizzledClasses[aClass] = 1;
+            swizzledClasses[aClass] = YES;
             free( methods );
         }
 
@@ -238,6 +257,14 @@ static NSRegularExpression *includeMethods, *excludeMethods, *excludeTypes;
 
 + (struct _xtrace_info *)infoFor:(Class)aClass sel:(SEL)sel {
     return &originals[aClass][sel];
+}
+
+#import <dlfcn.h>
+
++ (const char *)callerFor:(Class)aClass sel:(SEL)sel {
+    static Dl_info info;
+    dladdr(originals[aClass][sel].caller, &info);
+    return info.dli_sname;
 }
 
 // delegate implements as instance method
@@ -286,7 +313,7 @@ static BOOL formatValue( const char *type, void *valptr, va_list *argp, NSMutabl
             [args appendFormat:@"@selector(%s)", sel_getName(va_arg(*argp,SEL))];
             return YES;
         case '#': case '@': {
-            id obj = va_arg(*argp,id);
+            XTRACE_UNSAFE id obj = va_arg(*argp,XTRACE_UNSAFE id);
             if ( describeValues ) {
                 describing = YES;
                 [args appendString:obj?[obj description]:@"<nil>"];
@@ -330,10 +357,10 @@ static BOOL formatValue( const char *type, void *valptr, va_list *argp, NSMutabl
 }
 
 struct _xtrace_depth {
-    int depth; XTRACE_UNSAFE id obj; SEL sel;
+    XTRACE_UNSAFE id obj; SEL sel; int depth;
 };
 
-static id nullImpl( id obj, SEL sel, ... ) {
+static id nullImpl( XTRACE_UNSAFE __unused id obj, __unused SEL sel, ... ) {
     return nil;
 }
 
@@ -356,10 +383,18 @@ static struct _xtrace_info &findOriginal( struct _xtrace_depth *info, SEL sel, .
     }
 
     aClass = object_getClass( info->obj );
-    if ( (orig.logged = !describing && orig.mtype &&
-          (!tracingInstances ? tracedClasses[aClass] :
-           tracedInstances.find(info->obj) != tracedInstances.end())) ) {
+    if ( !describing && orig.mtype &&
+        (!tracingInstances ? tracedClasses[aClass] != nil :
+         tracedInstances.find(info->obj) != tracedInstances.end()) )
+        orig.color = tracedClasses[aClass];
+    else
+        orig.color = NULL;
+
+    if ( orig.color ) {
+
         NSMutableString *args = [NSMutableString string];
+        if ( orig.color[0] )
+            [args appendFormat:@"%s", orig.color];
 
         [args appendFormat:@"%*s%s[<%s %p>",
          indent++, "", orig.mtype, className, info->obj];
@@ -382,6 +417,7 @@ static struct _xtrace_info &findOriginal( struct _xtrace_depth *info, SEL sel, .
 
         // add custom filtering of logging here..
         [args appendFormat:@"] %.100s %p", orig.type, orig.original];
+        if ( orig.color[0] ) [args appendString:@"\033[;"];
         [logToDelegate ? delegate : [Xtrace class] xtraceLog:args];
     }
 
@@ -397,11 +433,12 @@ static void returning( struct _xtrace_info *orig, ... ) {
     va_list argp; va_start(argp, orig);
     indent && indent--;
 
-    if ( orig->logged && !hideReturns ) {
+    if ( orig->color && !hideReturns ) {
         NSMutableString *val = [NSMutableString string];
-        [val appendFormat:@"%*s-> ", indent, ""];
+        [val appendFormat:@"%s%*s-> ", orig->color, indent, ""];
         if ( formatValue(orig->type, NULL, &argp, val) ) {
             [val appendFormat:@" (%s)", orig->name];
+            if ( orig->color[0] ) [val appendString:@"\033[;"];
             [logToDelegate ? delegate : [Xtrace class] xtraceLog:val];
         }
     }
@@ -409,22 +446,23 @@ static void returning( struct _xtrace_info *orig, ... ) {
     orig->stats.elapsed += [NSDate timeIntervalSinceReferenceDate] - orig->stats.entered;
 }
 
-#define ARG_SIZE sizeof(id) + sizeof(SEL) + sizeof(void *)*9 // something may be aligned
-#ifdef __LP64__
-#define ARG_DEFS void *a0, void *a1, void *a2, void *a3, void *a4, void *a5, void *a6, void *a7, void *a8, void *a9, double d0, double d1, double d2, double d3, double d4, double d5, double d6, double d7
-#define ARG_COPY a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, d0, d1, d2, d3, d4, d5, d6, d7
-#else
+#define ARG_SIZE (sizeof(id) + sizeof(SEL) + sizeof(void *)*9) // approximate to say the least..
+#ifndef __LP64__
 #define ARG_DEFS void *a0, void *a1, void *a2, void *a3, void *a4, void *a5, void *a6, void *a7, void *a8, void *a9
 #define ARG_COPY a0, a1, a2, a3, a4, a5, a6, a7, a8, a9
+#else
+#define ARG_DEFS void *a0, void *a1, void *a2, void *a3, void *a4, void *a5, void *a6, void *a7, void *a8, void *a9, double d0, double d1, double d2, double d3, double d4, double d5, double d6, double d7
+#define ARG_COPY a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, d0, d1, d2, d3, d4, d5, d6, d7
 #endif
 
 // replacement implmentations "swizzled" onto class
 // "_depth" is number of levels down from NSObject
 // (used to detect calls to super)
 template <typename _type, int _depth>
-static void vintercept( id obj, SEL sel, ARG_DEFS ) {
-    struct _xtrace_depth info = { _depth, obj, sel };
+static void vintercept( XTRACE_UNSAFE id obj, SEL sel, ARG_DEFS ) {
+    struct _xtrace_depth info = { obj, sel, _depth };
     struct _xtrace_info &orig = findOriginal( &info, sel, ARG_COPY );
+    orig.caller = __builtin_return_address(0);
 
     if ( orig.before && !orig.callingBack ) {
         orig.callingBack = YES;
@@ -444,9 +482,10 @@ static void vintercept( id obj, SEL sel, ARG_DEFS ) {
 }
 
 template <typename _type, int _depth>
-static _type XTRACE_RETAINED intercept( id obj, SEL sel, ARG_DEFS ) {
-    struct _xtrace_depth info = { _depth, obj, sel };
+static _type XTRACE_RETAINED intercept( XTRACE_UNSAFE id obj, SEL sel, ARG_DEFS ) {
+    struct _xtrace_depth info = { obj, sel, _depth };
     struct _xtrace_info &orig = findOriginal( &info, sel, ARG_COPY );
+    orig.caller = __builtin_return_address(0);
 
     if ( orig.before && !orig.callingBack ) {
         orig.callingBack = YES;
@@ -454,12 +493,13 @@ static _type XTRACE_RETAINED intercept( id obj, SEL sel, ARG_DEFS ) {
         orig.callingBack = NO;
     }
 
-    _type (*impl)( id obj, SEL sel, ... ) = (_type (*)( id obj, SEL sel, ... ))orig.original;
+    _type (*impl)( XTRACE_UNSAFE id obj, SEL sel, ... ) =
+        (_type (*)( XTRACE_UNSAFE id obj, SEL sel, ... ))orig.original;
     _type out = impl( obj, sel, ARG_COPY );
 
     if ( orig.after && !orig.callingBack ) {
         orig.callingBack = YES;
-        impl = (_type (*)( id obj, SEL sel, ... ))orig.after;
+        impl = (_type (*)( XTRACE_UNSAFE id obj, SEL sel, ... ))orig.after;
         out = impl( delegate, sel, out, obj, ARG_COPY );
         orig.callingBack = NO;
     }
@@ -543,7 +583,7 @@ switch ( depth%IMPL_COUNT ) { \
     while ( !isdigit(*frameSize) )
         frameSize++;
 
-    if ( atoi(frameSize) > ARG_SIZE )
+    if ( atoi(frameSize) > (int)ARG_SIZE )
         NSLog( @"Xtrace: Stack frame too large to trace method: %s[%s %s]", mtype, className, name );
 
     else if ( newImpl ) {
@@ -601,7 +641,7 @@ switch ( depth%IMPL_COUNT ) { \
 
     for ( int i=0 ; i<maxargs ; i++ ) {
         args->type = type;
-        while ( !isdigit(*type) )
+        while ( !isdigit(*type) || type[1] == ',' )
             type++;
         args->stackOffset = -atoi(type);
         if ( i==0 )
@@ -633,8 +673,10 @@ switch ( depth%IMPL_COUNT ) { \
             type++;
         args->type = type;
         type = NSGetSizeAndAlignment( type, &size, &align );
-        if ( !*type )
+        if ( !*type ) {
+            args->type = NULL;
             return i;
+        }
         offset -= size;
         offset &= ~(align-1 | sizeof(void *)-1);
         args[1].stackOffset = (int)offset;
@@ -752,12 +794,41 @@ switch ( depth%IMPL_COUNT ) { \
         return [[self xtype:type] stringByAppendingString:@" *"];
 
     const char *end = ++type;
-    while ( isalpha(*end) || *end == '_' )
+    while ( isalpha(*end) || *end == '_' || *end == ',' )
         end++;
-    if ( end[0] == '>' )
+    if ( type[-1] == '<' )
         return [NSString stringWithFormat:@"id<%.*s>", (int)(end-type), type];
     else
         return [NSString stringWithFormat:@"%.*s%s", (int)(end-type), type, star];
+}
+
++ (NSArray *)profile {
+    NSMutableArray *profile = [NSMutableArray array];
+
+    for ( auto &byClass : originals )
+        for ( auto &bySel : byClass.second ) {
+            Xtrace *trace = [Xtrace new];
+            trace->aClass = byClass.first;
+            trace->info = &bySel.second;
+            trace->elapsed = bySel.second.stats.elapsed;
+            bySel.second.stats.elapsed = 0;
+            [profile addObject:trace];
+        }
+
+    [profile sortUsingSelector:@selector(compareElapsed:)];
+    return profile;
+}
+
++ (void)dumpProfile:(int)count dp:(int)decimalPlaces {
+    NSArray *profile = [self profile];
+    for ( int i=0 ; i<count && i<[profile count] ; i++ ) {
+        Xtrace *trace = [profile objectAtIndex:i];
+        printf( "%.*f\t%s[%s %s]\n", decimalPlaces, trace->elapsed, trace->info->mtype, class_getName(trace->aClass), trace->info->name );
+    }
+}
+
+- (NSComparisonResult)compareElapsed:(Xtrace *)other {
+    return self->elapsed > other->elapsed ? NSOrderedAscending : self->elapsed == other->elapsed ? NSOrderedSame : NSOrderedDescending;
 }
 
 @end
