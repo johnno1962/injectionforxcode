@@ -7,7 +7,7 @@
 //
 //  Repo: https://github.com/johnno1962/Xtrace
 //
-//  $Id: //depot/Xtrace/Xray/Xtrace.mm#67 $
+//  $Id: //depot/Xtrace/Xray/Xtrace.mm#70 $
 //
 //  The above copyright notice and this permission notice shall be
 //  included in all copies or substantial portions of the Software.
@@ -86,7 +86,7 @@ static id delegate;
     describeValues = desc;
 }
 
-static std::map<Class,const char *> tracedClasses; // also color
+static std::map<Class,const char *> tracedClasses; // has color
 static std::map<Class,BOOL> swizzledClasses, excludedClasses;
 static std::map<Class,std::map<SEL,struct _xtrace_info> > originals;
 static std::map<XTRACE_UNSAFE id,BOOL> tracedInstances;
@@ -174,13 +174,15 @@ static NSRegularExpression *includeMethods, *excludeMethods, *excludeTypes;
     return regexp;
 }
 
-static const char *traceColor = "";
+static const char *noColor = "", *traceColor = noColor;
 
 + (void)useColor:(const char *)color {
-    traceColor = color ? color : "";
+    if ( !color ) color = noColor;
+    traceColor = color;
 }
 
 + (void)useColor:(const char *)color forClass:(Class)aClass {
+    if ( !color ) color = noColor;
     Class metaClass = object_getClass(aClass);
     tracedClasses[metaClass] = color;
     tracedClasses[aClass] = color;
@@ -382,6 +384,7 @@ static struct _xtrace_info &findOriginal( struct _xtrace_depth *info, SEL sel, .
         orig.original = (VIMP)nullImpl;
     }
 
+    // add custom filtering of logging here..
     aClass = object_getClass( info->obj );
     if ( !describing && orig.mtype &&
         (!tracingInstances ? tracedClasses[aClass] != nil :
@@ -415,7 +418,6 @@ static struct _xtrace_info &findOriginal( struct _xtrace_depth *info, SEL sel, .
             }
         }
 
-        // add custom filtering of logging here..
         [args appendFormat:@"] %.100s %p", orig.type, orig.original];
         if ( orig.color[0] ) [args appendString:@"\033[;"];
         [logToDelegate ? delegate : [Xtrace class] xtraceLog:args];
@@ -459,7 +461,7 @@ static void returning( struct _xtrace_info *orig, ... ) {
 // "_depth" is number of levels down from NSObject
 // (used to detect calls to super)
 template <typename _type, int _depth>
-static void vintercept( XTRACE_UNSAFE id obj, SEL sel, ARG_DEFS ) {
+static void xtrace( XTRACE_UNSAFE id obj, SEL sel, ARG_DEFS ) {
     struct _xtrace_depth info = { obj, sel, _depth };
     struct _xtrace_info &orig = findOriginal( &info, sel, ARG_COPY );
     orig.caller = __builtin_return_address(0);
@@ -482,7 +484,7 @@ static void vintercept( XTRACE_UNSAFE id obj, SEL sel, ARG_DEFS ) {
 }
 
 template <typename _type, int _depth>
-static _type XTRACE_RETAINED intercept( XTRACE_UNSAFE id obj, SEL sel, ARG_DEFS ) {
+static _type XTRACE_RETAINED xtrace_t( XTRACE_UNSAFE id obj, SEL sel, ARG_DEFS ) {
     struct _xtrace_depth info = { obj, sel, _depth };
     struct _xtrace_info &orig = findOriginal( &info, sel, ARG_COPY );
     orig.caller = __builtin_return_address(0);
@@ -532,48 +534,48 @@ switch ( depth%IMPL_COUNT ) { \
     case 9: newImpl = (IMP)_func<_type,9>; break; \
 }
         case 'V':
-        case 'v': IMPLS( vintercept, void ); break;
+        case 'v': IMPLS( xtrace, void ); break;
 
-        case 'B': IMPLS( intercept, bool ); break;
+        case 'B': IMPLS( xtrace_t, bool ); break;
         case 'C':
-        case 'c': IMPLS( intercept, char ); break;
+        case 'c': IMPLS( xtrace_t, char ); break;
         case 'S':
-        case 's': IMPLS( intercept, short ); break;
+        case 's': IMPLS( xtrace_t, short ); break;
         case 'I':
-        case 'i': IMPLS( intercept, int ); break;
+        case 'i': IMPLS( xtrace_t, int ); break;
         case 'Q':
         case 'q':
 #ifndef __LP64__
-            IMPLS( intercept, long long ); break;
+            IMPLS( xtrace_t, long long ); break;
 #endif
         case 'L':
-        case 'l': IMPLS( intercept, long ); break;
-        case 'f': IMPLS( intercept, float ); break;
-        case 'd': IMPLS( intercept, double ); break;
+        case 'l': IMPLS( xtrace_t, long ); break;
+        case 'f': IMPLS( xtrace_t, float ); break;
+        case 'd': IMPLS( xtrace_t, double ); break;
         case '#':
-        case '@': IMPLS( intercept, id ) break;
-        case '^': IMPLS( intercept, void * ); break;
-        case ':': IMPLS( intercept, SEL ); break;
-        case '*': IMPLS( intercept, char * ); break;
+        case '@': IMPLS( xtrace_t, id ) break;
+        case '^': IMPLS( xtrace_t, void * ); break;
+        case ':': IMPLS( xtrace_t, SEL ); break;
+        case '*': IMPLS( xtrace_t, char * ); break;
         case '{':
             if ( strncmp(type,"{_NSRange=",10) == 0 )
-                IMPLS( intercept, NSRange )
+                IMPLS( xtrace_t, NSRange )
 #ifndef __IPHONE_OS_VERSION_MIN_REQUIRED
             else if ( strncmp(type,"{_NSRect=",9) == 0 )
-                IMPLS( intercept, NSRect )
+                IMPLS( xtrace_t, NSRect )
             else if ( strncmp(type,"{_NSPoint=",10) == 0 )
-                IMPLS( intercept, NSPoint )
+                IMPLS( xtrace_t, NSPoint )
             else if ( strncmp(type,"{_NSSize=",9) == 0 )
-                IMPLS( intercept, NSSize )
+                IMPLS( xtrace_t, NSSize )
 #endif
             else if ( strncmp(type,"{CGRect=",8) == 0 )
-                IMPLS( intercept, CGRect )
+                IMPLS( xtrace_t, CGRect )
             else if ( strncmp(type,"{CGPoint=",9) == 0 )
-                IMPLS( intercept, CGPoint )
+                IMPLS( xtrace_t, CGPoint )
             else if ( strncmp(type,"{CGSize=",8) == 0 )
-                IMPLS( intercept, CGSize )
+                IMPLS( xtrace_t, CGSize )
             else if ( strncmp(type,"{CGAffineTransform=",19) == 0 )
-                IMPLS( intercept, CGAffineTransform )
+                IMPLS( xtrace_t, CGAffineTransform )
             break;
         default:
             NSLog(@"Xtrace: Unsupported return type: %s for: %s[%s %s]", type, mtype, className, name);
@@ -810,8 +812,10 @@ switch ( depth%IMPL_COUNT ) { \
             Xtrace *trace = [Xtrace new];
             trace->aClass = byClass.first;
             trace->info = &bySel.second;
-            trace->elapsed = bySel.second.stats.elapsed;
-            bySel.second.stats.elapsed = 0;
+            trace->callCount = trace->info->stats.callCount;
+            trace->elapsed = trace->info->stats.elapsed;
+            trace->info->stats.callCount = 0;
+            trace->info->stats.elapsed = 0;
             [profile addObject:trace];
         }
 
@@ -823,7 +827,9 @@ switch ( depth%IMPL_COUNT ) { \
     NSArray *profile = [self profile];
     for ( int i=0 ; i<count && i<[profile count] ; i++ ) {
         Xtrace *trace = [profile objectAtIndex:i];
-        printf( "%.*f\t%s[%s %s]\n", decimalPlaces, trace->elapsed, trace->info->mtype, class_getName(trace->aClass), trace->info->name );
+        printf( "%.*f/%-4d %s[%s %s]\n",
+               decimalPlaces, trace->elapsed, trace->callCount,
+               trace->info->mtype, class_getName(trace->aClass), trace->info->name );
     }
 }
 

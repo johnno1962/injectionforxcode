@@ -7,7 +7,7 @@
 //
 //  Repo: https://github.com/johnno1962/Xtrace
 //
-//  $Id: //depot/Xtrace/Xray/Xtrace.h#23 $
+//  $Id: //depot/Xtrace/Xray/Xtrace.h#25 $
 //
 //  Class to intercept messages sent to a class or object.
 //  Swizzles generic logging implemntation in place of the
@@ -125,8 +125,9 @@ struct _xtrace_info {
 @interface Xtrace : NSObject {
 @package
     Class aClass;
+    struct _xtrace_info *info;
     NSTimeInterval elapsed;
-    const struct _xtrace_info *info;
+    int callCount;
 }
 
 // delegate for callbacks

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#44 $
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#45 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -376,8 +376,8 @@ while ( my $line = <BUILD> ) {
         }
     }
 
-    if ( $line =~ /has been modified since the precompiled header was built/ ) {
-        $rebuild++;
+    if ( $line =~ /has been modified since the precompiled header/ ) {
+        $rebuild++; # retry once after xcodebuild clean
     }
 
     print $line;
