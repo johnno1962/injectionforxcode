@@ -7,7 +7,7 @@
 //
 //  Repo: https://github.com/johnno1962/Xtrace
 //
-//  $Id: //depot/Xtrace/Xray/Xtrace.mm#70 $
+//  $Id: //depot/Xtrace/Xray/Xtrace.mm#73 $
 //
 //  The above copyright notice and this permission notice shall be
 //  included in all copies or substantial portions of the Software.
@@ -86,10 +86,11 @@ static id delegate;
     describeValues = desc;
 }
 
-static std::map<Class,const char *> tracedClasses; // has color
-static std::map<Class,BOOL> swizzledClasses, excludedClasses;
-static std::map<Class,std::map<SEL,struct _xtrace_info> > originals;
+static std::map<XTRACE_UNSAFE Class,std::map<SEL,struct _xtrace_info> > originals;
+static std::map<XTRACE_UNSAFE Class,const char *> tracedClasses; // trace color
+static std::map<XTRACE_UNSAFE Class,BOOL> swizzledClasses, excludedClasses;
 static std::map<XTRACE_UNSAFE id,BOOL> tracedInstances;
+static std::map<SEL,const char *> selectorColors;
 static BOOL tracingInstances;
 static int indent;
 
@@ -179,6 +180,11 @@ static const char *noColor = "", *traceColor = noColor;
 + (void)useColor:(const char *)color {
     if ( !color ) color = noColor;
     traceColor = color;
+}
+
++ (void)useColor:(const char *)color forSelector:(SEL)sel {
+    if ( !color ) color = noColor;
+    selectorColors[sel] = color;
 }
 
 + (void)useColor:(const char *)color forClass:(Class)aClass {
@@ -389,7 +395,8 @@ static struct _xtrace_info &findOriginal( struct _xtrace_depth *info, SEL sel, .
     if ( !describing && orig.mtype &&
         (!tracingInstances ? tracedClasses[aClass] != nil :
          tracedInstances.find(info->obj) != tracedInstances.end()) )
-        orig.color = tracedClasses[aClass];
+        orig.color = selectorColors.find(sel) != selectorColors.end() ?
+                selectorColors[sel] : tracedClasses[aClass];
     else
         orig.color = NULL;
 
@@ -827,9 +834,12 @@ switch ( depth%IMPL_COUNT ) { \
     NSArray *profile = [self profile];
     for ( int i=0 ; i<count && i<[profile count] ; i++ ) {
         Xtrace *trace = [profile objectAtIndex:i];
-        printf( "%.*f/%-4d %s[%s %s]\n",
-               decimalPlaces, trace->elapsed, trace->callCount,
-               trace->info->mtype, class_getName(trace->aClass), trace->info->name );
+        if ( !trace->info->color )
+            trace->info->color = noColor;
+        printf( "%s%.*f/%-4d %s[%s %s]%s\n",
+               trace->info->color, decimalPlaces, trace->elapsed, trace->callCount,
+               trace->info->mtype, class_getName(trace->aClass), trace->info->name,
+               trace->info->color[0] ? "\033[;" : "" );
     }
 }
 
