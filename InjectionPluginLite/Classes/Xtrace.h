@@ -7,7 +7,7 @@
 //
 //  Repo: https://github.com/johnno1962/Xtrace
 //
-//  $Id: //depot/Xtrace/Xray/Xtrace.h#27 $
+//  $Id: //depot/Xtrace/Xray/Xtrace.h#31 $
 //
 //  Class to intercept messages sent to a class or object.
 //  Swizzles generic logging implemntation in place of the
@@ -60,7 +60,7 @@
 #endif
 
 #define XTRACE_EXCLUSIONS \
-    "^(allocWithZone:|initWithCoder:|_UIAppearance_|_hasBaseline|"\
+    "^(allocWithZone:|initWithCoder:|_UIAppearance_|_hasBaseline|_tryRetain|"\
     "_(initializeFor|performUpdatesForPossibleChangesOf)Idiom:|"\
     "timeIntervalSinceReferenceDate)|WithObjects(AndKeys)?:$"
 
@@ -68,7 +68,7 @@
 // https://github.com/robbiehanson/XcodeColors
 
 #define XTRACE_FG "\033[fg"
-#define XTRACE_BG "\033[fg"
+#define XTRACE_BG "\033[bg"
 
 #define XTRACE_RED   XTRACE_FG"255,0,0;"
 #define XTRACE_GREEN XTRACE_FG"0,255,0;"
@@ -133,8 +133,14 @@ struct _xtrace_info {
 // delegate for callbacks
 + (void)setDelegate:delegate;
 
-// hide log of return values
-+ (void)hideReturns:(BOOL)hide;
+// show caller on entry
++ (void)showCaller:(BOOL)show;
+
+// show class implementing
++ (void)showActual:(BOOL)show;
+
+// show log of return values
++ (void)showReturns:(BOOL)show;
 
 // attempt log of call arguments
 + (void)showArguments:(BOOL)show;

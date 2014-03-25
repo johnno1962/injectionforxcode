@@ -7,7 +7,7 @@
 //
 //  Repo: https://github.com/johnno1962/Xtrace
 //
-//  $Id: //depot/Xtrace/Xray/Xtrace.mm#73 $
+//  $Id: //depot/Xtrace/Xray/Xtrace.mm#79 $
 //
 //  The above copyright notice and this permission notice shall be
 //  included in all copies or substantial portions of the Software.
@@ -62,7 +62,8 @@
 
 @implementation Xtrace
 
-static BOOL includeProperties, hideReturns, showArguments = YES, describeValues, logToDelegate;
+static BOOL showCaller, showActual = YES, showReturns = YES, showArguments = YES,
+    showSignature = NO, includeProperties = NO, describeValues = NO, logToDelegate;
 static id delegate;
 
 + (void)setDelegate:aDelegate {
@@ -70,8 +71,16 @@ static id delegate;
     logToDelegate = [delegate respondsToSelector:@selector(xtraceLog:)];
 }
 
-+ (void)hideReturns:(BOOL)hide {
-    hideReturns = hide;
++ (void)showCaller:(BOOL)show {
+    showCaller = show;
+}
+
++ (void)showActual:(BOOL)show {
+    showActual = show;
+}
+
++ (void)showReturns:(BOOL)hide {
+    showReturns = hide;
 }
 
 + (void)includeProperties:(BOOL)include {
@@ -92,7 +101,6 @@ static std::map<XTRACE_UNSAFE Class,BOOL> swizzledClasses, excludedClasses;
 static std::map<XTRACE_UNSAFE id,BOOL> tracedInstances;
 static std::map<SEL,const char *> selectorColors;
 static BOOL tracingInstances;
-static int indent;
 
 + (void)dontTrace:(Class)aClass {
     Class metaClass = object_getClass(aClass);
@@ -269,10 +277,20 @@ static const char *noColor = "", *traceColor = noColor;
 
 #import <dlfcn.h>
 
++ (const char *)callerFor:(void *)caller {
+    static std::map<void *,const char *> callers;
+
+    if ( callers.find(caller) == callers.end() ) {
+        Dl_info info;
+        if ( dladdr(caller, &info) )
+            callers[caller] = strdup(info.dli_sname);
+    }
+
+    return callers[caller];
+}
+
 + (const char *)callerFor:(Class)aClass sel:(SEL)sel {
-    static Dl_info info;
-    dladdr(originals[aClass][sel].caller, &info);
-    return info.dli_sname;
+    return [self callerFor:originals[aClass][sel].caller];
 }
 
 // delegate implements as instance method
@@ -289,10 +307,9 @@ static BOOL formatValue( const char *type, void *valptr, va_list *argp, NSMutabl
         case 'V': case 'v':
             return NO;
 
-        // warnings here are necessary evil
-        // but how does one suppress them??
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wall"
+#pragma clang diagnostic ignored "-Wvarargs"
+        // warnings here are necessary evil
         APPEND_TYPE( 'B', @"%d", bool )
         APPEND_TYPE( 'c', @"%d", char )
         APPEND_TYPE( 'C', @"%d", unsigned char )
@@ -372,6 +389,8 @@ static id nullImpl( XTRACE_UNSAFE __unused id obj, __unused SEL sel, ... ) {
     return nil;
 }
 
+static int indent; // could/should be thread var but causes deadlocks
+
 // find struct _original implmentation for message and log call
 static struct _xtrace_info &findOriginal( struct _xtrace_depth *info, SEL sel, ... ) {
     va_list argp; va_start(argp, sel);
@@ -383,15 +402,17 @@ static struct _xtrace_info &findOriginal( struct _xtrace_depth *info, SEL sel, .
         aClass = class_getSuperclass( aClass );
 
     struct _xtrace_info &orig = originals[aClass][sel];
+    orig.caller = __builtin_return_address(1);
 
     if ( !aClass ) {
-        NSLog( @"Xtrace: could not find original implementation for [%s %s]",
-              className, sel_getName(info->sel) );
+        NSLog( @"Xtrace: could not find original implementation for [%s %s]", className, sel_getName(sel) );
         orig.original = (VIMP)nullImpl;
     }
 
-    // add custom filtering of logging here..
+    Class implementingClass = aClass;
     aClass = object_getClass( info->obj );
+
+    // add custom filtering of logging here..
     if ( !describing && orig.mtype &&
         (!tracingInstances ? tracedClasses[aClass] != nil :
          tracedInstances.find(info->obj) != tracedInstances.end()) )
@@ -401,13 +422,22 @@ static struct _xtrace_info &findOriginal( struct _xtrace_depth *info, SEL sel, .
         orig.color = NULL;
 
     if ( orig.color ) {
+        const char *symbol;
+        if ( showCaller && indent == 0 && (symbol = [Xtrace callerFor:orig.caller]) )
+                [logToDelegate ? delegate : [Xtrace class] xtraceLog:[@"From: " stringByAppendingString:[NSString stringWithUTF8String:symbol]]];
 
         NSMutableString *args = [NSMutableString string];
         if ( orig.color[0] )
             [args appendFormat:@"%s", orig.color];
 
-        [args appendFormat:@"%*s%s[<%s %p>",
-         indent++, "", orig.mtype, className, info->obj];
+        if ( orig.mtype[0] == '+' )
+            [args appendFormat:@"%*s%s[%s",
+             indent++, "", orig.mtype, className];
+        else
+            [args appendFormat:@"%*s%s[<%s %p>",
+             indent++, "", orig.mtype, className, info->obj];
+        if ( showActual && implementingClass != aClass )
+            [args appendFormat:@"/%s", class_getName(implementingClass)];
 
         if ( !showArguments )
             [args appendFormat:@" %s", orig.name];
@@ -425,8 +455,11 @@ static struct _xtrace_info &findOriginal( struct _xtrace_depth *info, SEL sel, .
             }
         }
 
-        [args appendFormat:@"] %.100s %p", orig.type, orig.original];
-        if ( orig.color[0] ) [args appendString:@"\033[;"];
+        [args appendString:@"]"];
+        if ( showSignature )
+            [args appendFormat:@" %.100s %p", orig.type, orig.original];
+        if ( orig.color[0] )
+            [args appendString:@"\033[;"];
         [logToDelegate ? delegate : [Xtrace class] xtraceLog:args];
     }
 
@@ -440,9 +473,10 @@ static struct _xtrace_info &findOriginal( struct _xtrace_depth *info, SEL sel, .
 // log returning value
 static void returning( struct _xtrace_info *orig, ... ) {
     va_list argp; va_start(argp, orig);
-    indent && indent--;
+    if ( indent )
+        indent--;
 
-    if ( orig->color && !hideReturns ) {
+    if ( orig->color && showReturns ) {
         NSMutableString *val = [NSMutableString string];
         [val appendFormat:@"%s%*s-> ", orig->color, indent, ""];
         if ( formatValue(orig->type, NULL, &argp, val) ) {
@@ -471,7 +505,6 @@ template <typename _type, int _depth>
 static void xtrace( XTRACE_UNSAFE id obj, SEL sel, ARG_DEFS ) {
     struct _xtrace_depth info = { obj, sel, _depth };
     struct _xtrace_info &orig = findOriginal( &info, sel, ARG_COPY );
-    orig.caller = __builtin_return_address(0);
 
     if ( orig.before && !orig.callingBack ) {
         orig.callingBack = YES;
@@ -494,7 +527,6 @@ template <typename _type, int _depth>
 static _type XTRACE_RETAINED xtrace_t( XTRACE_UNSAFE id obj, SEL sel, ARG_DEFS ) {
     struct _xtrace_depth info = { obj, sel, _depth };
     struct _xtrace_info &orig = findOriginal( &info, sel, ARG_COPY );
-    orig.caller = __builtin_return_address(0);
 
     if ( orig.before && !orig.callingBack ) {
         orig.callingBack = YES;
