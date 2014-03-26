@@ -7,7 +7,7 @@
 //
 //  Repo: https://github.com/johnno1962/Xtrace
 //
-//  $Id: //depot/Xtrace/Xray/Xtrace.mm#79 $
+//  $Id: //depot/Xtrace/Xray/Xtrace.mm#84 $
 //
 //  The above copyright notice and this permission notice shall be
 //  included in all copies or substantial portions of the Software.
@@ -62,37 +62,38 @@
 
 @implementation Xtrace
 
-static BOOL showCaller, showActual = YES, showReturns = YES, showArguments = YES,
-    showSignature = NO, includeProperties = NO, describeValues = NO, logToDelegate;
+// Not sure this is C..
+static struct { BOOL showCaller, showActual = YES, showReturns = YES, showArguments = YES,
+    showSignature = NO, includeProperties = NO, describeValues = NO, logToDelegate; } params;
 static id delegate;
 
 + (void)setDelegate:aDelegate {
     delegate = aDelegate;
-    logToDelegate = [delegate respondsToSelector:@selector(xtraceLog:)];
+    params.logToDelegate = [delegate respondsToSelector:@selector(xtraceLog:)];
 }
 
 + (void)showCaller:(BOOL)show {
-    showCaller = show;
+    params.showCaller = show;
 }
 
 + (void)showActual:(BOOL)show {
-    showActual = show;
+    params.showActual = show;
 }
 
 + (void)showReturns:(BOOL)hide {
-    showReturns = hide;
+    params.showReturns = hide;
 }
 
 + (void)includeProperties:(BOOL)include {
-    includeProperties = include;
+    params.includeProperties = include;
 }
 
 + (void)showArguments:(BOOL)show {
-    showArguments = show;
+    params.showArguments = show;
 }
 
 + (void)describeValues:(BOOL)desc {
-    describeValues = desc;
+    params.describeValues = desc;
 }
 
 static std::map<XTRACE_UNSAFE Class,std::map<SEL,struct _xtrace_info> > originals;
@@ -241,7 +242,7 @@ static const char *noColor = "", *traceColor = noColor;
                     ; // no idea why this is a problem...
 #endif
 
-                else if (includeProperties || !class_getProperty( aClass, name ))
+                else if (params.includeProperties || !class_getProperty( aClass, name ))
                     [self intercept:aClass method:methods[i] mtype:mtype depth:depth];
             }
 
@@ -298,7 +299,8 @@ static const char *noColor = "", *traceColor = noColor;
     printf( "| %s\n", [trace UTF8String] );
 }
 
-static BOOL describing;
+// should really be per-thread but causes deadlocks
+static struct { int indent;  BOOL describing; } state;
 
 #define APPEND_TYPE( _enc, _fmt, _type ) case _enc: [args appendFormat:_fmt, va_arg(*argp,_type)]; return YES;
 
@@ -339,10 +341,10 @@ static BOOL formatValue( const char *type, void *valptr, va_list *argp, NSMutabl
             return YES;
         case '#': case '@': {
             XTRACE_UNSAFE id obj = va_arg(*argp,XTRACE_UNSAFE id);
-            if ( describeValues ) {
-                describing = YES;
+            if ( params.describeValues ) {
+                state.describing = YES;
                 [args appendString:obj?[obj description]:@"<nil>"];
-                describing = NO;
+                state.describing = NO;
             }
             else
                 [args appendFormat:@"<%s %p>", class_getName(object_getClass(obj)), obj];
@@ -378,7 +380,7 @@ static BOOL formatValue( const char *type, void *valptr, va_list *argp, NSMutabl
     }
 
     [args appendFormat:@"<?? %.50s>", type];
-    return YES;
+    return NO;
 }
 
 struct _xtrace_depth {
@@ -389,9 +391,7 @@ static id nullImpl( XTRACE_UNSAFE __unused id obj, __unused SEL sel, ... ) {
     return nil;
 }
 
-static int indent; // could/should be thread var but causes deadlocks
-
-// find struct _original implmentation for message and log call
+// find original implmentation for message and log call
 static struct _xtrace_info &findOriginal( struct _xtrace_depth *info, SEL sel, ... ) {
     va_list argp; va_start(argp, sel);
     Class aClass = object_getClass( info->obj );
@@ -413,7 +413,7 @@ static struct _xtrace_info &findOriginal( struct _xtrace_depth *info, SEL sel, .
     aClass = object_getClass( info->obj );
 
     // add custom filtering of logging here..
-    if ( !describing && orig.mtype &&
+    if ( !state.describing && orig.mtype &&
         (!tracingInstances ? tracedClasses[aClass] != nil :
          tracedInstances.find(info->obj) != tracedInstances.end()) )
         orig.color = selectorColors.find(sel) != selectorColors.end() ?
@@ -422,45 +422,53 @@ static struct _xtrace_info &findOriginal( struct _xtrace_depth *info, SEL sel, .
         orig.color = NULL;
 
     if ( orig.color ) {
-        const char *symbol;
-        if ( showCaller && indent == 0 && (symbol = [Xtrace callerFor:orig.caller]) )
-                [logToDelegate ? delegate : [Xtrace class] xtraceLog:[@"From: " stringByAppendingString:[NSString stringWithUTF8String:symbol]]];
-
         NSMutableString *args = [NSMutableString string];
+
+        const char *symbol;
+        if ( params.showCaller && state.indent == 0 &&
+            (symbol = [Xtrace callerFor:orig.caller]) && symbol[0] != '<' ) {
+            [args appendFormat:@"From: %s", symbol];
+            [params.logToDelegate ? delegate : [Xtrace class] xtraceLog:args];
+            [args setString:@""];
+        }
+
         if ( orig.color[0] )
             [args appendFormat:@"%s", orig.color];
 
         if ( orig.mtype[0] == '+' )
             [args appendFormat:@"%*s%s[%s",
-             indent++, "", orig.mtype, className];
+             state.indent++, "", orig.mtype, className];
         else
             [args appendFormat:@"%*s%s[<%s %p>",
-             indent++, "", orig.mtype, className, info->obj];
-        if ( showActual && implementingClass != aClass )
+             state.indent++, "", orig.mtype, className, info->obj];
+
+        if ( params.showActual && implementingClass != aClass )
             [args appendFormat:@"/%s", class_getName(implementingClass)];
 
-        if ( !showArguments )
+        if ( !params.showArguments )
             [args appendFormat:@" %s", orig.name];
         else {
             const char *frame = (char *)(void *)&info+sizeof info;
             void *valptr = &sel;
 
+            BOOL typesKnown = YES;
             for ( struct _xtrace_arg *aptr = orig.args ; *aptr->name ; aptr++ ) {
                 [args appendFormat:@" %.*s", (int)(aptr[1].name-aptr->name), aptr->name];
                 if ( !aptr->type )
                     break;
 
                 valptr = (void *)(frame+aptr[1].stackOffset);
-                formatValue( aptr->type, valptr, &argp, args );
+                typesKnown = typesKnown &&
+                    formatValue( aptr->type, valptr, &argp, args );
             }
         }
 
         [args appendString:@"]"];
-        if ( showSignature )
+        if ( params.showSignature )
             [args appendFormat:@" %.100s %p", orig.type, orig.original];
         if ( orig.color[0] )
             [args appendString:@"\033[;"];
-        [logToDelegate ? delegate : [Xtrace class] xtraceLog:args];
+        [params.logToDelegate ? delegate : [Xtrace class] xtraceLog:args];
     }
 
     orig.stats.callCount++;
@@ -473,21 +481,25 @@ static struct _xtrace_info &findOriginal( struct _xtrace_depth *info, SEL sel, .
 // log returning value
 static void returning( struct _xtrace_info *orig, ... ) {
     va_list argp; va_start(argp, orig);
-    if ( indent )
-        indent--;
+    if ( state.indent )
+        state.indent--;
 
-    if ( orig->color && showReturns ) {
+    orig->stats.elapsed += [NSDate timeIntervalSinceReferenceDate] - orig->stats.entered;
+
+    if ( orig->color && params.showReturns ) {
         NSMutableString *val = [NSMutableString string];
-        [val appendFormat:@"%s%*s-> ", orig->color, indent, ""];
+        [val appendFormat:@"%s%*s-> ", orig->color, state.indent, ""];
         if ( formatValue(orig->type, NULL, &argp, val) ) {
             [val appendFormat:@" (%s)", orig->name];
             if ( orig->color[0] ) [val appendString:@"\033[;"];
-            [logToDelegate ? delegate : [Xtrace class] xtraceLog:val];
+            [params.logToDelegate ? delegate : [Xtrace class] xtraceLog:val];
         }
     }
-
-    orig->stats.elapsed += [NSDate timeIntervalSinceReferenceDate] - orig->stats.entered;
 }
+
+#ifdef __arm64__
+#error Xtrace will not work on a native ARM64 build. Rebuild for 32 bits only.
+#endif
 
 #define ARG_SIZE (sizeof(id) + sizeof(SEL) + sizeof(void *)*9) // approximate to say the least..
 #ifndef __LP64__
@@ -702,7 +714,8 @@ switch ( depth%IMPL_COUNT ) { \
     return -1;
 }
 
-#else // alternate "NSGetSizeAndAlignment()" version
+#else
+#if 1 // alternate "NSGetSizeAndAlignment()" version
 
 + (int)extractOffsets:(const char *)type into:(struct _xtrace_arg *)args maxargs:(int)maxargs {
     NSUInteger size, align, offset = 0;
@@ -730,6 +743,19 @@ switch ( depth%IMPL_COUNT ) { \
     return -1;
 }
 
+#else // Extract types using NSMethodSignature - gives unsuppported type error
+
++ (int)extractOffsets:(const char *)type into:(struct _xtrace_arg *)args maxargs:(int)maxargs {
+    NSMethodSignature *info = [NSMethodSignature signatureWithObjCTypes:type];
+    int acount = (int)[info numberOfArguments];
+
+    for ( int i=2 ; i<acount ; i++ )
+        args[i-2].type = [info getArgumentTypeAtIndex:i];
+
+    return acount-2;
+}
+
+#endif
 #endif
 
 + (void)dumpClass:(Class)aClass {

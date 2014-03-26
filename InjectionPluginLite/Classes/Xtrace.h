@@ -7,7 +7,7 @@
 //
 //  Repo: https://github.com/johnno1962/Xtrace
 //
-//  $Id: //depot/Xtrace/Xray/Xtrace.h#31 $
+//  $Id: //depot/Xtrace/Xray/Xtrace.h#33 $
 //
 //  Class to intercept messages sent to a class or object.
 //  Swizzles generic logging implemntation in place of the
@@ -59,10 +59,9 @@
 #define XTRACE_RETAINED
 #endif
 
-#define XTRACE_EXCLUSIONS \
-    "^(allocWithZone:|initWithCoder:|_UIAppearance_|_hasBaseline|_tryRetain|"\
+#define XTRACE_EXCLUSIONS "^(initWithCoder:|"\
     "_(initializeFor|performUpdatesForPossibleChangesOf)Idiom:|"\
-    "timeIntervalSinceReferenceDate)|WithObjects(AndKeys)?:$"
+    "timeIntervalSinceReferenceDate)|(WithObjects(AndKeys)?|Format):$"
 
 // for use with "XcodeColours" plugin
 // https://github.com/robbiehanson/XcodeColors
