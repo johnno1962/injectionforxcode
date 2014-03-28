@@ -64,4 +64,6 @@
 - (void)runScript:(NSString *)script withArg:(NSString *)selectedFile;
 - (BOOL)connected;
 
+- (IBAction)clearConsole: (id)sender;
+
 @end

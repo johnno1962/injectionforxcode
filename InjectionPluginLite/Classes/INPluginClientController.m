@@ -269,7 +269,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 - (void)exec:(NSString *)command {
     int length = consoleTextView.string.length;
     if ( length > 100000 )
-        consoleTextView.string = @"";
+        [self clearConsole: Nil];
     else
         [consoleTextView setSelectedRange:NSMakeRange(length, 0)];
 
@@ -448,4 +448,10 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     [self openResource:"BundleInterface.h"];
 }
 
+#pragma mark Console
+
+- (void)clearConsole: (id)sender {
+
+    consoleTextView.string = @"";
+}
 @end
