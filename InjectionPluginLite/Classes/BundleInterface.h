@@ -1,5 +1,5 @@
 //
-//  $Id$
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInterface.h#15 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.

@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.m#30 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.m#31 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -269,7 +269,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 - (void)exec:(NSString *)command {
     int length = consoleTextView.string.length;
     if ( length > 100000 )
-        [self clearConsole: Nil];
+        [self clearConsole:nil];
     else
         [consoleTextView setSelectedRange:NSMakeRange(length, 0)];
 
@@ -451,7 +451,6 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 #pragma mark Console
 
 - (void)clearConsole: (id)sender {
-
     consoleTextView.string = @"";
 }
 @end
