@@ -78,7 +78,7 @@ if ( ! -d $InjectionBundle ) {
     # you are injecting classes in frameworks.
     if ( my @includePath = loadFile( "find . -name '*.h' | sed -e 's!/[^/]*\$!!' | sort -u | grep -v InjectionProject |" ) ) {
         $bundleProjectSource =~ s!(HEADER_SEARCH_PATHS = \(\n)(\s+)"../\*\*",!
-            $1.join "\n", map "$2\".$_\",", @includePath;
+            $1.join "\n", map "$2\"\\\".$_\\\"\",", @includePath;
         !eg;
     }
 }
