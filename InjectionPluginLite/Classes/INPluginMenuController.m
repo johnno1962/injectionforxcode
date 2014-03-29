@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#44 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#45 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -368,7 +368,8 @@ static CFDataRef copy_mac_address(void)
 
     int optval = 1;
     if ( (serverSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0 )
-        [self error:@"Could not open service socket: %s", strerror( errno )];
+        [self error:@"Could not open service socket: %s, "
+         "kill any \"ibtoold\" processes and restart.", strerror( errno )];
     else if ( setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval) < 0 )
         [self error:@"Could not set socket option: %s", strerror( errno )];
     else if ( setsockopt( serverSocket, IPPROTO_TCP, TCP_NODELAY, (void *)&optval, sizeof(optval)) < 0 )
