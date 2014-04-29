@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#50 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#51 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -55,6 +55,7 @@ struct _in_header { int pathLength, dataLength; };
 @end
 
 #import <netinet/tcp.h>
+#import <sys/socket.h>
 #import <arpa/inet.h>
 #import <sys/stat.h>
 #import <unistd.h>
@@ -124,24 +125,9 @@ id INImageTarget;
 static char path[PATH_MAX], *file = &path[1];
 static int status, sbInjection;
 
+#ifndef ANDROID
 static NSNetServiceBrowser *browser;
 static NSNetService *service;
-
-+ (void)load {
-    //INLog( @"+load: %s", _inIPAddresses[0] );
-    if ( _inIPAddresses[0][0] == '_' ) {
-        NSString *bonjourName = [NSString stringWithUTF8String:_inIPAddresses[0]];
-        _inIPAddresses[0] = _inIPAddresses[1];
-
-        browser = [NSNetServiceBrowser new];
-        browser.delegate = (id<NSNetServiceBrowserDelegate>)self;
-
-        INLog( @"%s looking for service: %@", INJECTION_APPNAME, bonjourName );
-        [browser searchForServicesOfType:bonjourName inDomain:@""];
-    }
-    else
-        [self performSelectorInBackground:@selector(bundleLoader) withObject:nil];
-}
 
 +(void)netServiceBrowser:(NSNetServiceBrowser *)aBrowser didFindService:(NSNetService *)aService moreComing:(BOOL)more {
     service = aService;
@@ -171,6 +157,25 @@ static NSNetService *service;
 +(void)netService:(NSNetService *)service didNotResolve:(NSDictionary *)errorDict {
     NSLog(@"%s could not resolve: %@", INJECTION_APPNAME, errorDict);
     [self performSelectorInBackground:@selector(bundleLoader) withObject:nil];
+}
+
++ (void)load {
+    //INLog( @"+load: %s", _inIPAddresses[0] );
+    if ( _inIPAddresses[0][0] == '_' ) {
+        NSString *bonjourName = [NSString stringWithUTF8String:_inIPAddresses[0]];
+        _inIPAddresses[0] = _inIPAddresses[1];
+
+        browser = [NSNetServiceBrowser new];
+        browser.delegate = (id<NSNetServiceBrowserDelegate>)self;
+
+        INLog( @"%s looking for service: %@", INJECTION_APPNAME, bonjourName );
+        [browser searchForServicesOfType:bonjourName inDomain:@""];
+    }
+    else
+#else
++ (void)load {
+#endif
+        [self performSelectorInBackground:@selector(bundleLoader) withObject:nil];
 }
 
 #import <dirent.h>
