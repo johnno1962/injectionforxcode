@@ -7,7 +7,7 @@
 //
 //  Repo: https://github.com/johnno1962/Xtrace
 //
-//  $Id: //depot/Xtrace/Xray/Xtrace.mm#92 $
+//  $Id: //depot/Xtrace/Xray/Xtrace.mm#94 $
 //
 //  The above copyright notice and this permission notice shall be
 //  included in all copies or substantial portions of the Software.
@@ -166,12 +166,12 @@ static BOOL tracingInstances;
 
 + (void)forClass:(Class)aClass before:(SEL)sel callbackBlock:callback {
     [self intercept:aClass method:class_getInstanceMethod(aClass, sel) mtype:NULL
-              depth:[self depth:aClass]]->beforeBlock = (XTRACE_BIMP)CFRetain( (CFTypeRef)callback );
+              depth:[self depth:aClass]]->beforeBlock = XTRACE_BRIDGE(XTRACE_BIMP)CFRetain( XTRACE_BRIDGE(CFTypeRef)callback );
 }
 
 + (void)forClass:(Class)aClass after:(SEL)sel callbackBlock:callback {
     [self intercept:aClass method:class_getInstanceMethod(aClass, sel) mtype:NULL
-              depth:[self depth:aClass]]->afterBlock = (XTRACE_BIMP)CFRetain( (CFTypeRef)callback );
+              depth:[self depth:aClass]]->afterBlock = XTRACE_BRIDGE(XTRACE_BIMP)CFRetain( XTRACE_BRIDGE(CFTypeRef)callback );
 }
 
 + (XTRACE_VIMP)forClass:(Class)aClass intercept:(SEL)sel callback:(SEL)callback {
@@ -472,7 +472,7 @@ static struct _xtrace_info &findOriginal( struct _xtrace_depth *info, SEL sel, .
             [args appendFormat:@" %s", orig.name];
         else {
             const char *frame = (char *)(void *)&info+sizeof info;
-            void *valptr = &sel;
+            void *valptr = NULL;
 
             BOOL typesKnown = YES;
             for ( struct _xtrace_arg *aptr = orig.args ; *aptr->name ; aptr++ ) {
@@ -502,7 +502,7 @@ static struct _xtrace_info &findOriginal( struct _xtrace_depth *info, SEL sel, .
 // log returning value
 static void returning( struct _xtrace_info *orig, ... ) {
     va_list argp; va_start(argp, orig);
-    if ( state.indent )
+    if ( state.indent > 0 )
         state.indent--;
 
     orig->stats.elapsed += [NSDate timeIntervalSinceReferenceDate] - orig->stats.entered;
@@ -935,9 +935,9 @@ switch ( depth%IMPL_COUNT ) { \
     return profile;
 }
 
-+ (void)dumpProfile:(int)count dp:(int)decimalPlaces {
++ (void)dumpProfile:(unsigned)count dp:(int)decimalPlaces {
     NSArray *profile = [self profile];
-    for ( int i=0 ; i<count && i<[profile count] ; i++ ) {
+    for ( unsigned i=0 ; i<count && i<[profile count] ; i++ ) {
         Xtrace *trace = [profile objectAtIndex:i];
         if ( !trace->info->color )
             trace->info->color = noColor;

@@ -91,9 +91,7 @@ Injection can work on Android if you follow these steps: Convert your applicatio
 by using "apportable load" from the command line inside your project. Unpatch and re-patch
 your project for injection as a different patch is applied when there is a ".approj" and 
 then run "apportable load" again and it should connect to Xcode. You should then
-be able to inject from the Xcode menu as before. Apportable does not support Xcode 5 
-at present so you may have to do a "sudo xcode-select -switch /Applications/Xcode4.app" 
-if you still have Xcode4 around.
+be able to inject from the Xcode menu as before.
 
 ## Storyboard Injection
 
