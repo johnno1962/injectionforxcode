@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#49 $
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#51 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -184,10 +184,10 @@ my @classes = unique loadFile( $selectedFile ) =~ /\@implementation\s+(\w+)\b/g;
 my $changesFile = "$InjectionBundle/BundleContents.m";
 my $learnt = $memory{$selectedFile};
 
-if ( $learnt ) {
+if ( $learnt || $isAndroid ) {
     IO::File->new( "> $changesFile" )
         ->print( "// learnt compilation.\n" );
-    $changesFile = "$selectedFile.tmp";
+    ($changesFile = $selectedFile) =~ s/(\.\w+)$/_$1/;
 }
 
 my $changesSource = IO::File->new( "> $changesFile" )
@@ -213,9 +213,15 @@ $changesSource->print( <<CODE );
 #undef _inval
 #define _inval( _val... ) /* = _val */
 
-@{[$learnt?'':'#import "BundleContents.h"']}
+@{[$learnt||$isAndroid?'':'#import "BundleContents.h"']}
 
-extern int injectionHook(void);
+#if __cplusplus
+extern "C" {
+#endif
+    int injectionHook();
+#if __cplusplus
+};
+#endif
 
 \@interface $productName : NSObject
 \@end
@@ -247,8 +253,6 @@ $changesSource->close();
 #
 
 if ( $isAndroid ) {
-    print "\nPerforming Android Build...\n";
-    
     my $pkg;
     patchAll( "Info.plist", sub {
         $pkg ||= ($_[0] =~ m@<key>CFBundleIdentifier</key>\s*<string>([^<]*)<@s)[0];
@@ -257,20 +261,32 @@ if ( $isAndroid ) {
     $pkg =~ s/\${PRODUCT_NAME:rfc1034identifier}/$projName/;
     $pkg =~ s/ /_/g;
 
-    (my $prjName = $projName) =~ s/ //g;
-    my @syslibs = qw(android log c m v z cxx stdc++ System SystemConfiguration Security CFNetwork
-        Foundation CoreFoundation CoreGraphics CoreText BridgeKit OpenAL GLESv1_CM GLESv2 EGL xml2);
-    my $isARC = loadFile( $mainProjectFile ) =~ /CLANG_ENABLE_OBJC_ARC = YES/;
+    print "\nPerforming Android Build...\n";
+    chdir "$ENV{HOME}/.apportable/SDK" or die "Could not chdir as: $!";
+
+    # ninja build file used for 1.1.09
+    my $ninja = loadFile( "Build/build.ninja" );
+    my $rule = $selectedFile =~ /\.mm$/ ? "compile_cxx" : "compile_c";
+    my ($command) = $ninja =~ /rule ${rule}_.*\n  command = ((?:.*\$\n)*.*)/;
+    my ($per_file_flags) = $ninja =~ /per_file_flags = (.*)/;
     my $tmpobj = "/tmp/injection_$ENV{USER}";
 
-    # hard coded build for 1.1.09
-    my $command = <<COMPILE;
-cd ~/.apportable/SDK && export PATH=`echo ~/.apportable/SDK/toolchain/macosx/android-ndk/toolchains/arm-linux-androideabi-*/prebuilt/darwin-x86*/arm-linux-androideabi/bin`:\$PATH && ./toolchain/macosx/clang/bin/clang -o $tmpobj.o -fpic -target arm-apportable-linux-androideabi -march=armv5te -mfloat-abi=soft -fsigned-char --sysroot=sysroot -Xclang -mconstructor-aliases -fzero-initialized-in-bss -fobjc-runtime=ios-6.0.0 -fobjc-legacy-dispatch -fconstant-cfstrings -mllvm -arm-reserve-r9 -fcolor-diagnostics -Wno-newline-eof -fblocks -fobjc-call-cxx-cdtors -fstack-protector -fno-short-enums -Wno-newline-eof -Werror-return-type -Werror-objc-root-class -fconstant-string-class=NSConstantString -ffunction-sections -funwind-tables -Xclang -fobjc-default-synthesize-properties -Wno-c++11-narrowing @{[$isARC ? "-fobjc-arc" : "-fno-objc-arc"]} -fasm-blocks -fno-asm -fpascal-strings -Wempty-body -Wno-deprecated-declarations -Wreturn-type -Wswitch -Wparentheses -Wformat -Wuninitialized -Wunused-value -Wunused-variable -iquote "Build/android-armeabi-debug/$projName-generated-files.hmap" -I"Build/android-armeabi-debug/$projName-own-target-headers.hmap" -I"Build/android-armeabi-debug/$projName-all-target-headers.hmap" -iquote "Build/android-armeabi-debug/$projName-project-headers.hmap" -include System/debug.pch -DDEBUG=1 -D__IPHONE_OS_VERSION_MIN_REQUIRED=60100 -D__PROJECT__='"$projName"' -D__compiler_offsetof=__builtin_offsetof -ISystem -ggdb3 -Wprotocol -std=gnu99 -fgnu-keywords -c "$projRoot/iOSInjectionProject/BundleContents.m" -MMD && ld $tmpobj.o "Build/android-armeabi-debug/$prjName/apk/lib/armeabi/libverde.so" @{[map "sysroot/usr/lib/armeabi/lib$_.so", @syslibs]} -shared -o $tmpobj.so
-COMPILE
+    $command =~ s/\$per_file_flags\b/$per_file_flags/g;
+    $command =~ s/\$in\b/"$changesFile"/g;
+    $command =~ s/\$out\b/"$tmpobj.o"/g;
+
+    $command =~ s/\$\n\s+//g;
+    $command =~ s/\$(.)/$1/g;
+
+    (my $prjName = $projName) =~ s/ //g;
+    my @syslibs = qw(android c m v z dl log cxx stdc++ System SystemConfiguration Security CFNetwork
+        Foundation CoreFoundation CoreGraphics CoreText BridgeKit OpenAL GLESv1_CM GLESv2 EGL xml2);
+
+    $command .= " && ./toolchain/macosx/android-ndk/toolchains/arm-linux-androideabi-*/prebuilt/darwin-x86*/arm-linux-androideabi/bin/ld $tmpobj.o \"Build/android-armeabi-debug/$prjName/apk/lib/armeabi/libverde.so\" @{[map \"sysroot/usr/lib/armeabi/lib$_.so\", @syslibs]} -shared -o $tmpobj.so";
 
     # print "$command";
 
-    0 == system( $command ) or error "Build failed";
+    0 == system( $command ) or error "Build failed: $changesFile";
 
     print "Loading shared library..\n";
     print "<$tmpobj.so\n";
