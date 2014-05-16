@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#51 $
+#  $Id$
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -309,7 +309,8 @@ if ( $learnt ) {
 
     foreach my $compile (@$learnt) {
         my ($arch) = $compile =~ / -arch (\w+) /;
-        $compile = "time $compile.tmp -o \"$projRoot$InjectionBundle/$arch/injecting_class.o\"";
+        $compile =~ s/(.mm?$)/_$1/;
+        $compile = "time $compile -o \"$projRoot$InjectionBundle/$arch/injecting_class.o\"";
         print "$compile\n";
         if ( system $compile ) {
             unlink $memory;
