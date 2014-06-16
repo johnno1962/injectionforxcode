@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#46 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#49 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -225,7 +225,6 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
                 [self.pauseResume performClick:self];
             [NSObject cancelPreviousPerformRequestsWithTarget:self];
             [self performSelector:@selector(findLLDB) withObject:nil afterDelay:.5];
-            //[Xtrace dumpClass:[self.debugger class]];
         }
         else
             [self performSelector:@selector(injectSource:) withObject:nil afterDelay:.1];
@@ -369,6 +368,8 @@ static CFDataRef copy_mac_address(void)
     int optval = 1;
     if ( (serverSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0 )
         [self error:@"Could not open service socket: %s", strerror( errno )];
+    else if ( fcntl(serverSocket, F_SETFD, FD_CLOEXEC) < 0 )
+        [self error:@"Could not set close exec: %s", strerror( errno )];
     else if ( setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval) < 0 )
         [self error:@"Could not set socket option: %s", strerror( errno )];
     else if ( setsockopt( serverSocket, IPPROTO_TCP, TCP_NODELAY, (void *)&optval, sizeof(optval)) < 0 )

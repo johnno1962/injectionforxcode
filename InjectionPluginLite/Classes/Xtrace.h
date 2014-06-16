@@ -7,7 +7,7 @@
 //
 //  Repo: https://github.com/johnno1962/Xtrace
 //
-//  $Id: //depot/Xtrace/Xray/Xtrace.h#38 $
+//  $Id: //depot/Xtrace/Xray/Xtrace.h#39 $
 //
 //  Class to intercept messages sent to a class or object.
 //  Swizzles generic logging implemntation in place of the
@@ -183,6 +183,9 @@ struct _xtrace_info {
 
 // "kitchen sink" trace all classes matching pattern
 + (void)traceClassPattern:(NSString *)pattern excluding:(NSString *)exclusions;
+
+// trace instance but only for methods in aClass
++ (void)traceInstance:(id)instance class:(Class)aClass;
 
 // trace all messages sent to an instance
 + (void)traceInstance:(id)instance;

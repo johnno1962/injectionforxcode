@@ -1,5 +1,5 @@
 #
-#  $Id: //depot/InjectionPluginLite/common.pm#22 $
+#  $Id: //depot/InjectionPluginLite/common.pm#23 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -24,7 +24,7 @@ use vars qw($resources $workspace $mainFile $executable $arch $patchNumber $flag
 $productName = "InjectionBundle$patchNumber";
 
 $isDevice = $executable =~ m@^/var/mobile/@;
-$isSimulator = $executable =~ m@/iPhone Simulator/@;
+$isSimulator = $executable =~ m@/(iPhone |Core)Simulator/@;
 $isAndroid = $executable =~ m@^/data/app/@;
 $isAppCode = $flags & 1<<4;
 
