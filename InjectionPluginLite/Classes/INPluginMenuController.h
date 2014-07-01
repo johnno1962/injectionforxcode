@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.h#12 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.h#13 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -66,6 +66,7 @@
 
 - (NSUserDefaults *)defaults;
 - (NSArray *)serverAddresses;
+- (NSString *)buildDirectory;
 - (NSString *)workspacePath;
 
 - (void)error:(NSString *)format, ...;

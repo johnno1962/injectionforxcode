@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#53 $
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#58 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -114,62 +114,18 @@ if ( $localBinary && $bundleProjectSource =~ s/(BUNDLE_LOADER = )([^;]+;)/$1"$lo
 
 ############################################################################
 #
-# This section is about learning the compile commands for classes in the
-# main project using "xcodebuild -dry-run". This helps avoid issues with
-# header include paths or specific compileation options used by the main
-# project. They are stored in a "memory" file - by architecture.
+# Build command for selected file is taken from previous Xcode buils logs
 #
 
-my $learn = "xcodebuild -dry-run $config";
-$learn .= " -project \"$projName.xcodeproj\"" if $projName;
-my $memory = "$archDir/compile_memory.txt.gz";
-my $mainProjectChanged = mtime( $mainProjectFile ) > mtime( $memory );
-my $canLearn = !$isAndroid && 1;
-my %memory;
+my $learnt;
 
-if ( $canLearn ) {
-    if ( !-f $memory || $mainProjectChanged ) {
+(my $escaped = $selectedFile) =~ s/ /\\\\ /g;
 
-        print "Learning compilations for files in project: $learn\n";
-
-        my $build = IO::File->new( "rm -rf build; $learn 2>&1 |" );
-        my $learn = IO::File->new( "| gzip >$memory" );
-        my ($cmd, $type) = ('');
-
-        while ( defined (my $line = <$build>) ) {
-            if ( $line =~ /^([^ ]+) / ) {
-                $type = $1;
-                $cmd = '';
-                #print "-------- $type\n";
-            }
-            elsif ( $line =~ /^    cd (.*)/ ) {
-                $cmd .= "cd $1 && ";
-            }
-            elsif ( $line =~ /^    setenv (\w+) (.*)/ ) {
-                $cmd .= "export $1=$2 && ";
-            }
-            elsif ( $line =~ /^    (\/.* -c ("?)(.*)(\2))( -o .*)/ ) {
-                $cmd .= $1;
-                my $rest = $5;
-                if ( $type =~ /ProcessPCH(\+\+)?|CpHeader/ ) {
-                    0 == system $cmd.$rest or error "Could not precompile: $cmd.$rest";
-                }
-                elsif( $type eq 'CompileC' ) {
-                    (my $file = $3) =~ s/\\//g;
-                    $learn->print( "$file\n$cmd\n" );
-                }
-            }
-        }
-
-        $learn->close();
-        $build->close();
-    }
-
-    my @memory = loadFile( "gunzip <$memory |" );
-    for ( my $i=0 ; $i<@memory ; $i+=2 ) {
-        push @{$memory{$memory[$i]}}, $memory[$i+1];
-    }
+foreach my $log (split "\n", `ls -t $buildRoot/../Logs/Build/*.xcactivitylog`) {
+    last if ($learnt) = grep $_ =~ /XcodeDefault\.xctoolchain/ && $_ =~ /$escaped/, split "\r", `gunzip <$log`;
 }
+
+error "Could not locate compile command for $escaped" if !$learnt && $selectedFile =~ /\.swift$/;
 
 ############################################################################
 #
@@ -180,16 +136,7 @@ if ( $canLearn ) {
 # Otherwise the source will be #imported in "BundleContents.m" for use.
 #
 
-my @classes = unique loadFile( $selectedFile ) =~ /\@implementation\s+(\w+)\b/g;
 my $changesFile = "$InjectionBundle/BundleContents.m";
-my $learnt = $memory{$selectedFile};
-
-if ( $learnt || $isAndroid ) {
-    IO::File->new( "> $changesFile" )
-        ->print( "// learnt compilation.\n" );
-    ($changesFile = $selectedFile) =~ s/(\.\w+)$/_$1/;
-}
-
 my $changesSource = IO::File->new( "> $changesFile" )
     or error "Could not open changes source file as: $!";
 
@@ -213,12 +160,13 @@ $changesSource->print( <<CODE );
 #undef _inval
 #define _inval( _val... ) /* = _val */
 
-@{[$learnt||$isAndroid?'':'#import "BundleContents.h"']}
+#import "BundleContents.h"
 
+extern
 #if __cplusplus
-extern "C" {
+"C" {
 #endif
-    int injectionHook();
+    int injectionHook(void);
 #if __cplusplus
 };
 #endif
@@ -229,7 +177,7 @@ extern "C" {
 
 + (void)load {
     Class bundleInjection = NSClassFromString(@"BundleInjection");
-@{[join '', map "    extern Class OBJC_CLASS_\$_$_;\n\t[bundleInjection loadedClass:INJECTION_BRIDGE(Class)(void *)&OBJC_CLASS_\$_$_ notify:$flags];\n", @classes]}    [bundleInjection loadedNotify:$flags hook:(void *)injectionHook];
+    [bundleInjection autoLoadedNotify:$flags hook:(void *)injectionHook];
 }
 
 \@end
@@ -240,7 +188,7 @@ int injectionHook() {
     return YES;
 }
 
-@{[join "", map "#import \"$_\"\n\n", $selectedFile]}
+@{[$learnt ? "" : "#import \"$selectedFile\"\n\n"]}
 
 CODE
 
@@ -248,82 +196,43 @@ $changesSource->close();
 
 ############################################################################
 #
-# At this point basic support has been patched in for an Apportable build on
-# Android devices where a .approj file is present. Your milage may vary...
-#
-
-if ( $isAndroid ) {
-    my $pkg;
-    patchAll( "Info.plist", sub {
-        $pkg ||= ($_[0] =~ m@<key>CFBundleIdentifier</key>\s*<string>([^<]*)<@s)[0];
-        return 0;
-    } );
-    $pkg =~ s/\${PRODUCT_NAME:rfc1034identifier}/$projName/;
-    $pkg =~ s/ /_/g;
-
-    print "\nPerforming Android Build...\n";
-    chdir "$ENV{HOME}/.apportable/SDK" or die "Could not chdir as: $!";
-
-    # ninja build file used for 1.1.09
-    my $ninja = loadFile( "Build/build.ninja" );
-    my $rule = $selectedFile =~ /\.mm$/ ? "compile_cxx" : "compile_c";
-    my ($command) = $ninja =~ /rule ${rule}_.*\n  command = ((?:.*\$\n)*.*)/;
-    my ($per_file_flags) = $ninja =~ /per_file_flags = (.*)/;
-    my $tmpobj = "/tmp/injection_$ENV{USER}";
-
-    $command =~ s/\$per_file_flags\b/$per_file_flags/g;
-    $command =~ s/\$in\b/"$changesFile"/g;
-    $command =~ s/\$out\b/"$tmpobj.o"/g;
-
-    $command =~ s/\$\n\s+//g;
-    $command =~ s/\$(.)/$1/g;
-
-    (my $prjName = $projName) =~ s/ //g;
-    my @syslibs = qw(android c m v z dl log cxx stdc++ System SystemConfiguration Security CFNetwork
-        Foundation CoreFoundation CoreGraphics CoreText BridgeKit OpenAL GLESv1_CM GLESv2 EGL xml2);
-
-    $command .= " && ./toolchain/macosx/android-ndk/toolchains/arm-linux-androideabi-*/prebuilt/darwin-x86*/arm-linux-androideabi/bin/ld $tmpobj.o \"Build/android-armeabi-debug/$prjName/apk/lib/armeabi/libverde.so\" @{[map \"sysroot/usr/lib/armeabi/lib$_.so\", @syslibs]} -shared -o $tmpobj.so";
-
-    # print "$command";
-
-    0 == system( $command ) or error "Build failed: $changesFile";
-
-    print "Loading shared library..\n";
-    print "<$tmpobj.so\n";
-    print "!>/data/data/$pkg/cache/$productName.so\n";
-    print "!/data/data/$pkg/cache/$productName.so\n";
-    print "Command sent to device.\n";
-    exit 0;
-}
-
-############################################################################
-#
 # This is where the learnt compilation is actually used. It's compiled into
 # the file XXXInjectionProject/<arch>/injecting_class.o and linked and the
-# bundle project file patched to link "$obj" into the bundle binary.
+# bundle project file patched to link "$obj" into the bundle binary. Swift
+# files are compiled on mass but their object files can be identified using
+# the JSON "-output-file-map".
 #
 
+my $sdk = ($config =~ /-sdk (\w+)/)[0] || 'macosx';
 my $obj = '';
-if ( $learnt ) {
-    print "Using learnt compilation.\n";
 
-    foreach my $compile (@$learnt) {
-        my ($arch) = $compile =~ / -arch (\w+) /;
-        $compile =~ s/(\.mm?$)/_$1/;
-        $compile = "time $compile -o \"$projRoot$InjectionBundle/$arch/injecting_class.o\"";
-        print "$compile\n";
-        if ( system $compile ) {
-            unlink $memory;
-            system "$learn clean";
-            error "*** Learnt Compile Failed: $compile\n\n** Build memory cleared, please try again. **\n\n";
-        }
+if ( $learnt ) {
+
+    print "$learnt\n";
+    0 == system $learnt or error "Learnt compile failed";
+
+    $obj = "$arch/injecting_class.o";
+    my ($toolchain,$map, $out);
+
+    if ( ($toolchain, $map) = $learnt =~ m@(/Applications/Xcode.*/XcodeDefault.xctoolchain)/.*? -output-file-map (.*?\.json) @ ) {
+        my $json = loadFile( $map );
+        $json =~ s/":/"=>/g;
+        $json = eval $json;
+        error "JSON conversion error: $@ in $map" if $@;
+        $out = $json->{$selectedFile}{object};
+    }
+    else {
+        ($out) = $learnt =~ / -o (.*)$/;
     }
 
-    unlink $changesFile;
-    $obj = "\"$arch/injecting_class.o\", ";
+    0 == system "cp -f '$out' $InjectionBundle/$obj" or error "Could not copy object";
+
+    if ( $toolchain ) {
+        $obj .= "\", \"-L$toolchain/usr/lib/swift_static/iphonesimulator\", \"-F$buildRoot/Products/Debug-$sdk";
+    }
 }
 
-$bundleProjectSource =~ s/(OTHER_LDFLAGS = \().*?("-undefined)/$1$obj$2/sg;
+$bundleProjectSource =~ s/(OTHER_LDFLAGS = \().*?("-undefined)/$1"$obj", $2/sg;
 saveFile( $bundleProjectFile, $bundleProjectSource );
 
 ############################################################################
@@ -340,12 +249,11 @@ my $rebuild = 0;
 
 build:
 my $build = "xcodebuild $config";
-my $sdk = ($config =~ /-sdk (\w+)/)[0] || 'macosx';
 
 my $buildScript = "$archDir/compile_commands.sh";
 my ($recording, $recorded);
 
-if ( $mainProjectChanged || mtime( $bundleProjectFile ) > mtime( $buildScript ) ) {
+if ( mtime( $bundleProjectFile ) > mtime( $buildScript ) ) {
     $recording = IO::File->new( "> $buildScript" )
         or die "Could not open '$buildScript' as: $!";
 }
@@ -366,7 +274,7 @@ while ( my $line = <BUILD> ) {
         $recorded++;
     }
 
-    if ( $line =~ m@(/usr/bin/touch -c ("([^"]+)"|(\S+(\\ \S*)*)))@ ) {
+    if ( $line =~ m@(/usr/bin/touch -c ("([^"]+)"|(\S+(\\ \S*)*)))@ && !$bundlePath ) {
         $bundlePath = $3 || $4;
         (my $cmd = $1) =~ s/'/'\\''/g;
         $recording->print( "echo && echo '$cmd' &&\n" ) if $recording;

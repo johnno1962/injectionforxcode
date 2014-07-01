@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#51 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#55 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -50,6 +50,7 @@ struct _in_header { int pathLength, dataLength; };
 + (BOOL)writeBytes:(off_t)bytes withPath:(const char *)path from:(int)fdin to:(int)fdout;
 #ifdef INJECTION_BUNDLE
 + (void)loadedClass:(Class)newClass notify:(BOOL)notify;
++ (void)autoLoadedNotify:(BOOL)notify hook:(void *)hook;
 + (void)loadedNotify:(BOOL)notify hook:(void *)hook;
 #endif
 @end
@@ -63,7 +64,20 @@ struct _in_header { int pathLength, dataLength; };
 
 #ifndef INJECTION_NOIMPL
 
+#import <dirent.h>
+
+#import <objc/runtime.h>
+#import <sys/sysctl.h>
+#import <dlfcn.h>
+
+#ifndef ANDROID
+#import <mach-o/dyld.h>
+#import <mach-o/arch.h>
+#import <mach-o/getsect.h>
+#endif
+
 #if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_LOADER)
+#import <UIKit/UIKit.h>
 @interface UINib(BundleInjection)
 - (NSArray *)inInstantiateWithOwner:(id)ownerOrNil options:(NSDictionary *)optionsOrNil;
 @end
@@ -178,8 +192,6 @@ static NSNetService *service;
         [self performSelectorInBackground:@selector(bundleLoader) withObject:nil];
 }
 
-#import <dirent.h>
-
 + (void)listDirectory:(const char *)start ending:(char *)end into:(NSMutableString *)listing {
     struct dirent *ent;
     struct stat st;
@@ -224,16 +236,6 @@ static NSNetService *service;
     close( loaderSocket );
     return 0;
 }
-
-#import <objc/runtime.h>
-#import <sys/sysctl.h>
-#import <dlfcn.h>
-
-#ifndef ANDROID
-#import <mach-o/dyld.h>
-#import <mach-o/arch.h>
-#import <mach-o/getsect.h>
-#endif
 
 + (void)bundleLoader {
 #ifndef INJECTION_ISARC
@@ -512,7 +514,18 @@ static NSNetService *service;
 // a little inside knowledge of Objective-C data structures for the new version of the class ...
 struct _in_objc_ivars { int twenty, count; struct { long *offsetPtr; char *name, *type; int align, size; } ivars[1]; };
 struct _in_objc_ronly { int z1, offsetStart; long offsetEnd, z2; char *className; void *methods; long z3; struct _in_objc_ivars *ivars; };
-struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_ronly *internal; };
+struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_ronly *internal;
+    // data new to swift
+    int size, tos, mdsize, eight;
+    struct _swift_data {
+        unsigned long flags;
+        const char *className;
+        int fieldcount, flags2;
+        const char *ivarNames;
+        struct _swift_field **(*get_field_data)();
+    } *swiftData;
+    IMP dispatch[1];
+};
 
 #else
 
@@ -661,7 +674,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
     Class oldClass = objc_getClass(className);
 
     if  ( newClass != oldClass ) {
-        [self alignIvarsOf:newClass to:oldClass];
+        ////[self alignIvarsOf:newClass to:oldClass];
 
         // replace implementations for class and instance methods
         [self swizzle:'+' className:className onto:object_getClass(oldClass) from:object_getClass(newClass)];
@@ -717,6 +730,55 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
             if ( originalClass && classReferences[i] != originalClass ) {
                 INLog( @"Fixing references to class: %s %p -> %p", className, classReferences[i], originalClass );
                 classReferences[i] = originalClass;
+            }
+        }
+    }
+#endif
+
+    INLog( @"Bundle \"%s\" loaded successfully.", strrchr( path, '/' )+1 );
+#ifndef __IPHONE_OS_VERSION_MIN_REQUIRED
+    if ( notify & INJECTION_ORDERFRONT )
+        [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+#endif
+    status = YES;
+    [[NSNotificationCenter defaultCenter] postNotificationName:kINNotification
+                                                        object:nil];
+}
+
++ (void)autoLoadedNotify:(BOOL)notify hook:(void *)hook {
+#ifndef ANDROID
+    Dl_info info;
+    if ( !dladdr( hook, &info ) )
+        NSLog( @"Could not find load address" );
+
+#ifndef __LP64__
+    uint32_t size = 0;
+    char *referencesSection = getsectdatafromheader((struct mach_header *)info.dli_fbase,
+                                                    "__DATA", "__objc_classlist", &size );
+#else
+    uint64_t size = 0;
+    char *referencesSection = getsectdatafromheader_64((struct mach_header_64 *)info.dli_fbase,
+                                                       "__DATA", "__objc_classlist", &size );
+#endif
+
+    if ( referencesSection ) {
+        Class *classReferences = (Class *)(void *)((char *)info.dli_fbase+(uint64_t)referencesSection);
+        BOOL seenInjectionClass = NO;
+        for ( int i=0 ; i<size/sizeof *classReferences ; i++ ) {
+            Class newClass = classReferences[i];
+            const char *className = class_getName(newClass);
+            static const char injectionPrefix[] = "InjectionBundle";
+            if ( seenInjectionClass || (seenInjectionClass = strncmp(className,injectionPrefix,(sizeof injectionPrefix)-1)==0) ) {
+                NSLog( @"Swizzling %s %p %p", className, newClass, objc_getClass(className) );
+                [newClass class];
+                [self loadedClass:newClass notify:notify];
+
+                // if swift, copy vtable
+                struct _in_objc_class *newclass = (struct _in_objc_class *)INJECTION_BRIDGE(void *)newClass;
+                if ( (unsigned long)newclass->internal & 0x1 ) {
+                    struct _in_objc_class *oldclass = (struct _in_objc_class *)INJECTION_BRIDGE(void *)objc_getClass(className);
+                    memcpy(oldclass->dispatch,newclass->dispatch,oldclass->mdsize-offsetof(struct _in_objc_class, dispatch)-2*sizeof(IMP));
+                }
             }
         }
     }

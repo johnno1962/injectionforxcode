@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.m#31 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginClientController.m#32 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -255,13 +255,14 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     if ( ![selectedFile length] )
         [self.consolePanel orderFront:self];
     NSString *command = [NSString stringWithFormat:@"\"%@/%@\" "
-                         "\"%@\" \"%@\" \"%@\" \"%@\" \"%@\" %d %d \"%@\" \"%@\" \"%@\" 2>&1",
+                         "\"%@\" \"%@\" \"%@\" \"%@\" \"%@\" %d %d \"%@\" \"%@\" \"%@\" \"%@\" 2>&1",
                          self.scriptPath, script, self.resourcePath, menuController.workspacePath,
                          self.mainFilePath ? self.mainFilePath : @"",
                          self.executablePath ? self.executablePath : @"", self.arch, ++patchNumber,
                          (silentButton.state ? 0 : INJECTION_NOTSILENT) | (frontButton.state ? INJECTION_ORDERFRONT : 0),
                          [unlockField.stringValue stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""],
                          [[menuController serverAddresses] componentsJoinedByString:@" "],
+                         [menuController buildDirectory],
                          selectedFile];
     [self exec:command];
 }

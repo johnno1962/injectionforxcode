@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#49 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#51 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -138,6 +138,10 @@
     return [source rangeOfString:string].location != NSNotFound;
 }
 
+- (NSString *)buildDirectory {
+    return [self.lastTextView valueForKeyPath:@"window.delegate.workspace.executionEnvironment.workspaceArena.buildFolderPath.pathString"];
+}
+
 - (NSString *)workspacePath {
     id delegate = [[NSApp keyWindow] delegate];
     if ( ![delegate respondsToSelector:@selector(document)] )
@@ -206,9 +210,9 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
          "Make sure that text is selected and the cursor is inside the file you have edited."];
         return;
     }
-    else if ( [lastFile rangeOfString:@"\\.mm?$"
+    else if ( [lastFile rangeOfString:@"\\.(mm?|swift)$"
                               options:NSRegularExpressionSearch].location == NSNotFound ) {
-        [self.client alert:@"Only class implementations (.m or .mm files) can be injected. "
+        [self.client alert:@"Only class implementations (.m, .mm or .swift files) can be injected. "
          "Make sure that text is selected and the cursor is inside the file you have edited."];
         return;
     }
@@ -259,9 +263,8 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 - (void)findLLDB {
 
     // do we have lldb's attention?
-    if ( [[self.debugger string] rangeOfString:@"27359872639733"].location == NSNotFound ) {
-        [self performSelector:@selector(findLLDB) withObject:nil afterDelay:.5];
-        [self keyEvent:@"p 27359872639632+101" code:0 after:.1];
+    if ( ![[self.debugger string] hasSuffix:@"(lldb) "] ) {
+        [self performSelector:@selector(findLLDB) withObject:nil afterDelay:.2];
         return;
     }
 
@@ -269,13 +272,18 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
     NSString *loader = [NSString stringWithFormat:@"p (void)[[NSBundle bundleWithPath:@\""
                         "%@/InjectionLoader.bundle\"] load]", self.client.scriptPath];
 
-    float after = 0;
-    [self keyEvent:loader code:0 after:after+=.5];
-    [self keyEvent:loader code:0 after:after+=.5];
-    [self keyEvent:@"c" code:0 after:after+=.5];
+    [self keyEvent:loader code:0 after:0.];
 
-    [[self.lastTextView window] makeFirstResponder:self.lastTextView];
-    [self performSelector:@selector(injectSource:) withObject:nil afterDelay:after+=.5];
+    [self performSelector:@selector(forceContinue) withObject:nil afterDelay:.5];
+}
+
+- (void)forceContinue {
+    if ( [self.pauseResume image] != [[[self.pauseResume target] class] iconImage_pause] ) {
+        [self keyEvent:@"c" code:0 after:1];
+        [self performSelector:@selector(forceContinue) withObject:nil afterDelay:1];
+    }
+    else
+        [self injectSource:nil];
 }
 
 - (void)keyEvent:(NSString *)str code:(unsigned short)code after:(float)delay {
