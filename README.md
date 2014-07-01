@@ -2,16 +2,16 @@
 
 Copyright (c) John Holdsworth 2012
 
-Now in the Mac AppStore: [https://itunes.apple.com/app/objective-c++/id551718707?ls=1&mt=12](https://itunes.apple.com/app/objective-c++/id551718707?ls=1&mt=12)
-
 Injection is a plugin for Xcode that allows you to "inject" Objective-C code changes into a
 running application without having to restart it during development and testing. After making
 a couple of minor changes to your application's "main.m" and pre-compilation header it
 will connect to a server running inside Xcode during testing to receive commands to
 load bundles containing the code changes. 
 
-Stop Press: experimental support to patch swift classes has been added. As Swift uses a 
-binary vtable don't expect the patch to work if you add or remove a method from your class!
+Stop Press: Patching your project is no longer required and experimental support to patch Swift 
+classes has been added. As Swift uses a  binary vtable don't expect the patch to work if you add 
+or remove a method from your class! To run the faster "unpatched" injection or to inject to a 
+device in your Swift project make sure there is a "main.m" even if it is empty so injection can patch it.
 
 ![Icon](http://injectionforxcode.johnholdsworth.com/overview.png)
 
@@ -29,24 +29,28 @@ https://vimeo.com/50137444
 Announcements of major commits to the repo will be made on twitter [@Injection4Xcode](https://twitter.com/#!/@Injection4Xcode).
 
 To use Injection, open the InjectionPluginLite project, build it and restart Xcode.
-You must build the "InjectionPlugin" target selecting to build for the simulator.
 Alternatively, you can download a small installer app "Injection Plugin.app" from 
 [http://injectionforxcode.com](http://injectionforxcode.com) and use the menu item 
 "File/Install Plugin" then restart Xcode (This also installs the AppCode plugin.)
+Injection is also avilable in the [Alcatraz](http://alcatraz.io/) meta plugin.
 This should add a submenu and an "Inject Source" item to Xcode's "Product" menu.
 If at first it doesn't appear, try restarting Xcode again.
 
-Open a simple example project such as UICatalog or GLEssentials from Apple. At this
-point you can use the  "Product/Injection Plugin/Patch Project for Injection" menu item
-to pre-prepare the project then rebuild it. If you have patched the project it should connect
-to Xcode which will display a red badge on it's dock icon showing the application is
-prepared to load patch bundles. Otherwise, select text in a class source file and use
-menu item "Product/Inject Source" to inject any changes you have made into the app
-and it will connect to Xcode and load your changes.
+In the simulator, Injection can be used "unpatched", loading a bundle on demmand
+to provide support for injection. You should be able to type ctrl-= at any time you
+are editing a method implementation to have the changes updated in your application.
+
+If you want to use injection from a device you will need to patch your project using
+the  "Product/Injection Plugin/Patch Project for Injection" menu item to pre-prepare 
+the project then rebuild it. This will connect immediately to Xcode when you run your
+app showing a red badge on Xcode's dock icon. You may want to do this for the simulator 
+as well as it is faster.
 
 On OS X remember to have your entitlements include "Allow outgoing connections". 
 
 ### JetBrains AppCode IDE Support
+
+NOTE: this release breaks 
 
 The InjectionPluginAppCode project provides basic support for code injection in the
 AppCode IDE. To use, install the file Injection.jar into directory
