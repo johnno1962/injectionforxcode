@@ -10,12 +10,8 @@ a couple of minor changes to your application's "main.m" and pre-compilation hea
 will connect to a server running inside Xcode during testing to receive commands to
 load bundles containing the code changes. 
 
-Stop Press: Injection no longer needs to patch your project to operate and is
-ready to use on any project at any time. To do this it inserts commands into
-your lldb console to load a small bootstrap bundle into your app then works 
-as before. You might still want to patch your project if you want to
-avoid this slight delay, use with AppCode or Apportable or inject code
-onto an iOS device.
+Stop Press: experimental support to patch swift classes has been added. As Swift uses a 
+binary vtable don't expect the patch to work if you add or remove a method from your class!
 
 ![Icon](http://injectionforxcode.johnholdsworth.com/overview.png)
 
@@ -50,23 +46,7 @@ and it will connect to Xcode and load your changes.
 
 On OS X remember to have your entitlements include "Allow outgoing connections". 
 
-### Using Injection with Xcode 4/5 
-
-The same plugin build can be used safely on Xcode 4 or 5. Xcode 5.1 however, no longer
-supports building for garbage collection which is required by Xcode 4. So, if you still
-need to use it with Xcode 4 you will need to use Xcode versions up to 5.0.2 to build it
-and change the change the GC_ENABLE_OBJC_GC to "supported". For Xcode 5.0+ you can simply
-build off github.
-
-If you see the following message when you restart Xcode5, use "Activity Monitor" to
-kill off any "ibtoold" daemon processes running that Xcode5 forks off and then restart. 
-
-![Icon](http://injectionforxcode.johnholdsworth.com/socket.png)
-
-If you are using Injection to develop an OS X application you may need a "Run Script, 
-Build Phase" of  "rm -rf $CODESIGNING_FOLDER_PATH/Contents/MacOS/InjectionBundle*".
-
-## JetBrains AppCode IDE Support
+### JetBrains AppCode IDE Support
 
 The InjectionPluginAppCode project provides basic support for code injection in the
 AppCode IDE. To use, install the file Injection.jar into directory
@@ -85,32 +65,7 @@ the client app has to find it's way over Wi-Fi to connect back to the plugin.
 Start small by injecting to the simulator then injecting to a device using the Xcode 
 plugin. Then try injecting to the device from AppCode after re-patching the project.
 
-## Using with [Apportable](http://www.apportable.com) 
-
-Injection can work on Android if you follow these steps: Convert your application
-by using "apportable load" from the command line inside your project. Unpatch and re-patch
-your project for injection as a different patch is applied when there is a ".approj" and 
-then run "apportable load" again and it should connect to Xcode. You should then
-be able to inject from the Xcode menu as before.
-
-## Storyboard Injection
-
-Injection will now inject UIViewController layouts in a storyboarded application. To do this
-you need to select the "Inject Storybds" option in the Tunable Parameters and add the 
-following as a "Build Phase" of type "Run Script" to your project (quotes included.)
-
-<pre>
-"$HOME/Library/Application Support/Developer/Shared/Xcode/Plug-ins/InjectionPlugin.xcplugin/Contents/Resources/projectBuilt.pl"
-</pre>
-
-When you next run the application, if you edit the storyboard and build the project, layout changes will be
-injected onto the UIViewControllers currently visible while the application is still running. This is 
-achieved by reloading their "nib" onto the existing view controller and sending -viewDidLoad, 
--viewWillAppear:YES and -viewDidAppear:YES to the view controller for it to redraw.
-This only works for applications with a single active Storyboard. See class method
-+reloadNibs in the file "BundleInjection.h". Storyboard Injection no longer works in Xcode 5.
-
-## Shareware License
+### Shareware License
 
 This source code is provided on github on the understanding it will not be redistributed.
 License is granted to use this software during development for any purpose indefinitely
@@ -120,7 +75,7 @@ will be prompted to register and have the opportunity to make a donation $10
 
 If you find (m)any issues in the code, get in contact using the email: support (at) injectionforxcode.com
 
-## How it works
+### How it works
 
 A project patched for injection #imports the file "BundleInjection.h" from the resources of the 
 plugin into it's "main.m" source file. Code in this header uses a +load method to connect back
@@ -152,7 +107,7 @@ __InjectionPluginAppCode__ Java plugin for JetBrains AppCode IDE support.
 I've removed the InjectionInstallerIII project as it needs you to have built the plugin anyway
 which will have already put it in the right place to load when you restart Xcode.
 
-## Source Files/Roles:
+### Source Files/Roles:
 
 __InjectionPluginLite/Classes/INPluginMenuController.m__
 
@@ -165,7 +120,7 @@ __InjectionPluginLite/Classes/INPluginClientController.m__
 A (currently) singleton instance to shadow a client connection from an application. It runs unix scripts to
 prepare the project and bundles used as part of injection and monitors for successful loading of the bundle.
 
-## Perl scripts:
+### Perl scripts:
 
 __InjectionPluginLite/patchProject.pl__
 
@@ -188,7 +143,7 @@ __InjectionPluginLite/common.pm__
 
 Code shared across the above scripts including the code that patches classes into categories.
 
-## Script output line-prefix conventions from -[INPluginClientController monitorScript]:
+### Script output line-prefix conventions from -[INPluginClientController monitorScript]:
 
 __>__ open local file for write
 
@@ -204,7 +159,7 @@ __?__ display alert to user with message
 
 Otherwise the line is appended as rich text to the console NSTextView.
 
-## Command line arguments to all scripts (in order)
+### Command line arguments to all scripts (in order)
 
 __$resources__ Path to "Resources" directory of plugin for headers etc.
 
@@ -224,9 +179,11 @@ __$unlockCommand__ Command to be used to make files writable from "app parameter
 
 __$addresses__ IP addresses injection server is running on for connecting from device.
 
+__$buidlRoot__ build directory for the project being injected.
+
 __$selectedFile__ Last source file selected in Xcode editor
 
-## Bitfields of $flags argument passed to scripts
+### Bitfields of $flags argument passed to scripts
 
 __1<<2__ Display UIAlert on load of changes (disabled with the "Silent" tunable parameter)
 
@@ -234,7 +191,7 @@ __1<<3__ Activate application/simulator on load.
 
 __1<<4__ Plugin is running in AppCode.
 
-## Please note:
+## #Please note:
 
 The above copyright notice and this permission notice shall be
 included in all copies or substantial portions of the Software.
