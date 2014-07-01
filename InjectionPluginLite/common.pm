@@ -1,5 +1,5 @@
 #
-#  $Id: //depot/InjectionPluginLite/common.pm#24 $
+#  $Id: //depot/InjectionPluginLite/common.pm#25 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -17,7 +17,7 @@ use vars qw($resources $workspace $mainFile $executable $arch $patchNumber $flag
     $isIOS $productName $appPackage $deviceRoot $projFile $projRoot $projName $projType
     $InjectionBundle $template $header $appClass $appPackage $appName $RED $buildRoot);
 
-($resources, $workspace, $mainFile, $executable, $arch, $patchNumber, $flags, $unlockCommand, $addresses, $buildRoot, $selectedFile) = @ARGV;
+($resources, $workspace, $mainFile, $executable, $arch, $patchNumber, $flags, $unlockCommand, $addresses, $selectedFile, $buildRoot) = @ARGV;
 
 ($appPackage, $deviceRoot, $appName) = $executable =~ m@((^.*)/([^/]+))/[^/]+$@;
 

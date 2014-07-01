@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#55 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#56 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -679,6 +679,14 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
         // replace implementations for class and instance methods
         [self swizzle:'+' className:className onto:object_getClass(oldClass) from:object_getClass(newClass)];
         [self swizzle:'-' className:className onto:oldClass from:newClass];
+
+        // if swift, copy vtable
+        struct _in_objc_class *newclass = (struct _in_objc_class *)INJECTION_BRIDGE(void *)newClass;
+        if ( (unsigned long)newclass->internal & 0x1 && newClass != oldClass ) {
+            struct _in_objc_class *oldclass = (struct _in_objc_class *)INJECTION_BRIDGE(void *)oldClass;
+            size_t bytes = oldclass->mdsize - offsetof(struct _in_objc_class, dispatch) - 2*sizeof(IMP);
+            memcpy( oldclass->dispatch, newclass->dispatch, bytes );
+        }
     }
 
 #if 0
@@ -772,13 +780,6 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
                 NSLog( @"Swizzling %s %p %p", className, newClass, objc_getClass(className) );
                 [newClass class];
                 [self loadedClass:newClass notify:notify];
-
-                // if swift, copy vtable
-                struct _in_objc_class *newclass = (struct _in_objc_class *)INJECTION_BRIDGE(void *)newClass;
-                if ( (unsigned long)newclass->internal & 0x1 ) {
-                    struct _in_objc_class *oldclass = (struct _in_objc_class *)INJECTION_BRIDGE(void *)objc_getClass(className);
-                    memcpy(oldclass->dispatch,newclass->dispatch,oldclass->mdsize-offsetof(struct _in_objc_class, dispatch)-2*sizeof(IMP));
-                }
             }
         }
     }

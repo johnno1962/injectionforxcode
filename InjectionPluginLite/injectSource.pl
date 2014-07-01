@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#58 $
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#59 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -120,8 +120,58 @@ if ( $localBinary && $bundleProjectSource =~ s/(BUNDLE_LOADER = )([^;]+;)/$1"$lo
 my $learnt;
 
 (my $escaped = $selectedFile) =~ s/ /\\\\ /g;
+my @logs;
 
-foreach my $log (split "\n", `ls -t $buildRoot/../Logs/Build/*.xcactivitylog`) {
+if ( !$buildRoot ) {
+    my $learn = "xcodebuild -dry-run $config";
+    $learn .= " -project \"$projName.xcodeproj\"" if $projName;
+    my $memory = "$archDir/learnt_commands.gz";
+    my $mainProjectChanged = mtime( $mainProjectFile ) > mtime( $memory );
+
+    if ( !-f $memory || $mainProjectChanged ) {
+
+        print "Learning compilations for files in project: $learn\n";
+
+        my $build = IO::File->new( "rm -rf build; $learn 2>&1 |" );
+        my $learn = IO::File->new( "| gzip >$memory" );
+        my ($cmd, $type) = ('');
+
+        while ( defined (my $line = <$build>) ) {
+            if ( $line =~ /^([^ ]+) / ) {
+                $type = $1;
+                $cmd = '';
+                #print "-------- $type\n";
+            }
+            elsif ( $line =~ /^    cd (.*)/ ) {
+                $cmd .= "cd $1 && ";
+            }
+            elsif ( $line =~ /^    setenv (\w+) (.*)/ ) {
+                $cmd .= "export $1=$2 && ";
+            }
+            elsif ( $line =~ /^    (\/.* -c ("?)(.*)(\2)( -o .*))/ ) {
+                $cmd .= $1;
+                my $rest = $5;
+                if ( $type =~ /ProcessPCH(\+\+)?|CpHeader/ ) {
+                    0 == system $cmd.$rest or error "Could not precompile: $cmd.$rest";
+                }
+                elsif( $type eq 'CompileC' ) {
+                    (my $file = $3) =~ s/\\//g;
+                    $learn->print( "$cmd\r" );
+                }
+            }
+        }
+
+        $learn->close();
+        $build->close();
+    }
+
+    @logs = ($memory)
+}
+else {
+    @logs = split "\n", `ls -t $buildRoot/../Logs/Build/*.xcactivitylog`
+}
+
+foreach my $log (@logs) {
     last if ($learnt) = grep $_ =~ /XcodeDefault\.xctoolchain/ && $_ =~ /$escaped/, split "\r", `gunzip <$log`;
 }
 
