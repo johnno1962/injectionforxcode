@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#59 $
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#60 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -258,9 +258,6 @@ my $obj = '';
 
 if ( $learnt ) {
 
-    print "$learnt\n";
-    0 == system $learnt or error "Learnt compile failed";
-
     $obj = "$arch/injecting_class.o";
     my ($toolchain,$map, $out);
 
@@ -270,10 +267,17 @@ if ( $learnt ) {
         $json = eval $json;
         error "JSON conversion error: $@ in $map" if $@;
         $out = $json->{$selectedFile}{object};
+
+        $learnt =~ s/ -emit-module .*?\.swiftmodule//;
+        $learnt =~ s/ -emit-objc-header.*$//;
     }
     else {
         ($out) = $learnt =~ / -o (.*)$/;
     }
+
+    (my $lout = $learnt) =~ s/\\/\\\\/g;
+    print "$lout\n";
+    0 == system "time $learnt" or error "Learnt compile failed";
 
     0 == system "cp -f '$out' $InjectionBundle/$obj" or error "Could not copy object";
 

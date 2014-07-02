@@ -50,8 +50,6 @@ On OS X remember to have your entitlements include "Allow outgoing connections".
 
 ### JetBrains AppCode IDE Support
 
-NOTE: this release breaks 
-
 The InjectionPluginAppCode project provides basic support for code injection in the
 AppCode IDE. To use, install the file Injection.jar into directory
 "~/Library/Application Support/appCode10". The new menu options should appear at the end 
