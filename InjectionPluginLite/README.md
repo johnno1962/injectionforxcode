@@ -181,7 +181,7 @@ __$unlockCommand__ Command to be used to make files writable from "app parameter
 
 __$addresses__ IP addresses injection server is running on for connecting from device.
 
-__$buidlRoot__ build directory for the project being injected.
+__$buildRoot__ build directory for the project being injected.
 
 __$selectedFile__ Last source file selected in Xcode editor
 
@@ -193,7 +193,7 @@ __1<<3__ Activate application/simulator on load.
 
 __1<<4__ Plugin is running in AppCode.
 
-## #Please note:
+### Please note:
 
 The above copyright notice and this permission notice shall be
 included in all copies or substantial portions of the Software.

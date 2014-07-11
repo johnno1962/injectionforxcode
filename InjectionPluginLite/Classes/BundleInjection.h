@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#56 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#57 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -682,7 +682,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 
         // if swift, copy vtable
         struct _in_objc_class *newclass = (struct _in_objc_class *)INJECTION_BRIDGE(void *)newClass;
-        if ( (unsigned long)newclass->internal & 0x1 && newClass != oldClass ) {
+        if ( (unsigned long)newclass->internal & 0x1 ) {
             struct _in_objc_class *oldclass = (struct _in_objc_class *)INJECTION_BRIDGE(void *)oldClass;
             size_t bytes = oldclass->mdsize - offsetof(struct _in_objc_class, dispatch) - 2*sizeof(IMP);
             memcpy( oldclass->dispatch, newclass->dispatch, bytes );
