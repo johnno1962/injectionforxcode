@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#60 $
+#  $Id$
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -273,6 +273,7 @@ if ( $learnt ) {
     }
     else {
         ($out) = $learnt =~ / -o (.*)$/;
+        $out =~ s/\\ / /g;
     }
 
     (my $lout = $learnt) =~ s/\\/\\\\/g;
