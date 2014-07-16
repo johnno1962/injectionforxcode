@@ -41,13 +41,14 @@ if ( ! -d $InjectionBundle ) {
         or error "Could not copy injection bundle.";
 
     # try to use main project's precompilation header
-    my $bundlePCH = "$InjectionBundle/InjectionBundle-Prefix.pch";
-    if ( my ($projectPCH) = split "\n", `find . -name "$projName-Prefix.pch"` ) {
-        print "Linking $bundlePCH to main pre-compilation header: $projectPCH\n";
-        unlink $bundlePCH;
-        symlink "../$projectPCH", $bundlePCH
-            or error "Could not link main preprocessor header as: $!";
-    }
+    ### no longer a feature now compilations "learnt"
+    #my $bundlePCH = "$InjectionBundle/InjectionBundle-Prefix.pch";
+    #if ( my ($projectPCH) = split "\n", `find . -name "$projName-Prefix.pch"` ) {
+    #    print "Linking $bundlePCH to main pre-compilation header: $projectPCH\n";
+    #    unlink $bundlePCH;
+    #    symlink "../$projectPCH", $bundlePCH
+    #        or error "Could not link main preprocessor header as: $!";
+    #}
 
     $bundleProjectSource = loadFile( $bundleProjectFile );
     if ( -f $mainProjectFile ) {
