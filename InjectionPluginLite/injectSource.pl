@@ -284,7 +284,7 @@ if ( $learnt ) {
     0 == system "cp -f '$out' $InjectionBundle/$obj" or error "Could not copy object";
 
     if ( $toolchain ) {
-        $obj .= "\", \"-L$toolchain/usr/lib/swift_static/iphonesimulator\", \"-F$buildRoot/Products/Debug-$sdk";
+        $obj .= "\", \"-L$toolchain/usr/lib/swift/iphonesimulator\", \"-F$buildRoot/Products/Debug-$sdk";
     }
 }
 
