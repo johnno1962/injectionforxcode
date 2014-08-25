@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#57 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#58 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -516,6 +516,7 @@ struct _in_objc_ivars { int twenty, count; struct { long *offsetPtr; char *name,
 struct _in_objc_ronly { int z1, offsetStart; long offsetEnd, z2; char *className; void *methods; long z3; struct _in_objc_ivars *ivars; };
 struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_ronly *internal;
     // data new to swift
+    int f1, f2; // added for Beta5
     int size, tos, mdsize, eight;
     struct _swift_data {
         unsigned long flags;
