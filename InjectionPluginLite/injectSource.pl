@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#63 $
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#64 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -17,6 +17,7 @@ use common;
 my $bundleProjectFile = "$InjectionBundle/InjectionBundle.xcodeproj/project.pbxproj";
 my $bundleProjectSource = -f $bundleProjectFile && loadFile( $bundleProjectFile );
 my $mainProjectFile = "$projName.xcodeproj/project.pbxproj";
+my $isSwift = $selectedFile =~ /\.swift$/;
 
 sub mtime {
     my ($file) = @_;
@@ -173,10 +174,13 @@ else {
 }
 
 foreach my $log (@logs) {
-    last if ($learnt) = grep $_ =~ /XcodeDefault\.xctoolchain/ && $_ =~ /$escaped/, split "\r", `gunzip <$log`;
+    last if ($learnt) = grep $_ =~ /XcodeDefault\.xctoolchain/ && $_ =~ /-primary-file $escaped/, split "\r", `gunzip <$log`;
 }
 
-error "Could not locate compile command for $escaped" if !$learnt && $selectedFile =~ /\.swift$/;
+if ( $isSwift ) {
+    error "Could not locate compile command for $escaped" if !$learnt;
+    $learnt =~ s/( -o .*?\.o).*/$1/g;
+}
 
 ############################################################################
 #
@@ -260,30 +264,18 @@ my $obj = '';
 if ( $learnt ) {
 
     $obj = "$arch/injecting_class.o";
-    my ($toolchain,$map, $out);
-
-    if ( ($toolchain, $map) = $learnt =~ m@(/Applications/Xcode.*/XcodeDefault.xctoolchain)/.*? -output-file-map (.*?\.json) @ ) {
-        my $json = loadFile( $map );
-        $json =~ s/":/"=>/g;
-        $json = eval $json;
-        error "JSON conversion error: $@ in $map" if $@;
-        $out = $json->{$selectedFile}{object};
-
-        $learnt =~ s/ -emit-module .*?\.swiftmodule//;
-        $learnt =~ s/ -emit-objc-header.*$//;
-    }
-    else {
-        ($out) = $learnt =~ / -o (.*)$/;
-        $out =~ s/\\ / /g;
-    }
+    my ($out) = $learnt =~ / -o (.*)$/;
+    $out =~ s/\\ / /g;
 
     (my $lout = $learnt) =~ s/\\/\\\\/g;
     print "$lout\n";
+
     0 == system "time $learnt" or error "Learnt compile failed";
 
     0 == system "cp -f '$out' $InjectionBundle/$obj" or error "Could not copy object";
 
-    if ( $toolchain ) {
+    if ( $isSwift ) {
+        my ($toolchain) = $learnt =~ m@(/Applications/Xcode.*?/XcodeDefault.xctoolchain)/@;
         $obj .= "\", \"-L$toolchain/usr/lib/swift/iphonesimulator\", \"-F$buildRoot/Products/Debug-$sdk";
     }
 }
