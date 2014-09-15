@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#58 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#59 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -733,7 +733,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 
     if ( referencesSection ) {
         Class *classReferences = (Class *)(void *)((char *)info.dli_fbase+(uint64_t)referencesSection);
-        for ( int i=0 ; i<size/sizeof *classReferences ; i++ ) {
+        for ( unsigned long i=0 ; i<size/sizeof *classReferences ; i++ ) {
             const char *className = class_getName(classReferences[i]);
             Class originalClass = objc_getClass( className );
             if ( originalClass && classReferences[i] != originalClass ) {
@@ -773,7 +773,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
     if ( referencesSection ) {
         Class *classReferences = (Class *)(void *)((char *)info.dli_fbase+(uint64_t)referencesSection);
         BOOL seenInjectionClass = NO;
-        for ( int i=0 ; i<size/sizeof *classReferences ; i++ ) {
+        for ( unsigned long i=0 ; i<size/sizeof *classReferences ; i++ ) {
             Class newClass = classReferences[i];
             const char *className = class_getName(newClass);
             static const char injectionPrefix[] = "InjectionBundle";
