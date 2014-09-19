@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#64 $
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#65 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -276,7 +276,7 @@ if ( $learnt ) {
 
     if ( $isSwift ) {
         my ($toolchain) = $learnt =~ m@(/Applications/Xcode.*?/XcodeDefault.xctoolchain)/@;
-        $obj .= "\", \"-L$toolchain/usr/lib/swift/iphonesimulator\", \"-F$buildRoot/Products/Debug-$sdk";
+        $obj .= "\", \"-L'$toolchain'/usr/lib/swift/iphonesimulator\", \"-F$buildRoot/Products/Debug-$sdk";
     }
 }
 
