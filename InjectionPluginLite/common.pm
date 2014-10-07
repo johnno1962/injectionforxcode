@@ -1,5 +1,5 @@
 #
-#  $Id: //depot/InjectionPluginLite/common.pm#25 $
+#  $Id: //depot/InjectionPluginLite/common.pm#26 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -15,15 +15,16 @@ use Carp;
 use vars qw($resources $workspace $mainFile $executable $arch $patchNumber $flags
     $unlockCommand $addresses $selectedFile $isDevice $isSimulator $isAndroid $isAppCode
     $isIOS $productName $appPackage $deviceRoot $projFile $projRoot $projName $projType
-    $InjectionBundle $template $header $appClass $appPackage $appName $RED $buildRoot);
+    $InjectionBundle $template $header $appClass $RED $buildRoot);
 
 ($resources, $workspace, $mainFile, $executable, $arch, $patchNumber, $flags, $unlockCommand, $addresses, $selectedFile, $buildRoot) = @ARGV;
 
-($appPackage, $deviceRoot, $appName) = $executable =~ m@((^.*)/([^/]+))/[^/]+$@;
+#($appPackage, $deviceRoot, $appName) = $executable =~ m@((^.*)/([^/]+))/[^/]+$@;
+($appPackage, $deviceRoot) = $executable =~ m@((^.*))$@; # iOS8
 
 $productName = "InjectionBundle$patchNumber";
 
-$isDevice = $executable =~ m@^/var/mobile/@;
+$isDevice = $executable =~ m@^(/private)?/var/mobile/@;
 $isSimulator = $executable =~ m@/(iPhone |Core)Simulator/@;
 $isAndroid = $executable =~ m@^/data/app/@;
 $isAppCode = $flags & 1<<4;

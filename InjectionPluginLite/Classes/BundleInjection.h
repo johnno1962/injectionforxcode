@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#59 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#60 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -300,7 +300,7 @@ static NSNetService *service;
             sbInjection = 0;
 #endif
 
-            NSString *executablePath = [[NSBundle mainBundle] executablePath];
+            NSString *executablePath = NSHomeDirectory();//[[NSBundle mainBundle] executablePath];
             [executablePath getCString:path maxLength:sizeof path encoding:NSUTF8StringEncoding];
             [self writeBytes:alen withPath:path from:0 to:loaderSocket];
             write(loaderSocket, arch, alen);
