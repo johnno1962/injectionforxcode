@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#65 $
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#66 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -174,7 +174,7 @@ else {
 }
 
 foreach my $log (@logs) {
-    last if ($learnt) = grep $_ =~ /XcodeDefault\.xctoolchain/ && $_ =~ /-primary-file $escaped/, split "\r", `gunzip <$log`;
+    last if ($learnt) = grep $_ =~ /XcodeDefault\.xctoolchain/ && $_ =~ /-primary-file ("$selectedFile"|$escaped)/, split "\r", `gunzip <$log`;
 }
 
 if ( $isSwift ) {
