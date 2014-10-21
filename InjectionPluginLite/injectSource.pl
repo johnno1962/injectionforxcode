@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#66 $
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#67 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -174,13 +174,15 @@ else {
 }
 
 foreach my $log (@logs) {
-    last if ($learnt) = grep $_ =~ /XcodeDefault\.xctoolchain/ && $_ =~ /-primary-file ("$selectedFile"|$escaped)/, split "\r", `gunzip <$log`;
+    last if ($learnt) = grep $_ =~ /XcodeDefault\.xctoolchain/ &&
+        $_ =~ /@{[$isSwift ? " -primary-file ": " "]}("$selectedFile"|$escaped)/,
+            split "\r", `gunzip <$log`;
 }
 
-if ( $isSwift ) {
+#if ( $isSwift ) {
     error "Could not locate compile command for $escaped" if !$learnt;
     $learnt =~ s/( -o .*?\.o).*/$1/g;
-}
+#}
 
 ############################################################################
 #
@@ -274,10 +276,10 @@ if ( $learnt ) {
 
     0 == system "cp -f '$out' $InjectionBundle/$obj" or error "Could not copy object";
 
-    if ( $isSwift ) {
+    #if ( $isSwift ) {
         my ($toolchain) = $learnt =~ m@(/Applications/Xcode.*?/XcodeDefault.xctoolchain)/@;
         $obj .= "\", \"-L'$toolchain'/usr/lib/swift/iphonesimulator\", \"-F$buildRoot/Products/Debug-$sdk";
-    }
+    #}
 }
 
 $bundleProjectSource =~ s/(OTHER_LDFLAGS = \().*?("-undefined)/$1"$obj", $2/sg;
