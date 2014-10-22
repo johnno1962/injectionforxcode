@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.h#13 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.h#14 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -27,24 +27,16 @@
 
 @interface INPluginMenuController : NSObject <NSNetServiceDelegate> {
 
-    //IBOutlet NSProgressIndicator *progressIndicator;
     IBOutlet NSTextField *urlLabel;
-    //IBOutlet NSPanel *webPanel;
     IBOutlet WebView *webView;
-    //IBOutlet NSMenu *subMenu;
     IBOutlet NSMenuItem *subMenuItem, *introItem;
-
-    //IBOutlet NSTextView *lastTextView;
-    //IBOutlet INPluginClientController *client;
 
     Class DVTSourceTextView;
     Class IDEWorkspaceDocument;
     Class IDEConsoleTextView;
 
-    //NSUserDefaults *defaults;
     int serverSocket;
 
-    //NSMutableString *mac;
     time_t installed;
     int licensed;
     int refkey;
@@ -63,6 +55,7 @@
 @property (nonatomic,retain) NSTextView *debugger;
 @property (nonatomic,retain) NSString *lastFile;
 @property (nonatomic,retain) NSWindow *lastWin;
+@property (nonatomic) BOOL hasSaved;
 
 - (NSUserDefaults *)defaults;
 - (NSArray *)serverAddresses;

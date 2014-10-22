@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#51 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#52 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -126,10 +126,17 @@
 - (NSString *)lastFileSaving:(BOOL)save {
     NSDocument *doc = [(id)[self.lastTextView delegate] document];
     if ( save ) {
-        [doc saveDocument:self];
+        self.hasSaved = FALSE;
+        [doc saveDocumentWithDelegate:self
+                      didSaveSelector:@selector(document:didSave:contextInfo:)
+                          contextInfo:NULL];
         [self setupLicensing];
     }
     return [[doc fileURL] path];
+}
+
+- (void)document:(NSDocument *)doc didSave:(BOOL)didSave contextInfo:(void  *)contextInfo {
+    self.hasSaved = TRUE;
 }
 
 - (BOOL)lastFileContains:(NSString *)string {
@@ -204,23 +211,28 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 }
 
 - (IBAction)injectSource:(id)sender {
-    NSString *lastFile = sender ? [self lastFileSaving:YES] : self.lastFile;
-    if ( !lastFile ) {
+    if ( [sender isKindOfClass:[NSMenuItem class]] )
+        self.lastFile = [self lastFileSaving:YES];
+
+    if ( !self.lastFile ) {
         [self.client alert:@"No source file is selected. "
          "Make sure that text is selected and the cursor is inside the file you have edited."];
         return;
     }
-    else if ( [lastFile rangeOfString:@"\\.(mm?|swift)$"
+    else if ( [self.lastFile rangeOfString:@"\\.(mm?|swift)$"
                               options:NSRegularExpressionSearch].location == NSNotFound ) {
         [self.client alert:@"Only class implementations (.m, .mm or .swift files) can be injected. "
          "Make sure that text is selected and the cursor is inside the file you have edited."];
+        return;
+    }
+    else if ( !self.hasSaved ) {
+        [self performSelector:@selector(injectSource:) withObject:self afterDelay:.01];
         return;
     }
     else if ( !self.client.connected ) {
 
         // "unpatched" injection
         if ( sender ) {
-            self.lastFile = lastFile;
             self.lastWin = [self.lastTextView window];
             [self findConsole:[self.lastWin contentView]];
             [self.lastWin makeFirstResponder:self.debugger];
@@ -242,10 +254,11 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
         [self.client alert:@"No  application has connected to injection. "
          "Patch the project and make sure DEBUG is #defined then run project again."];
     else
-        [self.client runScript:@"injectSource.pl" withArg:lastFile];
+        [self.client runScript:@"injectSource.pl" withArg:self.lastFile];
 
     self.pauseResume = nil;
     self.debugger = nil;
+    self.lastFile = nil;
     self.lastWin = nil;
 }
 
