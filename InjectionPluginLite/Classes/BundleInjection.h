@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#62 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#64 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -674,8 +674,14 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 
     free(methods);
 
+    // if class has a +injected method call it.
     if ( [oldClass respondsToSelector:@selector(injected)] )
         [oldClass injected];
+
+    // If XprobePlugin loaded? Call -injected on selected instance
+    Class xprobe = objc_getClass("Xprobe");
+    if ( [xprobe respondsToSelector:@selector(injectedClass:)] )
+        [xprobe injectedClass:oldClass];
 }
 
 + (void)loadedClass:(Class)newClass notify:(BOOL)notify {
@@ -765,7 +771,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 }
 
 + (void)autoLoadedNotify:(BOOL)notify hook:(void *)hook {
-    BOOL seenInjectionClass = NO;
+    __block BOOL seenInjectionClass = NO;
 #ifndef ANDROID
     Dl_info info;
     if ( !dladdr( hook, &info ) )
@@ -796,20 +802,22 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 #endif
 
     if ( referencesSection ) {
-        Class *classReferences = (Class *)(void *)((char *)info.dli_fbase+(uint64_t)referencesSection);
-        for ( unsigned long i=0 ; i<size/sizeof *classReferences ; i++ ) {
-            Class newClass = classReferences[i];
-            const char *className = class_getName(newClass);
-            static const char injectionPrefix[] = "InjectionBundle";
-            if ( seenInjectionClass ||
-                (seenInjectionClass = strncmp(className,injectionPrefix,(sizeof injectionPrefix)-1)==0) ) {
-                NSLog( @"Swizzling %s %p %p", className, newClass, objc_getClass(className) );
+        dispatch_async(dispatch_get_main_queue(), ^{
+            Class *classReferences = (Class *)(void *)((char *)info.dli_fbase+(uint64_t)referencesSection);
+            for ( unsigned long i=0 ; i<size/sizeof *classReferences ; i++ ) {
+                Class newClass = classReferences[i];
+                const char *className = class_getName(newClass);
+                static const char injectionPrefix[] = "InjectionBundle";
+                if ( seenInjectionClass ||
+                    (seenInjectionClass = strncmp(className,injectionPrefix,(sizeof injectionPrefix)-1)==0) ) {
+                    NSLog( @"Swizzling %s %p %p", className, newClass, objc_getClass(className) );
 #ifndef INJECTION_LEGACY32BITOSX
-                [newClass class];
+                    [newClass class];
 #endif
-                [self loadedClass:newClass notify:notify];
+                    [self loadedClass:newClass notify:notify];
+                }
             }
-        }
+        });
     }
 #endif
 
@@ -818,7 +826,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
     if ( notify & INJECTION_ORDERFRONT )
         [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
 #endif
-    status = YES;
+    status = referencesSection != NULL;
     [[NSNotificationCenter defaultCenter] postNotificationName:kINNotification
                                                         object:nil];
 }

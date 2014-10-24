@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInterface.h#17 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInterface.h#18 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -79,6 +79,7 @@ extern NSString *kINNotification; // bundle loaded
 @end
 
 @interface NSObject(INInjected)
++ (void)injectedClass:(Class)aClass;
 + (void)injected;
 @end
 

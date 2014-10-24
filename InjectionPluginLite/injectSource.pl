@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#69 $
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#70 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -234,9 +234,7 @@ extern
 
 + (void)load {
     Class bundleInjection = NSClassFromString(@"BundleInjection");
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [bundleInjection autoLoadedNotify:$flags hook:(void *)injectionHook];
-    });
+    [bundleInjection autoLoadedNotify:$flags hook:(void *)injectionHook];
 }
 
 \@end
