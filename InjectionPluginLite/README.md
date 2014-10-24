@@ -1,6 +1,6 @@
 # ![Icon](http://injectionforxcode.johnholdsworth.com/injection.png) Injection for Xcode Source
 
-Copyright (c) John Holdsworth 2012-4
+Copyright (c) John Holdsworth 2012-14
 
 Injection is a plugin for Xcode that allows you to "inject" Objective-C code changes into a
 running application without having to restart it during development and testing. After making
