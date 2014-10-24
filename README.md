@@ -1,6 +1,6 @@
 # ![Icon](http://injectionforxcode.johnholdsworth.com/injection.png) Injection for Xcode Source
 
-Copyright (c) John Holdsworth 2012
+Copyright (c) John Holdsworth 2012-14
 
 Injection is a plugin for Xcode that allows you to "inject" Objective-C code changes into a
 running application without having to restart it during development and testing. After making
@@ -8,10 +8,23 @@ a couple of minor changes to your application's "main.m" and pre-compilation hea
 will connect to a server running inside Xcode during testing to receive commands to
 load bundles containing the code changes. 
 
-Stop Press: Patching your project is no longer required and experimental support to patch Swift 
-classes has been added. As Swift uses a  binary vtable don't expect the patch to work if you add 
-or remove a method from your class! To run the faster "unpatched" injection or to inject to a 
-device in your Swift project make sure there is a "main.m" even if it is empty so injection can patch it.
+Patching your project is no longer required and support to run-time patch Swift classes 
+has been added. As Swift uses a binary vtable don't expect the patch to work if you add 
+or remove a method from your class! To run the faster "patched" injection or to inject to a 
+device in your Swift project make sure there is a "main.m" file even if it is empty so 
+injection can patch it. Finally, a new method +injected is called on each class as it is swizzled.
+
+Stop Press: Injection is now integrated with the [XprobePlugin](https://github.com/johnno1962/XprobePlugin).
+Use the Product/Xprobe/Load menu item to inspect the objects in your application
+and search for the object you wish to execute code against and click it's link to
+inspect/select it. Add a -(void)injected  method to your class containing the code you wish
+to execute against this object and inject the class. This method will be called, allowing 
+you to NSLog or modify it's run-time state.
+
+The most common problem you'll encounter using injection with Objective-C is that you
+will need to edit the "Header Search Paths" of the bundle project injection creates
+to build your code. With Swift, injection "learns" the command to compile your source
+from the project's previous build logs so this is never a problem.
 
 ![Icon](http://injectionforxcode.johnholdsworth.com/overview.png)
 
@@ -46,7 +59,10 @@ the project then rebuild it. This will connect immediately to Xcode when you run
 app showing a red badge on Xcode's dock icon. You may want to do this for the simulator 
 as well as it is faster.
 
-On OS X remember to have your entitlements include "Allow outgoing connections". 
+On OS X remember to have your entitlements include "Allow outgoing connections". If
+you have problems with injection you can remove the plugin my typing:
+
+    rm -rf ~/Library/Application\ Support/Developer/Shared/Xcode/Plug-ins/InjectionPlugin.xcplugin
 
 ### JetBrains AppCode IDE Support
 
@@ -96,6 +112,11 @@ Other options are on the "Project..Tunable Parameters" page such as the "Silent"
 turning off the message dialogue each time classes are injected.
 
 ![Icon](http://injectionforxcode.johnholdsworth.com/params2.png)
+
+With patched injection, the global variables INParameters and INColors are exposed to all
+classes in the project through it's .pch file. These variables are linked in real time to
+the sliders and color wells on the Tunable Parameters panel once the aplictaion has started.
+These can be used for micro-tuning your application or it's appearance.
 
 The projects in the source tree are related as follows:
 
@@ -181,7 +202,7 @@ __$unlockCommand__ Command to be used to make files writable from "app parameter
 
 __$addresses__ IP addresses injection server is running on for connecting from device.
 
-__$buidlRoot__ build directory for the project being injected.
+__$buildRoot__ build directory for the project being injected.
 
 __$selectedFile__ Last source file selected in Xcode editor
 
@@ -193,7 +214,7 @@ __1<<3__ Activate application/simulator on load.
 
 __1<<4__ Plugin is running in AppCode.
 
-## #Please note:
+### Please note:
 
 The above copyright notice and this permission notice shall be
 included in all copies or substantial portions of the Software.
