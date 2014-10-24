@@ -21,11 +21,6 @@ inspect/select it. Add a -(void)injected  method to your class containing the co
 to execute against this object and inject the class. This method will be called, allowing 
 you to NSLog or modify it's run-time state.
 
-The most common problem you'll encounter using injection with Objective-C is that you
-will need to edit the "Header Search Paths" of the bundle project injection creates
-to build your code. With Swift, injection "learns" the command to compile your source
-from the project's previous build logs so this is never a problem.
-
 ![Icon](http://injectionforxcode.johnholdsworth.com/overview.png)
 
 The "unpatched" version of Injection now includes "Xtrace" which will allow
@@ -63,6 +58,11 @@ On OS X remember to have your entitlements include "Allow outgoing connections".
 you have problems with injection you can remove the plugin my typing:
 
     rm -rf ~/Library/Application\ Support/Developer/Shared/Xcode/Plug-ins/InjectionPlugin.xcplugin
+
+The most common problem you'll encounter using injection with Objective-C is that you
+will need to edit the "Header Search Paths" of the bundle project injection creates
+to build your code. With Swift, injection "learns" the command to compile your source
+from the project's previous build logs so this is never a problem.
 
 ### JetBrains AppCode IDE Support
 
