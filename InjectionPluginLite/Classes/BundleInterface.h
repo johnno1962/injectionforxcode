@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInterface.h#16 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInterface.h#17 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -25,7 +25,7 @@
 
 #ifndef INJECTION_PLUGIN
 #define INJECTION_PLUGIN "com.johnholdsworth.InjectionPlugin"
-#define INJECTION_VERSION "6.0"
+#define INJECTION_VERSION "6.1"
 
 // scope macros
 #ifdef INJECTION_ENABLED
@@ -76,6 +76,10 @@ extern NSString *kINNotification; // bundle loaded
 - (void)inParameter:(int)tag hasChanged:(float)value;
 - (void)inColor:(int)tag hasChanged:(id)value;
 - (void)injectionBundleLoaded:(NSNotification *)notification;
+@end
+
+@interface NSObject(INInjected)
++ (void)injected;
 @end
 
 // macro interface to control panel

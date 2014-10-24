@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#60 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#62 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -36,6 +36,10 @@
 
 #define INJECTION_NOTSILENT (1<<2)
 #define INJECTION_ORDERFRONT (1<<3)
+
+#if !defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(__LP64__)
+#define INJECTION_LEGACY32BITOSX
+#endif
 
 #ifdef DEBUG
 #define INLog NSLog
@@ -259,9 +263,8 @@ static NSNetService *service;
         const struct mach_header *m_header = _dyld_get_image_header(0);
         const NXArchInfo *info = NXGetArchInfoFromCpuType(m_header->cputype, m_header->cpusubtype);
         const char *arch = info->name;
-#ifndef __IPHONE_OS_VERSION_MIN_REQUIRED
-        if ( strcmp( arch, "i386" ) == 0 )
-            NSLog( @"\n\n**** Injection does not work with 32 bit \"legacy\" OS X Objective-C runtime. ****\n\n" );
+#ifdef INJECTION_LEGACY32BITOSX
+        NSLog( @"\n\n**** Injection does not work with 32 bit \"legacy\" OS X Objective-C runtime. ****\n\n" );
 #endif
 #else
         const char *arch = "android";
@@ -653,6 +656,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 + (void)swizzle:(char)which className:(const char *)className onto:(Class)oldClass from:(Class)newClass {
     unsigned i, mc = 0;
     Method *methods = class_copyMethodList(newClass, &mc);
+
     for( i=0; i<mc; i++ ) {
         SEL name = method_getName(methods[i]);
         IMP newIMPL = method_getImplementation(methods[i]);
@@ -667,7 +671,11 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 #endif
             class_replaceMethod(oldClass, name, newIMPL, type);
     }
+
     free(methods);
+
+    if ( [oldClass respondsToSelector:@selector(injected)] )
+        [oldClass injected];
 }
 
 + (void)loadedClass:(Class)newClass notify:(BOOL)notify {
@@ -681,6 +689,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
         [self swizzle:'+' className:className onto:object_getClass(oldClass) from:object_getClass(newClass)];
         [self swizzle:'-' className:className onto:oldClass from:newClass];
 
+#ifndef INJECTION_LEGACY32BITOSX
         // if swift, copy vtable
         struct _in_objc_class *newclass = (struct _in_objc_class *)INJECTION_BRIDGE(void *)newClass;
         if ( (unsigned long)newclass->internal & 0x1 ) {
@@ -688,6 +697,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
             size_t bytes = oldclass->mdsize - offsetof(struct _in_objc_class, dispatch) - 2*sizeof(IMP);
             memcpy( oldclass->dispatch, newclass->dispatch, bytes );
         }
+#endif
     }
 
 #if 0
@@ -755,6 +765,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 }
 
 + (void)autoLoadedNotify:(BOOL)notify hook:(void *)hook {
+    BOOL seenInjectionClass = NO;
 #ifndef ANDROID
     Dl_info info;
     if ( !dladdr( hook, &info ) )
@@ -762,8 +773,22 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 
 #ifndef __LP64__
     uint32_t size = 0;
+#ifdef INJECTION_LEGACY32BITOSX
+    // attempted support for legacy 32bit OS X runtime
+    struct _sym {
+        int u1, u2;
+        short nclass, ncat;
+        Class classes[1];
+    } *sym = (struct _sym *)(void *)((char *)info.dli_fbase+
+                                     (uint64_t)getsectdatafromheader((struct mach_header *)info.dli_fbase,
+                                                    "__OBJC", "__symbols", &size ));
+    char *referencesSection = (char *)((char *)&sym[0].classes-(char *)info.dli_fbase);
+    size = sym[0].nclass*sizeof(Class);
+    seenInjectionClass = YES;
+#else
     char *referencesSection = getsectdatafromheader((struct mach_header *)info.dli_fbase,
                                                     "__DATA", "__objc_classlist", &size );
+#endif
 #else
     uint64_t size = 0;
     char *referencesSection = getsectdatafromheader_64((struct mach_header_64 *)info.dli_fbase,
@@ -772,14 +797,16 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 
     if ( referencesSection ) {
         Class *classReferences = (Class *)(void *)((char *)info.dli_fbase+(uint64_t)referencesSection);
-        BOOL seenInjectionClass = NO;
         for ( unsigned long i=0 ; i<size/sizeof *classReferences ; i++ ) {
             Class newClass = classReferences[i];
             const char *className = class_getName(newClass);
             static const char injectionPrefix[] = "InjectionBundle";
-            if ( seenInjectionClass || (seenInjectionClass = strncmp(className,injectionPrefix,(sizeof injectionPrefix)-1)==0) ) {
+            if ( seenInjectionClass ||
+                (seenInjectionClass = strncmp(className,injectionPrefix,(sizeof injectionPrefix)-1)==0) ) {
                 NSLog( @"Swizzling %s %p %p", className, newClass, objc_getClass(className) );
+#ifndef INJECTION_LEGACY32BITOSX
                 [newClass class];
+#endif
                 [self loadedClass:newClass notify:notify];
             }
         }

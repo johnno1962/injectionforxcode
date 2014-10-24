@@ -1,6 +1,6 @@
 # ![Icon](http://injectionforxcode.johnholdsworth.com/injection.png) Injection for Xcode Source
 
-Copyright (c) John Holdsworth 2012
+Copyright (c) John Holdsworth 2012-4
 
 Injection is a plugin for Xcode that allows you to "inject" Objective-C code changes into a
 running application without having to restart it during development and testing. After making
@@ -8,10 +8,16 @@ a couple of minor changes to your application's "main.m" and pre-compilation hea
 will connect to a server running inside Xcode during testing to receive commands to
 load bundles containing the code changes. 
 
-Stop Press: Patching your project is no longer required and experimental support to patch Swift 
-classes has been added. As Swift uses a  binary vtable don't expect the patch to work if you add 
-or remove a method from your class! To run the faster "unpatched" injection or to inject to a 
-device in your Swift project make sure there is a "main.m" even if it is empty so injection can patch it.
+Stop Press: Patching your project is no longer required and support to patch Swift classes 
+has been added. As Swift uses a binary vtable don't expect the patch to work if you add 
+or remove a method from your class! To run the faster "patched" injection or to inject to a 
+device in your Swift project make sure there is a "main.m" file even if it is empty so 
+injection can patch it. Finally, a new method +injected is called on each class as it is swizzled.
+
+The most common problem you'll encounter using injection with Objective-C is that you
+will need to edit the "Header Search Paths" of the bundle project injection creates
+to build your code. With Swift, injection learns the command to compile your source
+from it's previous build.
 
 ![Icon](http://injectionforxcode.johnholdsworth.com/overview.png)
 

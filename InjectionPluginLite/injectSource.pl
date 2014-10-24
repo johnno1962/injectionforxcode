@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#67 $
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#69 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -173,16 +173,16 @@ else {
     @logs = split "\n", `ls -t $buildRoot/../Logs/Build/*.xcactivitylog`
 }
 
-foreach my $log (@logs) {
-    last if ($learnt) = grep $_ =~ /XcodeDefault\.xctoolchain/ &&
-        $_ =~ /@{[$isSwift ? " -primary-file ": " "]}("$selectedFile"|$escaped)/,
-            split "\r", `gunzip <$log`;
-}
+if ( $isSwift ) {
+    foreach my $log (@logs) {
+        last if ($learnt) = grep $_ =~ /XcodeDefault\.xctoolchain/ &&
+            $_ =~ /@{[$isSwift ? " -primary-file ": " "]}("$selectedFile"|$escaped)/,
+                split "\r", `gunzip <$log`;
+    }
 
-#if ( $isSwift ) {
     error "Could not locate compile command for $escaped" if !$learnt;
     $learnt =~ s/( -o .*?\.o).*/$1/g;
-#}
+}
 
 ############################################################################
 #
@@ -234,7 +234,9 @@ extern
 
 + (void)load {
     Class bundleInjection = NSClassFromString(@"BundleInjection");
-    [bundleInjection autoLoadedNotify:$flags hook:(void *)injectionHook];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [bundleInjection autoLoadedNotify:$flags hook:(void *)injectionHook];
+    });
 }
 
 \@end

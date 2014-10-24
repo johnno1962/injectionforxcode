@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#52 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#53 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -211,7 +211,7 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 }
 
 - (IBAction)injectSource:(id)sender {
-    if ( [sender isKindOfClass:[NSMenuItem class]] )
+    if ( [sender isKindOfClass:[NSMenuItem class]] || [sender isKindOfClass:[NSButton class]] )
         self.lastFile = [self lastFileSaving:YES];
 
     if ( !self.lastFile ) {
