@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#70 $
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#72 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -119,8 +119,6 @@ if ( $localBinary && $bundleProjectSource =~ s/(BUNDLE_LOADER = )([^;]+;)/$1"$lo
 # Build command for selected file is taken from previous Xcode buils logs
 #
 
-my $learnt;
-
 (my $escaped = $selectedFile) =~ s/ /\\\\ /g;
 my @logs;
 
@@ -173,7 +171,10 @@ else {
     @logs = split "\n", `ls -t $buildRoot/../Logs/Build/*.xcactivitylog`
 }
 
-if ( $isSwift ) {
+#
+# grep build logs for command to build injecting source file
+#
+if ( $isSwift && !$learnt ) {
     foreach my $log (@logs) {
         last if ($learnt) = grep $_ =~ /XcodeDefault\.xctoolchain/ &&
             $_ =~ /@{[$isSwift ? " -primary-file ": " "]}("$selectedFile"|$escaped)/,
@@ -270,6 +271,7 @@ if ( $learnt ) {
     $out =~ s/\\ / /g;
 
     (my $lout = $learnt) =~ s/\\/\\\\/g;
+    $lout =~ s/( -DDEBUG )/$1-DINJECTION_BUNDLE /;
     print "$lout\n";
 
     0 == system "time $learnt" or error "Learnt compile failed";

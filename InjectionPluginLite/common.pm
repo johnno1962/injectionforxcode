@@ -1,5 +1,5 @@
 #
-#  $Id: //depot/InjectionPluginLite/common.pm#26 $
+#  $Id: //depot/InjectionPluginLite/common.pm#27 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -15,9 +15,9 @@ use Carp;
 use vars qw($resources $workspace $mainFile $executable $arch $patchNumber $flags
     $unlockCommand $addresses $selectedFile $isDevice $isSimulator $isAndroid $isAppCode
     $isIOS $productName $appPackage $deviceRoot $projFile $projRoot $projName $projType
-    $InjectionBundle $template $header $appClass $RED $buildRoot);
+    $InjectionBundle $template $header $appClass $RED $buildRoot $learnt);
 
-($resources, $workspace, $mainFile, $executable, $arch, $patchNumber, $flags, $unlockCommand, $addresses, $selectedFile, $buildRoot) = @ARGV;
+($resources, $workspace, $mainFile, $executable, $arch, $patchNumber, $flags, $unlockCommand, $addresses, $selectedFile, $buildRoot, $learnt) = @ARGV;
 
 #($appPackage, $deviceRoot, $appName) = $executable =~ m@((^.*)/([^/]+))/[^/]+$@;
 ($appPackage, $deviceRoot) = $executable =~ m@((^.*))$@; # iOS8

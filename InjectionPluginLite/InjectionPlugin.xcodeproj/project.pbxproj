@@ -24,6 +24,7 @@
 		BB86B52D1962F8F80081083B /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = BB86B52C1962F8F80081083B /* README.md */; };
 		BB8D68AB17F1BB64009E02EE /* listDevice.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB8D68AA17F1BB64009E02EE /* listDevice.pl */; };
 		BB98CE5716DB5E3C00B90297 /* appcode.txt in Resources */ = {isa = PBXBuildFile; fileRef = BB98CE5616DB5E3C00B90297 /* appcode.txt */; };
+		BBCDA04819FD229F009AC8C5 /* evalCode.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB117D2619FD20BD00A9400F /* evalCode.pl */; };
 		BBEADCF616B12EAE003EF366 /* projectBuilt.pl in Resources */ = {isa = PBXBuildFile; fileRef = BBEADCF516B12EAE003EF366 /* projectBuilt.pl */; };
 		BBEC640216A756F700DC5E08 /* patchProject.pl in Resources */ = {isa = PBXBuildFile; fileRef = BBEC640016A756F600DC5E08 /* patchProject.pl */; };
 		BBEC640316A756F700DC5E08 /* revertProject.pl in Resources */ = {isa = PBXBuildFile; fileRef = BBEC640116A756F600DC5E08 /* revertProject.pl */; };
@@ -46,6 +47,7 @@
 		8D5B49B6048680CD000E48DA /* InjectionPlugin.xcplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = InjectionPlugin.xcplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BB020F6D16B3CC2D00126E33 /* injectStoryboard.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = injectStoryboard.pl; sourceTree = "<group>"; };
+		BB117D2619FD20BD00A9400F /* evalCode.pl */ = {isa = PBXFileReference; lastKnownFileType = text.script.perl; path = evalCode.pl; sourceTree = "<group>"; };
 		BB3EFFAC16A4B815001F0065 /* INPluginClientController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INPluginClientController.h; sourceTree = "<group>"; };
 		BB3EFFAD16A4B815001F0065 /* INPluginClientController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = INPluginClientController.m; sourceTree = "<group>"; };
 		BB3EFFAE16A4B815001F0065 /* INPluginMenuController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INPluginMenuController.h; sourceTree = "<group>"; };
@@ -144,6 +146,7 @@
 		BB26EB8D160DE85B00A62DFC /* Scripts */ = {
 			isa = PBXGroup;
 			children = (
+				BB117D2619FD20BD00A9400F /* evalCode.pl */,
 				BB8D68AA17F1BB64009E02EE /* listDevice.pl */,
 				BB5DEF9616A55D2A00E97DD4 /* common.pm */,
 				BBEC640016A756F600DC5E08 /* patchProject.pl */,
@@ -244,6 +247,7 @@
 				BB3EFFD016A535C6001F0065 /* OSXBundleTemplate in Resources */,
 				BB5DEF9716A55D2A00E97DD4 /* common.pm in Resources */,
 				BBEC640216A756F700DC5E08 /* patchProject.pl in Resources */,
+				BBCDA04819FD229F009AC8C5 /* evalCode.pl in Resources */,
 				BBEC640316A756F700DC5E08 /* revertProject.pl in Resources */,
 				BB5DEF9C16A55E1800E97DD4 /* injectSource.pl in Resources */,
 				BB8D68AB17F1BB64009E02EE /* listDevice.pl in Resources */,

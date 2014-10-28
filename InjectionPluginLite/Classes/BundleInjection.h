@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#64 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#66 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -241,12 +241,22 @@ static NSNetService *service;
     return 0;
 }
 
+static const char **addrPtr;
+
++ (const char *)connectedAddress {
+    return addrPtr ? *addrPtr : NULL;
+}
+
 + (void)bundleLoader {
 #ifndef INJECTION_ISARC
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
 #else
     @autoreleasepool {
 #endif
+
+        Class firstInjection = objc_getClass(class_getName(self));
+        if ( [firstInjection connectedAddress] )
+            return;
 
         static char machine[64];
         if ( machine[0] )
@@ -275,7 +285,6 @@ static NSNetService *service;
         for ( i=0 ; i<100 ; i++ ) {
             int loaderSocket = 0;
 
-            const char **addrPtr;
             for ( addrPtr = addrSwitch ; *addrPtr;  addrPtr++ )
                 if ( (loaderSocket = [self connectTo:*addrPtr]) )
                     break;
@@ -780,7 +789,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 #ifndef __LP64__
     uint32_t size = 0;
 #ifdef INJECTION_LEGACY32BITOSX
-    // attempted support for legacy 32bit OS X runtime
+    // vain attempt support for legacy 32bit OS X runtime
     struct _sym {
         int u1, u2;
         short nclass, ncat;
@@ -808,14 +817,14 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
                 Class newClass = classReferences[i];
                 const char *className = class_getName(newClass);
                 static const char injectionPrefix[] = "InjectionBundle";
-                if ( seenInjectionClass ||
-                    (seenInjectionClass = strncmp(className,injectionPrefix,(sizeof injectionPrefix)-1)==0) ) {
+                if ( seenInjectionClass ) {
                     NSLog( @"Swizzling %s %p %p", className, newClass, objc_getClass(className) );
 #ifndef INJECTION_LEGACY32BITOSX
                     [newClass class];
 #endif
                     [self loadedClass:newClass notify:notify];
                 }
+                seenInjectionClass = strncmp(className,injectionPrefix,(sizeof injectionPrefix)-1)==0;
             }
         });
     }

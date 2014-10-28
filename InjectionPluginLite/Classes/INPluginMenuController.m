@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#53 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#54 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -28,13 +28,13 @@
 + (NSImage *)iconImage_pause;
 @end
 
+static INPluginMenuController *injectionPlugin;
+
 @implementation INPluginMenuController
 
 #pragma mark - Plugin Initialization
 
 + (void)pluginDidLoad:(NSBundle *)plugin {
-
-    static INPluginMenuController *injectionPlugin;
 	static dispatch_once_t onceToken;
 	dispatch_once(&onceToken, ^{
 		injectionPlugin = [[self alloc] init];
@@ -43,6 +43,10 @@
                                                  selector:@selector(applicationDidFinishLaunching:)
                                                      name:NSApplicationDidFinishLaunchingNotification object:nil];
 	});
+}
+
++ (void)evalCode:(NSString *)code {
+    [injectionPlugin.client runScript:@"evalCode.pl" withArg:code];
 }
 
 - (void)error:(NSString *)format, ... {
