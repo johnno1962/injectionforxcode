@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#54 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#55 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -65,7 +65,12 @@ static INPluginMenuController *injectionPlugin;
     self.defaults = [NSUserDefaults standardUserDefaults];
 
     if ( ![NSBundle loadNibNamed:@"INPluginMenuController" owner:self] )
-        NSLog( @"INPluginMenuController: Could not load interface." );
+        if ( [[NSAlert alertWithMessageText:@"Injection Plugin:"
+                              defaultButton:@"OK" alternateButton:@"Goto GitHub" otherButton:nil
+                  informativeTextWithFormat:@"Could not load interface nib. If problems persist, "
+               "please download and build from the sources on GitHub."]
+              runModal] == NSAlertAlternateReturn )
+            [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"https://github.com/johnno1962/injectionforxcode"]];
 
 	NSMenu *productMenu = [[[NSApp mainMenu] itemWithTitle:@"Product"] submenu];
 	if (productMenu) {
@@ -421,8 +426,11 @@ static CFDataRef copy_mac_address(void)
         socklen_t addrLen = sizeof clientAddr;
 
         int appConnection = accept( serverSocket, (struct sockaddr *)&clientAddr, &addrLen );
-        if ( appConnection > 0 )
+        if ( appConnection > 0 ) {
+            NSLog( @"Injection: Connection from %s:%d",
+                  inet_ntoa( clientAddr.sin_addr ), clientAddr.sin_port );
             [self.client setConnection:appConnection];
+        }
         else
             [NSThread sleepForTimeInterval:.5];
     }

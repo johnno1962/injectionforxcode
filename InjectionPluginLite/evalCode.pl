@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/evalCode.pl#3 $
+#  $Id: //depot/InjectionPluginLite/evalCode.pl#6 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -28,7 +28,31 @@ foreach my $log (split "\n", `ls -t $buildRoot/../Logs/Build/*.xcactivitylog`) {
     }
 }
 
-$learnt or error "Could not locate source for class: $className";
+if ( !$learnt ) {
+    print "Unkown class, using canned Objective-C compile..\n";
+    $isSwift = 0;
+    $selectedFile = "/tmp/injection_unknown.m";
+    chomp( $learnt = <<CANNED );
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x objective-c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -std=gnu99 -Wno-trigraphs -fpascal-strings -fobjc-arc -fmodules -O0 -Wno-missing-field-initializers -Wmissing-prototypes -Wno-implicit-atomic-properties -Wno-receiver-is-weak -Wno-arc-repeated-use-of-weak -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wshorten-64-to-32 -Wpointer-sign -Wno-newline-eof -Wno-selector -Wno-strict-selector-match -Wno-undeclared-selector -Wno-deprecated-implementations -DDEBUG=1 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk -fexceptions -fasm-blocks -fstrict-aliasing -Wprotocol -Wdeprecated-declarations -g -Wno-sign-conversion -fobjc-abi-version=2 -fobjc-legacy-dispatch -mios-simulator-version-min=5.0 -c $selectedFile -o /tmp/injection_unknown.o
+CANNED
+    open UNKNOWN, "> $selectedFile" or die "Could not open canned file.";
+    print UNKNOWN <<EMPTY;
+\@import UIKit;
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wobjc-protocol-property-synthesis"
+#pragma clang diagnostic ignored "-Wincomplete-implementation"
+#pragma clang diagnostic ignored "-Wprotocol"
+\@implementation $className
++ (Class)class {
+    return self;
+}
+\@end
+#pragma clang diagnostic pop
+
+EMPTY
+    close UNKNOWN;
+}
 
 $selectedFile =~ s/["\\]//g;
 $learnt =~ s/( -o .*?\.o).*/$1/g;
@@ -82,7 +106,7 @@ static void XLog( NSString *format, ... ) {
 \@implementation $className(Injected)
 
 - (void)injected {
-$code
+    $code;
 }
 
 \@end

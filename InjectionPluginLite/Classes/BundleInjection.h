@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#66 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#69 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -662,12 +662,24 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
         NSLog( @"%s %s %d", ivar_getName(vars[i]), ivar_getTypeEncoding(vars[i]), (int)ivar_getOffset(vars[i]));
 }
 
++ (BOOL)dontSwizzleProperty:(Class)oldClass sel:(SEL)sel {
+    char name[PATH_MAX];
+    strcpy(name,sel_getName(sel));
+    return class_getProperty(oldClass,sel_getName(sel)) ||
+        (strncmp(name,"set",3)==0 && (name[3] = tolower(name[3])) && class_getProperty(oldClass,name+3));
+}
+
 + (void)swizzle:(char)which className:(const char *)className onto:(Class)oldClass from:(Class)newClass {
     unsigned i, mc = 0;
     Method *methods = class_copyMethodList(newClass, &mc);
 
     for( i=0; i<mc; i++ ) {
         SEL name = method_getName(methods[i]);
+
+        // don't swizzle getters/setters
+        if ( [self dontSwizzleProperty:oldClass sel:name] )
+            continue;
+
         IMP newIMPL = method_getImplementation(methods[i]);
         const char *type = method_getTypeEncoding(methods[i]);
 
