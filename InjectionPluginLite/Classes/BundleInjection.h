@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#69 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#71 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -178,7 +178,7 @@ static NSNetService *service;
 }
 
 + (void)load {
-    //INLog( @"+load: %s", _inIPAddresses[0] );
+    INLog( @"+[BundleInjection load] %s", _inIPAddresses[0] ); ////
     if ( _inIPAddresses[0][0] == '_' ) {
         NSString *bonjourName = [NSString stringWithUTF8String:_inIPAddresses[0]];
         _inIPAddresses[0] = _inIPAddresses[1];
@@ -241,10 +241,10 @@ static NSNetService *service;
     return 0;
 }
 
-static const char **addrPtr;
+static const char **addrPtr, *connectedAddress;
 
 + (const char *)connectedAddress {
-    return addrPtr ? *addrPtr : NULL;
+    return connectedAddress;
 }
 
 + (void)bundleLoader {
@@ -318,6 +318,7 @@ static const char **addrPtr;
             write(loaderSocket, arch, alen);
 
             INLog( @"Connected to \"%s\" plugin, ready to load %s code.", INJECTION_APPNAME, arch );
+            connectedAddress = *addrPtr;
 
             int fdout = 0;
             struct _in_header header;
