@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#55 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#56 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -46,7 +46,10 @@ static INPluginMenuController *injectionPlugin;
 }
 
 + (void)evalCode:(NSString *)code {
-    [injectionPlugin.client runScript:@"evalCode.pl" withArg:code];
+    if( !injectionPlugin.client.connected )
+        [injectionPlugin error:@"Injection has not connected, please restart app"];
+    else
+        [injectionPlugin.client runScript:@"evalCode.pl" withArg:code];
 }
 
 - (void)error:(NSString *)format, ... {

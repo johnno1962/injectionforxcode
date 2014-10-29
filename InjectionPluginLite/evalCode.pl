@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/evalCode.pl#6 $
+#  $Id: //depot/InjectionPluginLite/evalCode.pl#8 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -17,10 +17,12 @@ use common;
 
 my ($pathID, $className, $isSwift, $code) = split /\^/, $selectedFile;
 
+print "Searching logs in $buildRoot/../Logs/Build\n";
+
 FOUND:
 foreach my $log (split "\n", `ls -t $buildRoot/../Logs/Build/*.xcactivitylog`) {
     foreach my $line ( split "\r", `gunzip <$log` ) {
-        if ( $line =~ /XcodeDefault\.xctoolchain.+@{[$isSwift ? " -primary-file ": " -c "]}("[^"]+\/$className\.(m|mm|swift)"|\S+\/$className\.(m|mm|swift))/ ) {
+        if ( index( $line, " $arch" ) != -1 && $line =~ /XcodeDefault\.xctoolchain.+@{[$isSwift ? " -primary-file ": " -c "]}("[^"]+\/$className\.(m|mm|swift)"|\S+\/$className\.(m|mm|swift))/ ) {
             $selectedFile = $1;
             $learnt = $line;
             last FOUND;
@@ -33,7 +35,7 @@ if ( !$learnt ) {
     $isSwift = 0;
     $selectedFile = "/tmp/injection_unknown.m";
     chomp( $learnt = <<CANNED );
-/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x objective-c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -std=gnu99 -Wno-trigraphs -fpascal-strings -fobjc-arc -fmodules -O0 -Wno-missing-field-initializers -Wmissing-prototypes -Wno-implicit-atomic-properties -Wno-receiver-is-weak -Wno-arc-repeated-use-of-weak -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wshorten-64-to-32 -Wpointer-sign -Wno-newline-eof -Wno-selector -Wno-strict-selector-match -Wno-undeclared-selector -Wno-deprecated-implementations -DDEBUG=1 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk -fexceptions -fasm-blocks -fstrict-aliasing -Wprotocol -Wdeprecated-declarations -g -Wno-sign-conversion -fobjc-abi-version=2 -fobjc-legacy-dispatch -mios-simulator-version-min=5.0 -c $selectedFile -o /tmp/injection_unknown.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x objective-c -arch $arch -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -std=gnu99 -Wno-trigraphs -fpascal-strings -fobjc-arc -fmodules -O0 -Wno-missing-field-initializers -Wmissing-prototypes -Wno-implicit-atomic-properties -Wno-receiver-is-weak -Wno-arc-repeated-use-of-weak -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wshorten-64-to-32 -Wpointer-sign -Wno-newline-eof -Wno-selector -Wno-strict-selector-match -Wno-undeclared-selector -Wno-deprecated-implementations -DDEBUG=1 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk -fexceptions -fasm-blocks -fstrict-aliasing -Wprotocol -Wdeprecated-declarations -g -Wno-sign-conversion -fobjc-abi-version=2 -fobjc-legacy-dispatch -mios-simulator-version-min=5.0 -c $selectedFile -o /tmp/injection_unknown.o
 CANNED
     open UNKNOWN, "> $selectedFile" or die "Could not open canned file.";
     print UNKNOWN <<EMPTY;
@@ -65,12 +67,14 @@ my $source = <SOURCE>;
 
 my $additionsTag = "// added by XprobePlugin";
 
+my ($swiftClass) = $source =~ /\@objc\(\w+\)\s+class (\w+)/;
+
 $source =~ s@\n*$additionsTag.*|$@ $isSwift ? <<ENDSWIFT : <<ENDCODE @es;
 
 
 $additionsTag
 
-extension $className {
+extension @{[$swiftClass||$className]} {
 
     func xprintln(str:String) {
         if let xprobe: AnyClass = NSClassFromString("Xprobe") {
@@ -97,11 +101,18 @@ $additionsTag
 + (void)xlog:(NSString *)message;
 \@end
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
 static void XLog( NSString *format, ... ) {
     va_list argp;
     va_start(argp, format);
     [NSClassFromString(@"Xprobe") xlog:[[NSString alloc] initWithFormat:format arguments:argp]];
 }
+
+static void xprintln( const char *msg ) {
+    XLog( \@"Swift language used for Objective-C injection: %s", msg );
+}
+#pragma clang diagnostic pop
 
 \@implementation $className(Injected)
 

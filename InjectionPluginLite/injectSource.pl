@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#72 $
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#73 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -35,10 +35,10 @@ if ( !$executable ) {
 # and bring across key parameters also setting header include path.
 #
 
-if ( ! -d $InjectionBundle ) {
+if ( !$bundleProjectSource ) {
     print "Copying $template into project.\n";
 
-    0 == system "cp -r \"$FindBin::Bin/$template\" $InjectionBundle && chmod -R og+w $InjectionBundle"
+    0 == system "cp -rf \"$FindBin::Bin/$template\" $InjectionBundle && chmod -R og+w $InjectionBundle"
         or error "Could not copy injection bundle.";
 
     # try to use main project's precompilation header
