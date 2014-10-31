@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectSource.pl#73 $
+#  $Id: //depot/InjectionPluginLite/injectSource.pl#76 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -123,7 +123,7 @@ if ( $localBinary && $bundleProjectSource =~ s/(BUNDLE_LOADER = )([^;]+;)/$1"$lo
 my @logs;
 
 if ( !$buildRoot ) {
-    my $learn = "xcodebuild -dry-run $config";
+    my $learn = "xcodebuild@{[$isSwift?'':' -dry-run']} $config";
     $learn .= " -project \"$projName.xcodeproj\"" if $projName;
     my $memory = "$archDir/learnt_commands.gz";
     my $mainProjectChanged = mtime( $mainProjectFile ) > mtime( $memory );
@@ -154,7 +154,7 @@ if ( !$buildRoot ) {
                 if ( $type =~ /ProcessPCH(\+\+)?|CpHeader/ ) {
                     0 == system $cmd.$rest or error "Could not precompile: $cmd.$rest";
                 }
-                elsif( $type eq 'CompileC' ) {
+                elsif( $type =~ /Compile(C|Swift)/ ) {
                     (my $file = $3) =~ s/\\//g;
                     $learn->print( "$cmd\r" );
                 }
@@ -174,15 +174,24 @@ else {
 #
 # grep build logs for command to build injecting source file
 #
-if ( $isSwift && !$learnt ) {
+if ( !$learnt ) {
+FOUND:
     foreach my $log (@logs) {
-        last if ($learnt) = grep $_ =~ /XcodeDefault\.xctoolchain/ &&
-            $_ =~ /@{[$isSwift ? " -primary-file ": " "]}("$selectedFile"|$escaped)/,
-                split "\r", `gunzip <$log`;
+        foreach my $line ( split "\r", `gunzip <$log` ) {
+            if ( index( $line, " $arch" ) != -1 && $line =~ /XcodeDefault\.xctoolchain.+@{[$isSwift ?
+                    " -primary-file ": " "]}("$selectedFile"|$escaped)/ ) {
+                $learnt = $line;
+                last FOUND;
+            }
+        }
     }
 
-    error "Could not locate compile command for $escaped" if !$learnt;
-    $learnt =~ s/( -o .*?\.o).*/$1/g;
+    if ( !$learnt ) {
+        error "Could not locate compile command for $escaped" if $isSwift;
+    }
+    else {
+        $learnt =~ s/( -o .*?\.o).*/$1/g;
+    }
 }
 
 ############################################################################
@@ -267,12 +276,12 @@ my $obj = '';
 if ( $learnt ) {
 
     $obj = "$arch/injecting_class.o";
-    my ($out) = $learnt =~ / -o (.*)$/;
+    my ($out) = $learnt =~ / -o (.*)$/ or die "Could not locate object file in: $learnt";
     $out =~ s/\\ / /g;
 
     (my $lout = $learnt) =~ s/\\/\\\\/g;
-    $lout =~ s/( -DDEBUG )/$1-DINJECTION_BUNDLE /;
-    print "$lout\n";
+    $lout =~ s/( -DDEBUG\S* )/$1-DINJECTION_BUNDLE /;
+    print "Learnt compile: $lout\n";
 
     0 == system "time $learnt" or error "Learnt compile failed";
 
@@ -280,7 +289,8 @@ if ( $learnt ) {
 
     #if ( $isSwift ) {
         my ($toolchain) = $learnt =~ m@(/Applications/Xcode.*?/XcodeDefault.xctoolchain)/@;
-        $obj .= "\", \"-L'$toolchain'/usr/lib/swift/iphonesimulator\", \"-F$buildRoot/Products/Debug-$sdk";
+        $obj .= "\", \"-L'$toolchain'/usr/lib/swift/iphonesimulator";
+        $obj .= "\", \"-F$buildRoot/Products/Debug-$sdk" if $buildRoot;
     #}
 }
 

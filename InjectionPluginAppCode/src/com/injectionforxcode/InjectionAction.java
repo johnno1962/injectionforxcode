@@ -149,7 +149,7 @@ public class InjectionAction extends AnAction {
     static String resourcesPath = System.getProperty( "user.home" )+"/Library/Application Support/Developer/Shared/Xcode/Plug-ins/InjectionPlugin.xcplugin/Contents/Resources/";
     static String unlockCommand = "chmod +w \"%s\"";
 
-    int patchNumber = 0, flags = 1<<2 | 1<<4;
+    int patchNumber = 0, INJECTION_NOTSILENT = 1<<2, INJECTION_APPCODE = 1<<4, flags = INJECTION_NOTSILENT | INJECTION_APPCODE;
 
     static String serverAddresses() throws SocketException {
         String ipaddrs = "127.0.0.1";
@@ -178,7 +178,7 @@ public class InjectionAction extends AnAction {
             else if ( script == "injectSource.pl" && clientOutput == null )
                 return alert( "Application not running/connected.");
 
-            else if ( selectedFile == null || selectedFile.charAt( selectedFile.length()-1 ) != 'm' )
+            else if ( selectedFile == null || !Pattern.matches( ".+\\.(m|mm|swift)$", selectedFile ) )
                 return alert( "Select text in an implementation file to inject..." );
 
             FileDocumentManager.getInstance().saveAllDocuments();

@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#56 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.m#57 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -299,11 +299,16 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 
     [self keyEvent:loader code:0 after:0.];
 
+    self.continues = 0;
     [self performSelector:@selector(forceContinue) withObject:nil afterDelay:.5];
 }
 
+- (BOOL)isAppRunning {
+    return [self.pauseResume image] == [[[self.pauseResume target] class] iconImage_pause];
+}
+
 - (void)forceContinue {
-    if ( [self.pauseResume image] != [[[self.pauseResume target] class] iconImage_pause] ) {
+    if ( ![self isAppRunning] && self.continues++ < 5 ) {
         [self keyEvent:@"c" code:0 after:1];
         [self performSelector:@selector(forceContinue) withObject:nil afterDelay:1];
     }

@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.h#14 $
+//  $Id: //depot/InjectionPluginLite/Classes/INPluginMenuController.h#15 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -56,6 +56,7 @@
 @property (nonatomic,retain) NSString *lastFile;
 @property (nonatomic,retain) NSWindow *lastWin;
 @property (nonatomic) BOOL hasSaved;
+@property (nonatomic) int continues;
 
 - (NSUserDefaults *)defaults;
 - (NSArray *)serverAddresses;

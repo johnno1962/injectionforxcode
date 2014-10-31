@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/evalCode.pl#8 $
+#  $Id: //depot/InjectionPluginLite/evalCode.pl#9 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -22,7 +22,8 @@ print "Searching logs in $buildRoot/../Logs/Build\n";
 FOUND:
 foreach my $log (split "\n", `ls -t $buildRoot/../Logs/Build/*.xcactivitylog`) {
     foreach my $line ( split "\r", `gunzip <$log` ) {
-        if ( index( $line, " $arch" ) != -1 && $line =~ /XcodeDefault\.xctoolchain.+@{[$isSwift ? " -primary-file ": " -c "]}("[^"]+\/$className\.(m|mm|swift)"|\S+\/$className\.(m|mm|swift))/ ) {
+        if ( index( $line, " $arch" ) != -1 && $line =~ /XcodeDefault\.xctoolchain.+@{[$isSwift ?
+                " -primary-file " : " -c "]}("[^"]+\/$className\.(m|mm|swift)"|\S+\/$className\.(m|mm|swift))/ ) {
             $selectedFile = $1;
             $learnt = $line;
             last FOUND;

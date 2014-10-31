@@ -32,19 +32,18 @@
 
   <actions>
     <!-- Add your actions here -->
-      <action id="Injection.Inject" class="com.injectionforxcode.InjectionAction" text="Inject Source" description="Inject Source">
+      <group id="MyPlugin.SampleMenu" text="_Sample Menu" description="Sample menu">
           <add-to-group group-id="RunMenu" anchor="last"/>
+      <action id="Injection.Inject" class="com.injectionforxcode.InjectionAction" text="Inject Source" description="Inject Source">
           <keyboard-shortcut keymap="$default" first-keystroke="meta EQUALS"/>
       </action>
       <action id="Injection.Patch" class="com.injectionforxcode.InjectionAction$PatchAction" text="Patch Project for Injection" description="Patch Project">
-          <add-to-group group-id="RunMenu" anchor="last"/>
       </action>
       <action id="Injection.Unpatch" class="com.injectionforxcode.InjectionAction$UnpatchAction" text="Revert Injection's changes" description="Unpatch Project">
-          <add-to-group group-id="RunMenu" anchor="last"/>
       </action>
       <action id="Injection.Bundle" class="com.injectionforxcode.InjectionAction$BundleAction" text="Open Bundle Project" description="Open Injection's Bundle Project">
-          <add-to-group group-id="RunMenu" anchor="last"/>
       </action>
+      </group>
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">

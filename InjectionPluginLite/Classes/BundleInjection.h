@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#71 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#72 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -54,8 +54,8 @@ struct _in_header { int pathLength, dataLength; };
 + (BOOL)writeBytes:(off_t)bytes withPath:(const char *)path from:(int)fdin to:(int)fdout;
 #ifdef INJECTION_BUNDLE
 + (void)loadedClass:(Class)newClass notify:(BOOL)notify;
-+ (void)autoLoadedNotify:(BOOL)notify hook:(void *)hook;
-+ (void)loadedNotify:(BOOL)notify hook:(void *)hook;
++ (void)autoLoadedNotify:(int)notify hook:(void *)hook;
++ (void)loadedNotify:(int)notify hook:(void *)hook;
 #endif
 @end
 
@@ -706,7 +706,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
         [xprobe injectedClass:oldClass];
 }
 
-+ (void)loadedClass:(Class)newClass notify:(BOOL)notify {
++ (void)loadedClass:(Class)newClass notify:(int)notify {
     const char *className = class_getName(newClass);
     Class oldClass = objc_getClass(className);
 
@@ -753,12 +753,27 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 #endif
 }
 
-+ (void)loadedNotify:(BOOL)notify hook:(void *)hook {
++ (void)loadedNotify:(int)notify hook:(void *)hook {
 #ifndef ANDROID
+    [self fixClassRefs:hook];
+#endif
+
+    INLog( @"Bundle \"%s\" loaded successfully.", strrchr( path, '/' )+1 );
+#ifndef __IPHONE_OS_VERSION_MIN_REQUIRED
+    if ( notify & INJECTION_ORDERFRONT )
+        [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+#endif
+    status = YES;
+    [[NSNotificationCenter defaultCenter] postNotificationName:kINNotification
+                                                        object:nil];
+}
+
+#ifndef ANDROID
++ (void)fixClassRefs:(void *)hook {
     Dl_info info;
     if ( !dladdr( hook, &info ) )
         NSLog( @"Could not find load address" );
-
+    
 #ifndef __LP64__
     uint32_t size = 0;
     char *referencesSection = getsectdatafromheader((struct mach_header *)info.dli_fbase,
@@ -780,19 +795,10 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
             }
         }
     }
-#endif
-
-    INLog( @"Bundle \"%s\" loaded successfully.", strrchr( path, '/' )+1 );
-#ifndef __IPHONE_OS_VERSION_MIN_REQUIRED
-    if ( notify & INJECTION_ORDERFRONT )
-        [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
-#endif
-    status = YES;
-    [[NSNotificationCenter defaultCenter] postNotificationName:kINNotification
-                                                        object:nil];
 }
+#endif
 
-+ (void)autoLoadedNotify:(BOOL)notify hook:(void *)hook {
++ (void)autoLoadedNotify:(int)notify hook:(void *)hook {
     __block BOOL seenInjectionClass = NO;
 #ifndef ANDROID
     Dl_info info;
@@ -839,6 +845,8 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
                 }
                 seenInjectionClass = strncmp(className,injectionPrefix,(sizeof injectionPrefix)-1)==0;
             }
+
+            [self fixClassRefs:hook];
         });
     }
 #endif
