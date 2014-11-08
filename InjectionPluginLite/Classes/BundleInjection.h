@@ -857,8 +857,10 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
         [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
 #endif
     status = referencesSection != NULL;
-    [[NSNotificationCenter defaultCenter] postNotificationName:kINNotification
+    dispatch_async(dispatch_get_main_queue(), ^{
+    	[[NSNotificationCenter defaultCenter] postNotificationName:kINNotification
                                                         object:nil];
+    });                                         
 }
 
 #endif
