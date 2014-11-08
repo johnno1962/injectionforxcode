@@ -15,9 +15,9 @@
 	<key>CFBundlePackageType</key>
 	<string>BNDL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>${CURRENT_PROJECT_VERSION}</string>
+	<string>6.1</string>
 	<key>CFBundleVersion</key>
-	<string>${CURRENT_PROJECT_VERSION}</string>
+	<string>6.1</string>
 	<key>NSPrincipalClass</key>
 	<string>INPluginMenuController</string>
 	<key>XCGCReady</key>

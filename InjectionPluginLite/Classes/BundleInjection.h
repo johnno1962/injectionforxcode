@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#72 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#74 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -695,15 +695,6 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
     }
 
     free(methods);
-
-    // if class has a +injected method call it.
-    if ( [oldClass respondsToSelector:@selector(injected)] )
-        [oldClass injected];
-
-    // If XprobePlugin loaded? Call -injected on selected instance
-    Class xprobe = objc_getClass("Xprobe");
-    if ( [xprobe respondsToSelector:@selector(injectedClass:)] )
-        [xprobe injectedClass:oldClass];
 }
 
 + (void)loadedClass:(Class)newClass notify:(int)notify {
@@ -718,7 +709,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
         [self swizzle:'-' className:className onto:oldClass from:newClass];
 
 #ifndef INJECTION_LEGACY32BITOSX
-        // if swift, copy vtable
+        // if swift language class, copy vtable
         struct _in_objc_class *newclass = (struct _in_objc_class *)INJECTION_BRIDGE(void *)newClass;
         if ( (unsigned long)newclass->internal & 0x1 ) {
             struct _in_objc_class *oldclass = (struct _in_objc_class *)INJECTION_BRIDGE(void *)oldClass;
@@ -727,6 +718,15 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
         }
 #endif
     }
+
+    // if class has a +injected method call it.
+    if ( [oldClass respondsToSelector:@selector(injected)] )
+        [oldClass injected];
+
+    // If XprobePlugin loaded? Call -injected on selected instance
+    Class xprobe = objc_getClass("Xprobe");
+    if ( [xprobe respondsToSelector:@selector(injectedClass:)] )
+        [xprobe injectedClass:oldClass];
 
 #if 0
     [self dumpIvars:oldClass];
@@ -799,8 +799,8 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 #endif
 
 + (void)autoLoadedNotify:(int)notify hook:(void *)hook {
-    __block BOOL seenInjectionClass = NO;
 #ifndef ANDROID
+    __block BOOL seenInjectionClass = NO;
     Dl_info info;
     if ( !dladdr( hook, &info ) )
         NSLog( @"Could not find load address" );
@@ -829,38 +829,41 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
                                                        "__DATA", "__objc_classlist", &size );
 #endif
 
-    if ( referencesSection ) {
+    INLog( @"Bundle \"%s\" loaded successfully.", strrchr( path, '/' )+1 );
+
+    if ( referencesSection )
         dispatch_async(dispatch_get_main_queue(), ^{
             Class *classReferences = (Class *)(void *)((char *)info.dli_fbase+(uint64_t)referencesSection);
             for ( unsigned long i=0 ; i<size/sizeof *classReferences ; i++ ) {
                 Class newClass = classReferences[i];
                 const char *className = class_getName(newClass);
-                static const char injectionPrefix[] = "InjectionBundle";
+
                 if ( seenInjectionClass ) {
-                    NSLog( @"Swizzling %s %p %p", className, newClass, objc_getClass(className) );
+                    INLog( @"Swizzling %s %p %p", className, newClass, objc_getClass(className) );
 #ifndef INJECTION_LEGACY32BITOSX
                     [newClass class];
 #endif
                     [self loadedClass:newClass notify:notify];
                 }
+
+                static const char injectionPrefix[] = "InjectionBundle";
                 seenInjectionClass = strncmp(className,injectionPrefix,(sizeof injectionPrefix)-1)==0;
             }
 
             [self fixClassRefs:hook];
-        });
-    }
-#endif
 
-    INLog( @"Bundle \"%s\" loaded successfully.", strrchr( path, '/' )+1 );
 #ifndef __IPHONE_OS_VERSION_MIN_REQUIRED
-    if ( notify & INJECTION_ORDERFRONT )
-        [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+            if ( notify & INJECTION_ORDERFRONT )
+                [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
 #endif
+            [[NSNotificationCenter defaultCenter] postNotificationName:kINNotification
+                                                                object:nil];
+        });
+    else
+        NSLog( @"Injection Error: Could not locate referencesSection" );
+
     status = referencesSection != NULL;
-    dispatch_async(dispatch_get_main_queue(), ^{
-    	[[NSNotificationCenter defaultCenter] postNotificationName:kINNotification
-                                                        object:nil];
-    });                                         
+#endif
 }
 
 #endif
