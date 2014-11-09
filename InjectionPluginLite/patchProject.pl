@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/patchProject.pl#16 $
+#  $Id: //depot/InjectionPluginLite/patchProject.pl#17 $
 #  Injection
 #
 #  Created by John Holdsworth on 15/01/2013.
@@ -24,7 +24,10 @@ my $ifdef = $projName =~ /UICatalog|(iOS|OSX)GLEssentials/ ?
 
 print "\\b Patching project contained in: $projRoot\n";
 
-patchAll( "refix.pch", sub {
+###################################################################################################
+# patch project .pch files (if not using AppCode)
+if ( !$isAppCode ) {
+    patchAll( "refix.pch", sub {
     $_[0] =~ s/\n*($key.*)?$/<<CODE/es;
 
 
@@ -37,9 +40,12 @@ $key
 #import "$resources/BundleInterface.h"
 CODE
     } );
+}
 
 $ifdef .= "\n#define INJECTION_PORT $selectedFile" if $isAppCode;
 
+###################################################################################################
+# patch normal Xcode projects
 if ( !-d "$projRoot$projName.approj" ) {
     patchAll( "main.(m|mm)", sub {
         $_[0] =~ s/\n*($key.*)?$/<<CODE/es;
@@ -57,6 +63,9 @@ static const char *_inIPAddresses[] = {@{[join ', ', map "\"$_\"", @ip4Addresses
 CODE
     } ) or error "Could not match project's main.(m|mm)";
 }
+
+###################################################################################################
+# patch projects using apportable
 else {
     patchAll( "main.(m|mm)", sub {
         $_[0] =~ s/\n+$key.*/\n/s;
@@ -85,6 +94,8 @@ CODE
     } );
 }
 
+###################################################################################################
+# ensure symbols exported
 my $dontHideSymbols = "GCC_SYMBOLS_PRIVATE_EXTERN = NO;";
 patchAll( "project.pbxproj", sub {
     $_[0] =~ s@(/\* Debug \*/ = \{[^{]*buildSettings = \{(\s*)[^}]*)(};)@$1$dontHideSymbols$2$3@g

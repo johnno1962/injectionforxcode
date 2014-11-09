@@ -21,6 +21,8 @@ inspect/select it. You can then open an editor which allows you to execute any
 Objective-C or Swift code  against the object (implemented as a catgeory/extension.)
 Use Xlog/xprintln to log output back to the Xprobe window.
 
+The InjectionPluginAppCode has also been updated for 3.1 so you can now inject Swift from AppCode!
+
 ![Icon](http://injectionforxcode.johnholdsworth.com/overview.png)
 
 The "unpatched" version of Injection now includes "Xtrace" which will allow

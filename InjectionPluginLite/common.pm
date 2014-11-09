@@ -1,5 +1,5 @@
 #
-#  $Id: //depot/InjectionPluginLite/common.pm#27 $
+#  $Id: //depot/InjectionPluginLite/common.pm#28 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -15,21 +15,29 @@ use Carp;
 use vars qw($resources $workspace $mainFile $executable $arch $patchNumber $flags
     $unlockCommand $addresses $selectedFile $isDevice $isSimulator $isAndroid $isAppCode
     $isIOS $productName $appPackage $deviceRoot $projFile $projRoot $projName $projType
-    $InjectionBundle $template $header $appClass $RED $buildRoot $learnt);
+    $InjectionBundle $template $header $appClass $RED $buildRoot $learnt
+    $INJECTION_NOTSILENT $INJECTION_ORDERFRONT $INJECTION_ISAPPCODE);
+
+$INJECTION_NOTSILENT  = 1<<2; # print annoying dialogue on injection
+$INJECTION_ORDERFRONT = 1<<3; # order from OSX App or simulator
+$INJECTION_ISAPPCODE  = 1<<4; # injecting from AppCode plugin
 
 ($resources, $workspace, $mainFile, $executable, $arch, $patchNumber, $flags, $unlockCommand, $addresses, $selectedFile, $buildRoot, $learnt) = @ARGV;
 
 #($appPackage, $deviceRoot, $appName) = $executable =~ m@((^.*)/([^/]+))/[^/]+$@;
-($appPackage, $deviceRoot) = $executable =~ m@((^.*))$@; # iOS8
+($appPackage, $deviceRoot) = $executable =~ m@((^.*))$@; # for iOS8
 
 $productName = "InjectionBundle$patchNumber";
 
 $isDevice = $executable =~ m@^(/private)?/var/mobile/@;
 $isSimulator = $executable =~ m@/(iPhone |Core)Simulator/@;
 $isAndroid = $executable =~ m@^/data/app/@;
-$isAppCode = $flags & 1<<4;
+$isAppCode = $flags & $INJECTION_ISAPPCODE;
 
 $isIOS = $isDevice || $isSimulator || $isAndroid;
+
+# no confirmation message when using AppCode
+$flags &= ~$INJECTION_NOTSILENT if $isAppCode;
 
 ($template, $header, $appClass) = $isIOS ?
     ("iOSBundleTemplate", "UIKit/UIKit.h", "UIApplication") :
@@ -130,7 +138,7 @@ sub patchAll {
         my $contents = loadFile( $file );
         $changed += $change->( $contents )||0;
         if( saveFile( $file, $contents ) ) {
-            system "open '$file'";
+            system "open '$file'" if !$isAppCode;
         }
     }
 

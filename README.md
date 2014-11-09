@@ -17,9 +17,11 @@ injection can patch it. Finally, a new method +injected is called on each class 
 Stop Press: Injection is now integrated with the [XprobePlugin](https://github.com/johnno1962/XprobePlugin).
 Use the Product/Xprobe/Load menu item to inspect the objects in your application
 and search for the object you wish to execute code against and click it's link to
-inspect/select it. Add a -(void)injected  method to your class containing the code you wish
-to execute against this object and inject the class. This method will be called, allowing 
-you to NSLog or modify it's run-time state.
+inspect/select it. You can then open an editor which allows you to execute any
+Objective-C or Swift code  against the object (implemented as a catgeory/extension.)
+Use Xlog/xprintln to log output back to the Xprobe window.
+
+The InjectionPluginAppCode has also been updated for 3.1 so you can now inject Swift from AppCode!
 
 ![Icon](http://injectionforxcode.johnholdsworth.com/overview.png)
 
