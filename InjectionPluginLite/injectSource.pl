@@ -96,19 +96,18 @@ my $config = " -configuration Debug -arch $arch";
 $config .= " -sdk iphonesimulator" if $isSimulator;
 $config .= " -sdk iphoneos" if $isDevice;
 
-my ($localBinary, $identity) = ($executable);
+my $infoFile = "$archDir/identity.txt";
 
-if ( $isDevice ) {
-    my $infoFile = "$InjectionBundle/identity.txt";
-
-    if ( !-f $infoFile ) {
-        my %VARS = `xcodebuild -showBuildSettings $config` =~ /    (\w+) = (.*)\n/g;
-        IO::File->new( "> $infoFile" )->print( "$VARS{CODESIGNING_FOLDER_PATH}\n$VARS{CODE_SIGN_IDENTITY}\n");
-    }
-
-    ($localBinary, $identity) = loadFile( $infoFile );
-    $localBinary =~ s@([^./]+).app@$1.app/$1@;
+if ( !-f $infoFile ) {
+    my %VARS = `$xcodebuild -showBuildSettings $config` =~ /    (\w+) = (.*)\n/g;
+    IO::File->new( "> $infoFile" )->print( "$VARS{CODESIGNING_FOLDER_PATH}\n$VARS{CODE_SIGN_IDENTITY}\n");
 }
+
+my ($localBundle, $identity) = loadFile( $infoFile );
+$localBundle =~ s@^.*/Build/@$buildRoot/@;
+(my $localBinary = $localBundle) =~ s@([^./]+).app@$1.app/$1@;
+
+unlink $infoFile if !-d $localBundle;
 
 if ( $localBinary && $bundleProjectSource =~ s/(BUNDLE_LOADER = )([^;]+;)/$1"$localBinary";/g ) {
     print "Patching bundle project to app path: $localBinary\n";
@@ -293,6 +292,9 @@ if ( $learnt ) {
         $obj .= "\", \"-F$buildRoot/Products/Debug-$sdk" if $buildRoot;
     #}
 }
+
+my @frameworks = `cd '$localBundle/Frameworks'; ls -d *.framework` =~ /(\S+)\.framework/g;
+$obj .= join "\", \"-F$localBundle/Frameworks", map "\", \"-framework\", \"$_", @frameworks;
 
 $bundleProjectSource =~ s/(OTHER_LDFLAGS = \().*?("-undefined)/$1"$obj", $2/sg;
 saveFile( $bundleProjectFile, $bundleProjectSource );
