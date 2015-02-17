@@ -847,7 +847,8 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
                 }
 
                 static const char injectionPrefix[] = "InjectionBundle";
-                seenInjectionClass = strncmp(className,injectionPrefix,(sizeof injectionPrefix)-1)==0;
+                seenInjectionClass = seenInjectionClass ||
+                    strncmp(className,injectionPrefix,(sizeof injectionPrefix)-1)==0;
             }
 
             [self fixClassRefs:hook];
