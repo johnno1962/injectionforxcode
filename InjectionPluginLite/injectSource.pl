@@ -295,7 +295,7 @@ if ( $learnt ) {
     #}
 }
 
-if ( -d my $frameworkDir = "$localBundle/Frameworks" ) {
+if ( -d (my $frameworkDir = "$localBundle/Frameworks") ) {
     my @frameworks = `cd '$frameworkDir'; ls -d *.framework` =~ /(\S+)\.framework/g;
     $obj .= join "\", \"-F$frameworkDir", map "\", \"-framework\", \"$_", @frameworks;
 }
