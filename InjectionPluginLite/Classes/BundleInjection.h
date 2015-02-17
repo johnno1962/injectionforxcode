@@ -839,7 +839,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
                 NSString *className = NSStringFromClass(newClass);
 
                 if ( seenInjectionClass ) {
-                    INLog( @"Swizzling %@ %p %p", className, newClass, objc_getClass(className) );
+                    INLog( @"Swizzling %@ %p %p", className, newClass, NSClassFromString(className) );
 #ifndef INJECTION_LEGACY32BITOSX
                     [newClass class];
 #endif
