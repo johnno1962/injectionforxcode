@@ -836,19 +836,17 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
             Class *classReferences = (Class *)(void *)((char *)info.dli_fbase+(uint64_t)referencesSection);
             for ( unsigned long i=0 ; i<size/sizeof *classReferences ; i++ ) {
                 Class newClass = classReferences[i];
-                const char *className = class_getName(newClass);
+                NSString *className = NSStringFromClass(newClass);
 
                 if ( seenInjectionClass ) {
-                    INLog( @"Swizzling %s %p %p", className, newClass, objc_getClass(className) );
+                    INLog( @"Swizzling %@ %p %p", className, newClass, objc_getClass(className) );
 #ifndef INJECTION_LEGACY32BITOSX
                     [newClass class];
 #endif
                     [self loadedClass:newClass notify:notify];
                 }
-
-                static const char injectionPrefix[] = "InjectionBundle";
-                seenInjectionClass = seenInjectionClass ||
-                    strncmp(className,injectionPrefix,(sizeof injectionPrefix)-1)==0;
+                else
+                    seenInjectionClass = [className hasPrefix:@"InjectionBundle"];
             }
 
             [self fixClassRefs:hook];
