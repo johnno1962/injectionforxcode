@@ -295,8 +295,10 @@ if ( $learnt ) {
     #}
 }
 
-my @frameworks = `cd '$localBundle/Frameworks'; ls -d *.framework` =~ /(\S+)\.framework/g;
-$obj .= join "\", \"-F$localBundle/Frameworks", map "\", \"-framework\", \"$_", @frameworks;
+if ( -d my $frameworkDir = "$localBundle/Frameworks" ) {
+    my @frameworks = `cd '$frameworkDir'; ls -d *.framework` =~ /(\S+)\.framework/g;
+    $obj .= join "\", \"-F$frameworkDir", map "\", \"-framework\", \"$_", @frameworks;
+}
 
 $bundleProjectSource =~ s/(OTHER_LDFLAGS = \().*?("-undefined)/$1"$obj", $2/sg;
 saveFile( $bundleProjectFile, $bundleProjectSource );
