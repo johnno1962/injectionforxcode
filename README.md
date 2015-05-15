@@ -66,6 +66,21 @@ will need to edit the "Header Search Paths" of the bundle project injection crea
 to build your code. With Swift, injection "learns" the command to compile your source
 from the project's previous build logs so this is never a problem.
 
+### Injecting classes inside Swift frameworks
+
+With Xcode 3.6.1/Swoft 1.2 this has become a little more difficult as "internal"
+symbols that may be required for the injecting class to link against are now
+given visibility "hidden" which makes them unavailable resulting in crashes.
+This can be resolved by downloading and building the [unhide](https://github.com/johnno1962/unhide)
+project and adding a "Run Script" build phase to your framework target to
+call the following command.
+
+    ~/bin/unhide.sh
+
+This patches the object files in the framework to export any hidden symbols
+and relinks the framework executable making all swift symbols available to
+the dynamic link loader facilitating their injection.
+
 ### JetBrains AppCode IDE Support
 
 The InjectionPluginAppCode project provides basic support for code injection in the
