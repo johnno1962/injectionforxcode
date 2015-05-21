@@ -71,8 +71,8 @@ static INPluginMenuController *injectionPlugin;
         if ( [[NSAlert alertWithMessageText:@"Injection Plugin:"
                               defaultButton:@"OK" alternateButton:@"Goto GitHub" otherButton:nil
                   informativeTextWithFormat:@"Could not load interface nib. If problems persist, "
-               "please download from GitHub, build clean then rebuild from the sources."]
-              runModal] == NSAlertAlternateReturn )
+               "please download from GitHub, build clean then rebuild from the sources. "
+               "This will install the plugin."] runModal] == NSAlertAlternateReturn )
             [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"https://github.com/johnno1962/injectionforxcode"]];
 
 	NSMenu *productMenu = [[[NSApp mainMenu] itemWithTitle:@"Product"] submenu];
