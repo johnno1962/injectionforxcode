@@ -68,7 +68,7 @@ from the project's previous build logs so this is never a problem.
 
 ### Injecting classes inside Swift frameworks
 
-With Xcode 3.6.1/Swoft 1.2 this has become a little more difficult as "internal"
+With Xcode 3.6.1/Swift 1.2 this has become a little more difficult as "internal"
 symbols that may be required for the injecting class to link against are now
 given visibility "hidden" which makes them unavailable resulting in crashes.
 This can be resolved by downloading and building the [unhide](https://github.com/johnno1962/unhide)

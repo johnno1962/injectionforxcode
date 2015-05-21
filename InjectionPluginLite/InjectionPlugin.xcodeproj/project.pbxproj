@@ -21,7 +21,6 @@
 		BB5DEF9C16A55E1800E97DD4 /* injectSource.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB5DEF9816A55E1800E97DD4 /* injectSource.pl */; };
 		BB5DEF9D16A55E1800E97DD4 /* openBundle.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB5DEF9916A55E1800E97DD4 /* openBundle.pl */; };
 		BB63E0FB160CA89800E95F5D /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB63E0F8160CA89800E95F5D /* IOKit.framework */; };
-		BB86B52D1962F8F80081083B /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = BB86B52C1962F8F80081083B /* README.md */; };
 		BB8D68AB17F1BB64009E02EE /* listDevice.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB8D68AA17F1BB64009E02EE /* listDevice.pl */; };
 		BB98CE5716DB5E3C00B90297 /* appcode.txt in Resources */ = {isa = PBXBuildFile; fileRef = BB98CE5616DB5E3C00B90297 /* appcode.txt */; };
 		BBCDA04819FD229F009AC8C5 /* evalCode.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB117D2619FD20BD00A9400F /* evalCode.pl */; };
@@ -48,6 +47,7 @@
 		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BB020F6D16B3CC2D00126E33 /* injectStoryboard.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = injectStoryboard.pl; sourceTree = "<group>"; };
 		BB117D2619FD20BD00A9400F /* evalCode.pl */ = {isa = PBXFileReference; lastKnownFileType = text.script.perl; path = evalCode.pl; sourceTree = "<group>"; };
+		BB360C021B0E5C0100C39245 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		BB3EFFAC16A4B815001F0065 /* INPluginClientController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INPluginClientController.h; sourceTree = "<group>"; };
 		BB3EFFAD16A4B815001F0065 /* INPluginClientController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = INPluginClientController.m; sourceTree = "<group>"; };
 		BB3EFFAE16A4B815001F0065 /* INPluginMenuController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INPluginMenuController.h; sourceTree = "<group>"; };
@@ -62,7 +62,6 @@
 		BB5DEF9816A55E1800E97DD4 /* injectSource.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = injectSource.pl; sourceTree = "<group>"; };
 		BB5DEF9916A55E1800E97DD4 /* openBundle.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = openBundle.pl; sourceTree = "<group>"; };
 		BB63E0F8160CA89800E95F5D /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
-		BB86B52C1962F8F80081083B /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		BB8D68AA17F1BB64009E02EE /* listDevice.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = listDevice.pl; sourceTree = "<group>"; };
 		BB98CE5616DB5E3C00B90297 /* appcode.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = appcode.txt; sourceTree = "<group>"; };
 		BBC2900018CA6F46003436A9 /* InjectionLoader.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = InjectionLoader.xcodeproj; path = InjectionLoader/InjectionLoader.xcodeproj; sourceTree = "<group>"; };
@@ -88,7 +87,7 @@
 		089C166AFE841209C02AAC07 /* QuietXcode */ = {
 			isa = PBXGroup;
 			children = (
-				BB86B52C1962F8F80081083B /* README.md */,
+				BB360C021B0E5C0100C39245 /* README.md */,
 				BBC2900018CA6F46003436A9 /* InjectionLoader.xcodeproj */,
 				7F411B0C15FABAC6002F77B6 /* Classes */,
 				089C167CFE841241C02AAC07 /* Resources */,
@@ -296,7 +295,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				BB3EFFB216A4B815001F0065 /* INPluginMenuController.m in Sources */,
-				BB86B52D1962F8F80081083B /* README.md in Sources */,
 				BB3EFFB116A4B815001F0065 /* INPluginClientController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
