@@ -55,7 +55,7 @@ $key
 
 #ifdef $ifdef
 static char _inMainFilePath[] = __FILE__;
-static const char *_inIPAddresses[] = {@{[join ', ', map "\"$_\"", @ip4Addresses]}, NULL};
+static const char *_inIPAddresses[] = {@{[join ', ', map "\"$_\"", @ip4Addresses]}, 0};
 
 #define INJECTION_ENABLED
 #import "$resources/BundleInjection.h"
@@ -77,7 +77,7 @@ else {
 #define DEBUG 1 // for Apportable
 #ifdef $ifdef
 static char _inMainFilePath[] = __FILE__;
-static const char *_inIPAddresses[] = {@{[join ', ', map "\"$_\"", @ip4Addresses]}, NULL};
+static const char *_inIPAddresses[] = {@{[join ', ', map "\"$_\"", @ip4Addresses]}, 0};
 
 #define INJECTION_ENABLED
 #import "$resources/BundleInjection.h"
