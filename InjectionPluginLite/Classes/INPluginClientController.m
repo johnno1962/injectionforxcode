@@ -156,11 +156,19 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
         return;
     }
 
-    status = storyButton.state ? 2 : 1;
+    status = (storyButton.state ? INJECTION_STORYBOARD : 1) | INJECTION_DEVICEIOS8;
     write( appConnection, &status, sizeof status );
 
     [BundleInjection readHeader:&header forPath:path from:appConnection];
     self.executablePath = [NSString stringWithUTF8String:path];
+
+    if ( header.dataLength )
+        self.deviceRoot = self.executablePath;
+    else
+        do {
+            [BundleInjection readHeader:&header forPath:path from:appConnection];
+            self.deviceRoot = [NSString stringWithUTF8String:path];
+        } while ( header.dataLength == 0 );
 
     read( appConnection, path, header.dataLength );
     self.arch = [NSString stringWithUTF8String:path];

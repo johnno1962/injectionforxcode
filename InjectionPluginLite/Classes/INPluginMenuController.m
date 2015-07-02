@@ -24,8 +24,11 @@
 #import "INPluginMenuController.h"
 #import "INPluginClientController.h"
 
-@interface NSObject(INMethodsUsed)
-+ (NSImage *)iconImage_pause;
+@interface DBGLLDBSession : NSObject
+- (void)requestPause;
+- (void)requestContinue;
+- (void)evaluateExpression:(id)a0 threadID:(unsigned long)a1 stackFrameID:(unsigned long)a2 queue:(id)a3 completionHandler:(id)a4;
+- (void)executeConsoleCommand:(id)a0 threadID:(unsigned long)a1 stackFrameID:(unsigned long)a2 ;
 @end
 
 static INPluginMenuController *injectionPlugin;
@@ -61,6 +64,7 @@ static INPluginMenuController *injectionPlugin;
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
+    IDEWorkspaceWindowController = NSClassFromString(@"IDEWorkspaceWindowController");
     IDEWorkspaceDocument = NSClassFromString(@"IDEWorkspaceDocument");
     DVTSourceTextView = NSClassFromString(@"DVTSourceTextView");
     IDEConsoleTextView = NSClassFromString(@"IDEConsoleTextView");
@@ -222,10 +226,39 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
     [self.client runScript:@"openBundle.pl" withArg:[self lastFileSaving:YES]];
 }
 
+- (NSWindowController *)lastController {
+    return [self.lastWin windowController];
+}
+
+- (DBGLLDBSession *)sessionForController:(NSWindowController *)controller {
+    return [controller valueForKeyPath:@"workspace"
+            ".executionEnvironment.selectedLaunchSession.currentDebugSession"];
+}
+
+- (NSWindowController *)debugController {
+    NSWindowController *controller = [self lastController];
+    if ( [self sessionForController:controller] )
+        return controller;
+
+    for ( NSWindow *win in [NSApp windows] ) {
+        controller = [win windowController];
+        if ( [controller isKindOfClass:IDEWorkspaceWindowController] &&
+            [self sessionForController:controller] )
+            return controller;
+    }
+
+    return [self lastController];
+}
+
+- (DBGLLDBSession *)session {
+    return [self sessionForController:[self debugController]];
+}
+
 - (IBAction)injectSource:(id)sender {
     if ( [sender isKindOfClass:[NSMenuItem class]] || [sender isKindOfClass:[NSButton class]] )
         self.lastFile = [self lastFileSaving:YES];
 
+    DBGLLDBSession *session = [self session];
     if ( !self.lastFile ) {
         [self.client alert:@"No source file is selected. "
          "Make sure that text is selected and the cursor is inside the file you have edited."];
@@ -246,13 +279,8 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
         // "unpatched" injection
         if ( sender ) {
             self.lastWin = [self.lastTextView window];
-            [self findConsole:[self.lastWin contentView]];
-            [self.lastWin makeFirstResponder:self.debugger];
-            if ( ![[[self.pauseResume target] class] respondsToSelector:@selector(iconImage_pause)] ||
-                    [self.pauseResume image] == [[[self.pauseResume target] class] iconImage_pause] )
-                [self.pauseResume performClick:self];
-            [NSObject cancelPreviousPerformRequestsWithTarget:self];
-            [self performSelector:@selector(findLLDB) withObject:nil afterDelay:.5];
+            [session requestPause];
+            [self performSelector:@selector(loadBundle:) withObject:session afterDelay:.1];
         }
         else
             [self performSelector:@selector(injectSource:) withObject:nil afterDelay:.1];
@@ -274,63 +302,16 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
     self.lastWin = nil;
 }
 
-- (void)findConsole:(NSView *)view {
-    for ( NSView *subview in [view subviews] ) {
-        if ( [subview isKindOfClass:[NSButton class]] &&
-            [(NSButton *)subview action] == @selector(pauseOrResume:) )
-            self.pauseResume = (NSButton *)subview;
-        if ( [subview class] == IDEConsoleTextView )
-            self.debugger = (NSTextView *)subview;
-        [self findConsole:subview];
-    }
-}
-
-- (void)findLLDB {
-
-    // do we have lldb's attention?
-    if ( ![[self.debugger string] hasSuffix:@"(lldb) "] ) {
-        [self performSelector:@selector(findLLDB) withObject:nil afterDelay:.2];
-        return;
-    }
-
-    [NSObject cancelPreviousPerformRequestsWithTarget:self];
-    NSString *loader = [NSString stringWithFormat:@"p (void)[[NSBundle bundleWithPath:@\""
-                        "%@/InjectionLoader.bundle\"] load]", self.client.scriptPath];
-
-    [self keyEvent:loader code:0 after:0.];
-
-    self.continues = 0;
-    [self performSelector:@selector(forceContinue) withObject:nil afterDelay:.5];
-}
-
-- (BOOL)isAppRunning {
-    return [self.pauseResume image] == [[[self.pauseResume target] class] iconImage_pause];
-}
-
-- (void)forceContinue {
-    if ( ![self isAppRunning] && self.continues++ < 5 ) {
-        [self keyEvent:@"c" code:0 after:1];
-        [self performSelector:@selector(forceContinue) withObject:nil afterDelay:1];
-    }
-    else
-        [self injectSource:nil];
-}
-
-- (void)keyEvent:(NSString *)str code:(unsigned short)code after:(float)delay {
-    NSEvent *event = [NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0, 0)
-                                 modifierFlags:0 timestamp:0 windowNumber:0 context:0
-                                    characters:str charactersIgnoringModifiers:nil
-                                     isARepeat:YES keyCode:code];
-    if ( [[self.debugger window] firstResponder] == self.debugger )
-        [self performSelector:@selector(keyEvent:) withObject:event afterDelay:delay];
-    if ( code == 0 )
-        [self keyEvent:@"\r" code:36 after:delay+.1];
-}
-
-- (void)keyEvent:(NSEvent *)event {
-    [[self.debugger window] makeFirstResponder:self.debugger];
-    if ( [[self.debugger window] firstResponder] == self.debugger )
-        [self.debugger keyDown:event];
+- (void)loadBundle:(DBGLLDBSession *)session {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND,0), ^{
+        NSString *loader = [NSString stringWithFormat:@"p (void)[[NSBundle bundleWithPath:"
+                            "@\"%@/InjectionLoader.bundle\"] load]\r", self.client.scriptPath];
+        [session executeConsoleCommand:loader threadID:1 stackFrameID:0];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [session requestContinue];
+            [self injectSource:nil];
+        });
+    });
 }
 
 #pragma mark - Injection Service

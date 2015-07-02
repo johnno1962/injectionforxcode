@@ -85,7 +85,7 @@ extension @{[$swiftClass||$className]} {
         }
     }
 
-    \@objc func injected() {
+    \@objc func onXprobeEval() {
         $code
     }
     
@@ -115,9 +115,9 @@ static void xprintln( const char *msg ) {
 }
 #pragma clang diagnostic pop
 
-\@implementation $className(Injected)
+\@implementation $className(onXprobeEval)
 
-- (void)injected {
+- (void)onXprobeEval {
     $code;
 }
 

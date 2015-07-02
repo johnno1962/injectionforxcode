@@ -14,7 +14,10 @@ or remove a method from your class! To run the faster "patched" injection or to 
 device in your Swift project make sure there is a "main.m" file even if it is empty so 
 injection can patch it. Finally, a new method +injected is called on each class as it is swizzled.
 
-Stop Press: Injection is now integrated with the [XprobePlugin](https://github.com/johnno1962/XprobePlugin).
+Stop Press: Injection now calls the long awaited instance level "-injected" method when
+an instance is of a class that has been injected. This is implemented by "sweeping" your
+applications objects using code fro the Xprobe plugin. 
+It is also now integrated with the [XprobePlugin](https://github.com/johnno1962/XprobePlugin).
 Use the Product/Xprobe/Load menu item to inspect the objects in your application
 and search for the object you wish to execute code against and click it's link to
 inspect/select it. You can then open an editor which allows you to execute any
@@ -100,13 +103,13 @@ the client app has to find it's way over Wi-Fi to connect back to the plugin.
 Start small by injecting to the simulator then injecting to a device using the Xcode 
 plugin. Then try injecting to the device from AppCode after re-patching the project.
 
-### Shareware License
+### "Nagware" License
 
 This source code is provided on github on the understanding it will not be redistributed.
-License is granted to use this software during development for any purpose indefinitely
+License is granted to use this software during development for any purpose for two weeks
 (it should never be included in a released application!) After two weeks you
-will be prompted to register and have the opportunity to make a donation $10
-(or $25 in a commercial environment) as suggested by code included in the software.
+will be prompted to make a donation $10 (or $25 in a commercial environment)
+as suggested by code included in the software.
 
 If you find (m)any issues in the code, get in contact using the email: support (at) injectionforxcode.com
 

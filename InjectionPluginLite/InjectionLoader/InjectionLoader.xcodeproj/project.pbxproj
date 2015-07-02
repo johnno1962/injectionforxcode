@@ -229,6 +229,7 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
 				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				PRODUCT_NAME = InjectionLoader;
+				WARNING_CFLAGS = "-Wno-missing-prototypes";
 				WRAPPER_EXTENSION = bundle;
 			};
 			name = Debug;
@@ -242,6 +243,7 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
 				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				PRODUCT_NAME = InjectionLoader;
+				WARNING_CFLAGS = "-Wno-missing-prototypes";
 				WRAPPER_EXTENSION = bundle;
 			};
 			name = Release;

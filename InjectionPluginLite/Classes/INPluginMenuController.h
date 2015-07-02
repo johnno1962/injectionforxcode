@@ -31,6 +31,7 @@
     IBOutlet WebView *webView;
     IBOutlet NSMenuItem *subMenuItem, *introItem;
 
+    Class IDEWorkspaceWindowController;
     Class DVTSourceTextView;
     Class IDEWorkspaceDocument;
     Class IDEConsoleTextView;

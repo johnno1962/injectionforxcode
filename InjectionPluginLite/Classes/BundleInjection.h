@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#74 $
+//  $Id: //depot/InjectionPluginLite/Classes/BundleInjection.h#121 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -28,14 +28,20 @@
 #define INJECTION_PORT 31442
 #endif
 
-#define INJECTION_MAGIC -INJECTION_PORT*INJECTION_PORT
+#define INJECTION_MAGIC (-INJECTION_PORT*INJECTION_PORT)
+#define INJECTION_MULTICAST "239.255.255.239"
+#ifndef INJECTION_APPNAME
 #define INJECTION_APPNAME "Injection"
+#endif
 #define INJECTION_MKDIR -1
 #define INJECTION_NOFILE -2
 #define INJECTION_CLOSE -3
 
-#define INJECTION_NOTSILENT (1<<2)
+#define INJECTION_STORYBOARD (1<<1)
+#define INJECTION_NOTSILENT  (1<<2)
 #define INJECTION_ORDERFRONT (1<<3)
+#define INJECTION_USEAPPCODE (1<<4)
+#define INJECTION_DEVICEIOS8 (1<<5)
 
 #if !defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(__LP64__)
 #define INJECTION_LEGACY32BITOSX
@@ -53,7 +59,7 @@ struct _in_header { int pathLength, dataLength; };
 + (BOOL)readHeader:(struct _in_header *)header forPath:(char *)path from:(int)fdin;
 + (BOOL)writeBytes:(off_t)bytes withPath:(const char *)path from:(int)fdin to:(int)fdout;
 #ifdef INJECTION_BUNDLE
-+ (void)loadedClass:(Class)newClass notify:(BOOL)notify;
++ (Class)loadedClass:(Class)newClass notify:(BOOL)notify;
 + (void)autoLoadedNotify:(int)notify hook:(void *)hook;
 + (void)loadedNotify:(int)notify hook:(void *)hook;
 #endif
@@ -68,6 +74,8 @@ struct _in_header { int pathLength, dataLength; };
 
 #ifndef INJECTION_NOIMPL
 
+#import "BundleSweeper.h"
+
 #import <dirent.h>
 
 #import <objc/runtime.h>
@@ -80,21 +88,40 @@ struct _in_header { int pathLength, dataLength; };
 #import <mach-o/getsect.h>
 #endif
 
-#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_LOADER)
+#ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
+#ifndef INJECTION_LOADER
 #import <UIKit/UIKit.h>
 @interface UINib(BundleInjection)
 - (NSArray *)inInstantiateWithOwner:(id)ownerOrNil options:(NSDictionary *)optionsOrNil;
 @end
+#endif
 @implementation UIAlertView(Injection)
 - (void)injectionDismiss {
     [self dismissWithClickedButtonIndex:0 animated:YES];
 }
 @end
+//#else
+//#import <Cocoa/Cocoa.h>
 #endif
 
 @interface BundleInjection(Private)
-- (void)bundleLoader;
-- (void)loadBundle;
++ (INColor * INJECTION_STRONG *)_inColors;
++ (float *)_inParameters;
++ (void)bundleLoader;
++ (void)loadBundle;
++ (void)reloadNibs;
+@end
+
+@interface NSObject(injected)
++ (void)injectedClass:(Class)aClass;
++ (void)injected;
+- (void)injected;
+- (void)onXprobeEval;
+- (void)setViewController:vc;
+@end
+
+@interface NSObject(UINibDecoder)
+- (id)inDecodeObjectForKey:(id)key;
 @end
 
 @implementation BundleInjection
@@ -127,21 +154,19 @@ struct _in_header { int pathLength, dataLength; };
 #ifdef INJECTION_ENABLED
 
 NSString *kINNotification = @"INJECTION_BUNDLE_NOTIFICATION";
-float INParameters[INJECTION_PARAMETERS] = {1,1,1,1,1};
+float *INParameters;
 id INDelegates[INJECTION_PARAMETERS];
 
-#ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
-UIColor *INColors[INJECTION_PARAMETERS];
-#else
-NSColor *INColors[INJECTION_PARAMETERS];
-#endif
+INColor * INJECTION_STRONG *INColors;
 id INColorTargets[INJECTION_PARAMETERS];
 SEL INColorActions[INJECTION_PARAMETERS];
 id INColorDelegate;
 id INImageTarget;
 
-static char path[PATH_MAX], *file = &path[1];
+static char path[100000], *file = &path[1];
 static int status, sbInjection;
+static int multicastSocket;
+static BOOL injectAndReset;
 
 #ifndef ANDROID
 static NSNetServiceBrowser *browser;
@@ -160,12 +185,14 @@ static NSNetService *service;
 }
 
 +(void)netServiceDidResolveAddress:(NSNetService *)service {
+    char **addressPtr = (char **)_inIPAddresses;
     for ( NSData *addr in service.addresses ) {
         struct sockaddr_in *ip = (struct sockaddr_in *)[addr bytes];
         if ( ip->sin_family == AF_INET ) {
-            _inIPAddresses[0] = strdup( inet_ntoa( ip->sin_addr ) );
-            NSLog( @"%s service on: %s", INJECTION_APPNAME, _inIPAddresses[0] );
-           break;
+            *addressPtr = strdup( inet_ntoa( ip->sin_addr ) );
+            NSLog( @"%s: Bonjour reports service on %s", INJECTION_APPNAME, *addressPtr );
+            if ( *++addressPtr == NULL )
+                break;
         }
     }
 
@@ -177,23 +204,72 @@ static NSNetService *service;
     [self performSelectorInBackground:@selector(bundleLoader) withObject:nil];
 }
 
-+ (void)load {
-    INLog( @"+[BundleInjection load] %s", _inIPAddresses[0] ); ////
-    if ( _inIPAddresses[0][0] == '_' ) {
-        NSString *bonjourName = [NSString stringWithUTF8String:_inIPAddresses[0]];
++ (void)multicastResponse {
+    struct sockaddr_in addr;
+    unsigned addrlen = sizeof(addr);
+    char msgbuf[PATH_MAX];
+    ssize_t nbytes;
+
+    if ( (nbytes=recvfrom( multicastSocket, msgbuf, sizeof msgbuf, 0,
+                          (struct sockaddr *) &addr, &addrlen )) < 0 ) {
         _inIPAddresses[0] = _inIPAddresses[1];
+        NSLog( @"%s: Error receiving from multicast: %s", INJECTION_APPNAME, strerror(errno) );
+    }
+    else {
+        _inIPAddresses[0] = strdup( inet_ntoa(addr.sin_addr) );
+        NSLog( @"%s: Multicast response from %s", INJECTION_APPNAME, _inIPAddresses[0] );
+    }
+
+    [self performSelectorInBackground:@selector(bundleLoader) withObject:nil];
+}
+
++ (void)load {
+#ifndef INJECTION_LOADER
+    INLog( @"+[BundleInjection load] %s (see project's main.(m|mm)", _inIPAddresses[0] ); ////
+#endif
+
+#if TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR
+#ifdef JUICE_IPADDRS
+    const char **addrptr = _inIPAddresses;
+    for ( NSString *addr in [@JUICE_IPADDRS componentsSeparatedByString:@" "] )
+        *addrptr++ = strdup( [addr UTF8String] );
+#endif
+    const char *firstAddress = _inIPAddresses[0];
+
+    if ( firstAddress[0] == '_' ) {
+        NSString *bonjourName = [NSString stringWithUTF8String:firstAddress];
 
         browser = [NSNetServiceBrowser new];
         browser.delegate = (id<NSNetServiceBrowserDelegate>)self;
 
-        INLog( @"%s looking for service: %@", INJECTION_APPNAME, bonjourName );
+        INLog( @"%s: Looking for bonjour service: %@", INJECTION_APPNAME, bonjourName );
         [browser searchForServicesOfType:bonjourName inDomain:@""];
+        return;
     }
-    else
+
+    else if ( firstAddress[0] == '*' ) {
+        static struct sockaddr_in addr;
+        addr.sin_family=AF_INET;
+        addr.sin_addr.s_addr=inet_addr(INJECTION_MULTICAST);
+        addr.sin_port=htons(INJECTION_PORT);
+
+        if ( (multicastSocket=socket(AF_INET,SOCK_DGRAM,0)) < 0 )
+            NSLog( @"%s: Could not get mutlicast socket: %s", INJECTION_APPNAME, strerror(errno) );
+        else {
+            [self performSelectorInBackground:@selector(multicastResponse) withObject:nil];
+
+            if (sendto( multicastSocket, firstAddress+1, strlen(firstAddress+1), 0,
+                       (struct sockaddr *) &addr, sizeof(addr) ) < 0)
+                NSLog( @"%s: Could not send mutlicast ping: %s", INJECTION_APPNAME, strerror(errno) );
+            else
+                return;
+        }
+    }
+#endif
 #else
 + (void)load {
 #endif
-        [self performSelectorInBackground:@selector(bundleLoader) withObject:nil];
+    [self performSelectorInBackground:@selector(bundleLoader) withObject:nil];
 }
 
 + (void)listDirectory:(const char *)start ending:(char *)end into:(NSMutableString *)listing {
@@ -227,16 +303,17 @@ static NSNetService *service;
 	inet_aton( ipAddress, &loaderAddr.sin_addr );
 	loaderAddr.sin_port = htons(INJECTION_PORT);
 
-    INLog( @"%s attempting connection to: %s:%d (see project's main.(m|mm)", INJECTION_APPNAME, ipAddress, INJECTION_PORT );
+    INLog( @"%s attempting connection to: %s:%d", INJECTION_APPNAME, ipAddress, INJECTION_PORT );
 
     int loaderSocket, optval = 1;
     if ( (loaderSocket = socket(loaderAddr.sin_family, SOCK_STREAM, 0)) < 0 )
-        NSLog( @"Could not open socket for injection: %s", strerror( errno ) );
+        NSLog( @"%s: Could not open socket for injection: %s", INJECTION_APPNAME, strerror( errno ) );
     else if ( setsockopt( loaderSocket, IPPROTO_TCP, TCP_NODELAY, (void *)&optval, sizeof(optval)) < 0 )
-        NSLog( @"Could not set TCP_NODELAY: %s", strerror( errno ) );
+        NSLog( @"%s: Could not set TCP_NODELAY: %s", INJECTION_APPNAME, strerror( errno ) );
     else if ( connect( loaderSocket, (struct sockaddr *)&loaderAddr, sizeof loaderAddr ) >= 0 )
         return loaderSocket;
 
+    INLog( @"%s: Could not connect: %s", INJECTION_APPNAME, strerror( errno ) );
     close( loaderSocket );
     return 0;
 }
@@ -255,10 +332,19 @@ static const char **addrPtr, *connectedAddress;
 #endif
 
         Class firstInjection = objc_getClass(class_getName(self));
-        if ( [firstInjection connectedAddress] )
+        if ( [firstInjection connectedAddress] && [firstInjection respondsToSelector:@selector(_inParameters)] ) {
+            INParameters = [firstInjection _inParameters];
+            INColors = [firstInjection _inColors];
             return;
+        }
+        else {
+            INParameters = (float *)calloc( INJECTION_PARAMETERS, sizeof *INParameters );
+            INColors = (INColor * INJECTION_STRONG *)calloc( INJECTION_PARAMETERS, sizeof *INColors );
+            for ( int i=0 ; i<INJECTION_PARAMETERS ; i++ )
+                INParameters[i] = 1.;
+        }
 
-        static char machine[64];
+       static char machine[64];
         if ( machine[0] )
             return;
 
@@ -282,7 +368,7 @@ static const char **addrPtr, *connectedAddress;
         size_t alen = strlen(arch)+1;
 
         int i;
-        for ( i=0 ; i<100 ; i++ ) {
+        for ( i = 0 ; i < 5 ; i++ ) {
             int loaderSocket = 0;
 
             for ( addrPtr = addrSwitch ; *addrPtr;  addrPtr++ )
@@ -303,18 +389,27 @@ static const char **addrPtr, *connectedAddress;
                 return;
             }
 
-#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_LOADER)
-            if ( (sbInjection = status & 2) )
-                method_exchangeImplementations(
-                   class_getInstanceMethod([UINib class], @selector(instantiateWithOwner:options:)),
-                   class_getInstanceMethod([UINib class], @selector(inInstantiateWithOwner:options:)));
+#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_LOADER) && !defined(XPROBE_BUNDLE)
+            if ( (sbInjection = status & INJECTION_STORYBOARD) ) {
+                method_exchangeImplementations(class_getInstanceMethod([UINib class], @selector(instantiateWithOwner:options:)),
+                                               class_getInstanceMethod([UINib class], @selector(inInstantiateWithOwner:options:)));
+                method_exchangeImplementations(class_getInstanceMethod(objc_getClass("UINibDecoder"), @selector(decodeObjectForKey:)),
+                                               class_getInstanceMethod([NSObject class], @selector(inDecodeObjectForKey:)));
+            }
 #else
             sbInjection = 0;
 #endif
 
-            NSString *executablePath = NSHomeDirectory();//[[NSBundle mainBundle] executablePath];
-            [executablePath getCString:path maxLength:sizeof path encoding:NSUTF8StringEncoding];
+            if ( status & INJECTION_DEVICEIOS8 ) {
+                NSString *executablePath = [[NSBundle mainBundle] executablePath];
+                [executablePath getCString:path maxLength:sizeof path encoding:NSUTF8StringEncoding];
+                [self writeBytes:0 withPath:path from:0 to:loaderSocket];
+            }
+
+            NSString *deviceRoot = NSHomeDirectory();
+            [deviceRoot getCString:path maxLength:sizeof path encoding:NSUTF8StringEncoding];
             [self writeBytes:alen withPath:path from:0 to:loaderSocket];
+
             write(loaderSocket, arch, alen);
 
             INLog( @"Connected to \"%s\" plugin, ready to load %s code.", INJECTION_APPNAME, arch );
@@ -328,6 +423,10 @@ static const char **addrPtr, *connectedAddress;
 
                 switch ( path[0] ) {
 
+                    case '~':
+                        injectAndReset = YES;
+                        break;
+
                     case '/': // load bundle
                         status = NO;
                         if ( header.dataLength == INJECTION_MAGIC )
@@ -336,7 +435,7 @@ static const char **addrPtr, *connectedAddress;
                         else
                             NSLog( @"Synchronization error." );
                         if ( !status )
-                            NSLog( @"*** Bundle has failed to load. If this is due to symbols not found, make sure that Build Setting 'Symbols Hidden by Default' is NO for your Debug build. ***");
+                            NSLog( @"*** Bundle has failed to load. If this is due to symbols not found, this may be due to symbols being hidden from dynamic libraries. ***");
                         write( loaderSocket, &status, sizeof status );
                         break;
 
@@ -429,18 +528,6 @@ static const char **addrPtr, *connectedAddress;
                     }
                         break;
 
-                    case '@': // project built, reload visible view controllers
-#if __IPHONE_OS_VERSION_MIN_REQUIRED
-                        if ( sbInjection )
-                            [self performSelectorOnMainThread:@selector(reloadNibs)
-                                                   withObject:nil waitUntilDone:YES];
-                        else
-                            NSLog( @"'Inject StoryBds' must be enabled on the Tunable Parameters panel." );
-#else
-                        NSLog( @"Storyboard injection only available for iOS in Xcode 4." );
-#endif
-                        break;
-
                     case '!': // log message to console window
                         printf( "%s\n", file );
                         break;
@@ -448,16 +535,21 @@ static const char **addrPtr, *connectedAddress;
                     default: // parameter or color value update
                         if ( isdigit(path[0]) ) {
                             int tag = path[0]-'0';
+                            static BOOL logValue;
+
                             if ( tag < 5 ) {
                                 INParameters[tag] = atof( file );
-                                INLog( @"Param #%d -> %f", tag, INParameters[tag] );
+                                if ( logValue )
+                                    INLog( @"Param #%d -> %f", tag, INParameters[tag] );
                                 [INDelegates[tag] inParameter:tag hasChanged:INParameters[tag]];
                             }
                             else if ( (tag -= 5) < 5 ) {
-#ifndef INJECTION_LOADER
                                 float r, g, b, a;
                                 sscanf( file, "%f,%f,%f,%f", &r, &g, &b, &a );
-                                INLog( @"Color #%d -> %f,%f,%f,%f", tag, r, g, b, a );
+                                if ( logValue )
+                                    INLog( @"Color #%d -> %f,%f,%f,%f", tag, r, g, b, a );
+                                if ( path[0] == '9' )
+                                    logValue = TRUE;
 #ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
                                 UIColor *col = [UIColor colorWithRed:r green:g
                                                                 blue:b alpha:a];
@@ -482,13 +574,11 @@ static const char **addrPtr, *connectedAddress;
                                     [target setNeedsDisplay];
                                 if ( [INColorDelegate respondsToSelector:@selector(inColor:hasChanged:)] )
                                     [INColorDelegate inColor:tag hasChanged:col];
-#else
-                                static int warned;
-                                if ( !warned++ )
-                                    NSLog( @"Color tuning not available in \"unpatched\" Injection" );
-#endif
                             }
-                                
+
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                [self injectedClass:nil];
+                            });
                         }
                         else if ( header.dataLength == INJECTION_CLOSE ) {
                             NSLog( @"Project closed, exiting %s loader", INJECTION_APPNAME );
@@ -505,7 +595,7 @@ static const char **addrPtr, *connectedAddress;
             close( loaderSocket );
         }
 
-        INLog( @"Giving up on connecting to %s", INJECTION_APPNAME );
+        INLog( @"Giving up on connecting to %s, restart app.", INJECTION_APPNAME );
 
 #ifndef INJECTION_ISARC
         [pool release];
@@ -520,7 +610,7 @@ static const char **addrPtr, *connectedAddress;
     if ( !bundle )
         NSLog( @"Could not initalise bundle at \"%s\"", path );
     else
-        INLog( @"Injecting Bundle: %s", path );
+        ;//INLog( @"Injecting Bundle: %s", path );
     [bundle load];
 }
 
@@ -531,7 +621,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
     // data new to swift
     int f1, f2; // added for Beta5
     int size, tos, mdsize, eight;
-    struct _swift_data {
+    struct __swift_data {
         unsigned long flags;
         const char *className;
         int fieldcount, flags2;
@@ -665,9 +755,18 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 
 + (BOOL)dontSwizzleProperty:(Class)oldClass sel:(SEL)sel {
     char name[PATH_MAX];
-    strcpy(name,sel_getName(sel));
-    return class_getProperty(oldClass,sel_getName(sel)) ||
-        (strncmp(name,"set",3)==0 && (name[3] = tolower(name[3])) && class_getProperty(oldClass,name+3));
+    strcpy(name, sel_getName(sel));
+    if ( strncmp(name, "is", 2) == 0 && isupper(name[2]) ) {
+        name[2] = tolower(name[2]);
+        return class_getProperty(oldClass, name+2) != NULL;
+    }
+    else if ( strncmp(name, "set", 3) != 0 || islower(name[3]) )
+        return class_getProperty(oldClass, name) != NULL;
+    else {
+        name[3] = tolower(name[3]);
+        name[strlen(name)-1] = '\000';
+        return class_getProperty(oldClass, name+3) != NULL;
+    }
 }
 
 + (void)swizzle:(char)which className:(const char *)className onto:(Class)oldClass from:(Class)newClass {
@@ -675,29 +774,31 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
     Method *methods = class_copyMethodList(newClass, &mc);
 
     for( i=0; i<mc; i++ ) {
-        SEL name = method_getName(methods[i]);
+        SEL sel = method_getName(methods[i]);
 
-        // don't swizzle getters/setters
-        if ( [self dontSwizzleProperty:oldClass sel:name] )
+        static char singletonPrefix[] = "shared";
+        if ( which == '+' ?
+            strncmp( sel_getName(sel), singletonPrefix, sizeof singletonPrefix-1 ) == 0 :
+            [self dontSwizzleProperty:oldClass sel:sel] )
             continue;
 
         IMP newIMPL = method_getImplementation(methods[i]);
         const char *type = method_getTypeEncoding(methods[i]);
 
         //INLog( @"Swizzling: %c[%s %s] %s to: %p", which, className, sel_getName(name), type, newIMPL );
-#ifdef INJECTION_LOADER
+#ifdef XTRACE_EXCLUSIONS
         if ( originals.find(oldClass) != originals.end() &&
-            originals[oldClass].find(name) != originals[oldClass].end() )
-            originals[oldClass][name].original = (XTRACE_VIMP)newIMPL;
+            originals[oldClass].find(sel) != originals[oldClass].end() )
+            originals[oldClass][sel].original = (XTRACE_VIMP)newIMPL;
         else
 #endif
-            class_replaceMethod(oldClass, name, newIMPL, type);
+            class_replaceMethod(oldClass, sel, newIMPL, type);
     }
 
     free(methods);
 }
 
-+ (void)loadedClass:(Class)newClass notify:(int)notify {
++ (Class)loadedClass:(Class)newClass notify:(int)notify {
     const char *className = class_getName(newClass);
     Class oldClass = objc_getClass(className);
 
@@ -711,7 +812,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 #ifndef INJECTION_LEGACY32BITOSX
         // if swift language class, copy vtable
         struct _in_objc_class *newclass = (struct _in_objc_class *)INJECTION_BRIDGE(void *)newClass;
-        if ( (unsigned long)newclass->internal & 0x1 ) {
+        if ( (uintptr_t)newclass->internal & 0x1 ) {
             struct _in_objc_class *oldclass = (struct _in_objc_class *)INJECTION_BRIDGE(void *)oldClass;
             size_t bytes = oldclass->mdsize - offsetof(struct _in_objc_class, dispatch) - 2*sizeof(IMP);
             memcpy( oldclass->dispatch, newclass->dispatch, bytes );
@@ -719,23 +820,14 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 #endif
     }
 
-    // if class has a +injected method call it.
-    if ( [oldClass respondsToSelector:@selector(injected)] )
-        [oldClass injected];
-
-    // If XprobePlugin loaded? Call -injected on selected instance
-    Class xprobe = objc_getClass("Xprobe");
-    if ( [xprobe respondsToSelector:@selector(injectedClass:)] )
-        [xprobe injectedClass:oldClass];
-
 #if 0
     [self dumpIvars:oldClass];
     [self dumpIvars:newClass];
 #endif
-#ifndef INJECTION_LOADER
 #ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
     if ( notify & INJECTION_NOTSILENT ) {
-        NSString *msg = [[NSString alloc] initWithFormat:@"Class '%s' injected.", className];
+        NSString *msg = [[NSString alloc] initWithFormat:@"Class '%@' injected.",
+                         NSStringFromClass(oldClass)];
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Bundle Loaded"
                                                         message:msg delegate:nil
                                               cancelButtonTitle:@"OK" otherButtonTitles:nil];
@@ -748,22 +840,34 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 #endif
     }
 #else
-    INLog( @" ...ignore any warning, Injection has swizzled class '%s'", className );
+    //INLog( @" ...ignore any warning, Injection has swizzled class '%s'", className );
 #endif
-#endif
+    return oldClass;
+}
+
++ (void)injectedClass:(Class)oldClass {
+    // If XprobePlugin loaded? Call -onXprobeEval on selected instance
+    Class xprobe = objc_getClass("Xprobe");
+    if ( [xprobe respondsToSelector:@selector(injectedClass:)] )
+        [xprobe injectedClass:oldClass];
 }
 
 + (void)loadedNotify:(int)notify hook:(void *)hook {
+    status = YES;
+    if ( !hook )
+        return;
+
 #ifndef ANDROID
     [self fixClassRefs:hook];
 #endif
 
     INLog( @"Bundle \"%s\" loaded successfully.", strrchr( path, '/' )+1 );
+
 #ifndef __IPHONE_OS_VERSION_MIN_REQUIRED
     if ( notify & INJECTION_ORDERFRONT )
         [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
 #endif
-    status = YES;
+
     [[NSNotificationCenter defaultCenter] postNotificationName:kINNotification
                                                         object:nil];
 }
@@ -790,7 +894,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
             const char *className = class_getName(classReferences[i]);
             Class originalClass = objc_getClass( className );
             if ( originalClass && classReferences[i] != originalClass ) {
-                INLog( @"Fixing references to class: %s %p -> %p", className, classReferences[i], originalClass );
+                //INLog( @"Fixing references to class: %s %p -> %p", className, classReferences[i], originalClass );
                 classReferences[i] = originalClass;
             }
         }
@@ -804,6 +908,13 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
     Dl_info info;
     if ( !dladdr( hook, &info ) )
         NSLog( @"Could not find load address" );
+
+    if ( notify & INJECTION_STORYBOARD )
+#if defined(INJECTION_LOADER) || defined(XPROBE_BUNDLE)
+        NSLog( @"%s: *** Storyboard injection requires project patching ***", INJECTION_APPNAME );
+#else
+        [self reloadNibs];
+#endif
 
 #ifndef __LP64__
     uint32_t size = 0;
@@ -829,24 +940,27 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
                                                        "__DATA", "__objc_classlist", &size );
 #endif
 
-    INLog( @"Bundle \"%s\" loaded successfully.", strrchr( path, '/' )+1 );
+    //INLog( @"Bundle \"%s\" loaded successfully.", strrchr( path, '/' )+1 );
+    NSMutableArray *injectedClasses = [NSMutableArray new];
 
     if ( referencesSection )
         dispatch_async(dispatch_get_main_queue(), ^{
             Class *classReferences = (Class *)(void *)((char *)info.dli_fbase+(uint64_t)referencesSection);
+
             for ( unsigned long i=0 ; i<size/sizeof *classReferences ; i++ ) {
                 Class newClass = classReferences[i];
                 NSString *className = NSStringFromClass(newClass);
 
-                if ( seenInjectionClass ) {
-                    INLog( @"Swizzling %@ %p %p", className, newClass, NSClassFromString(className) );
+                if ( !seenInjectionClass )
+                    seenInjectionClass = [className hasPrefix:@"InjectionBundle"];
+                else {
 #ifndef INJECTION_LEGACY32BITOSX
                     [newClass class];
 #endif
-                    [self loadedClass:newClass notify:notify];
+                    Class oldClass = [self loadedClass:newClass notify:notify];
+                    INLog( @"Swizzled %@ %p -> %p", className, newClass, oldClass );
+                    [injectedClasses addObject:oldClass];
                 }
-                else
-                    seenInjectionClass = [className hasPrefix:@"InjectionBundle"];
             }
 
             [self fixClassRefs:hook];
@@ -854,9 +968,45 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 #ifndef __IPHONE_OS_VERSION_MIN_REQUIRED
             if ( notify & INJECTION_ORDERFRONT )
                 [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+#else
+            if ( injectAndReset ) {
+                UIApplication *app = UIApplication.sharedApplication;
+                UIViewController *vc = [app.windows[0] rootViewController];
+                UIViewController *newVc = vc.storyboard.instantiateInitialViewController;
+                if ( !newVc )
+                    newVc = [[[vc class] alloc] initWithNibName:vc.nibName bundle:nil];
+                if ( [app.delegate respondsToSelector:@selector(setViewController:)] )
+                    [(NSObject *)app.delegate setViewController:newVc];
+                [app.windows[0] setRootViewController:newVc];
+                //[app.delegate application:app didFinishLaunchingWithOptions:nil];
+                injectAndReset = NO;
+            }
 #endif
-            [[NSNotificationCenter defaultCenter] postNotificationName:kINNotification
-                                                                object:nil];
+
+            dispatch_async(dispatch_get_main_queue(), ^{
+                NSArray *liveObjects = nil;
+                for ( Class oldClass in injectedClasses ) {
+                    // if class has a +injected method call it.
+                    if ( [oldClass respondsToSelector:@selector(injected)] )
+                        [oldClass injected];
+
+                    // implementation of -injected
+                    if ( [oldClass respondsToSelector:@selector(instancesRespondToSelector:)] &&
+                        [oldClass instancesRespondToSelector:@selector(injected)] ) {
+                        if ( !liveObjects )
+                            liveObjects = [self sweepForLiveObjects];
+
+                        for ( NSObject *obj in liveObjects )
+                            if ( ![obj isProxy] && [obj isKindOfClass:oldClass] )
+                                [obj injected];
+                    }
+
+                    [self injectedClass:oldClass];
+                }
+
+                [[NSNotificationCenter defaultCenter] postNotificationName:kINNotification
+                                                                    object:injectedClasses];
+            });
         });
     else
         NSLog( @"Injection Error: Could not locate referencesSection" );
@@ -864,12 +1014,13 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
     status = referencesSection != NULL;
 #endif
 }
-
 #endif
 
-#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_LOADER)
+#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(INJECTION_LOADER) && !defined(XPROBE_BUNDLE)
 
-static NSMutableDictionary *nibsByNibName, *optionsByVC;
+static NSMutableDictionary *optionsByVC, *placeholdersByNib;
+static NSMutableArray *recordPlaceholders, *playbackPlaceholders;
+static NSBundle *lastLoadedNibBundle;
 
 + (void)reloadVisibleVC:(UIViewController *)vc fromBundle:(NSBundle *)bundle storyBoard:(NSString *)storyBoard {
     if ( [vc respondsToSelector:@selector(visibleViewController)] )
@@ -880,45 +1031,92 @@ static NSMutableDictionary *nibsByNibName, *optionsByVC;
     NSString *nibPath = [NSString stringWithFormat:@"%@.storyboardc/%@", storyBoard, vc.nibName];
     UINib *nib = [UINib nibWithNibName:nibPath bundle:bundle];
 
-    if ( !nibsByNibName )
-        nibsByNibName = [[NSMutableDictionary alloc] init];
-
     if ( !nib )
-        NSLog( @"Could not open nib named '%@' in bundle: %@", nibPath, bundle );
-    else
-        [nibsByNibName setObject:nib forKey:vc.nibName];
+        NSLog( @"%s: Could not open nib named '%@' in bundle: %@", INJECTION_APPNAME, nibPath, bundle );
 
+    NSDictionary *savedOptions = [optionsByVC objectForKey:[vc description]];
     INLog( @"Reloading nib %@ onto %@", nibPath, vc );
-    [nib instantiateWithOwner:vc options:[optionsByVC objectForKey:[vc description]]];
+    CGFloat topBarOffset = vc.topLayoutGuide.length;
+
+    playbackPlaceholders = [placeholdersByNib[[vc nibName]] mutableCopy];
+    [nib inInstantiateWithOwner:vc options:savedOptions];
+    playbackPlaceholders = nil;
+
+    if ( [vc.view isKindOfClass:[UITableView class]] )
+        ((UITableView *)vc.view).contentInset = UIEdgeInsetsMake(topBarOffset, 0.0f, 0.0f, 0.0f);
+
+    [vc.view setNeedsLayout];
+    [vc.view layoutIfNeeded];
 
     [vc viewDidLoad];
-    [vc viewWillAppear:YES];
-    [vc viewDidAppear:YES];
+    [vc viewWillAppear:NO];
+    [vc viewDidAppear:NO];
 }
 
 + (void)reloadNibs {
-    NSString *storyBoard = [[[NSBundle mainBundle] infoDictionary] valueForKey:@"UIMainStoryboardFile"];
-    NSBundle *bundle = [NSBundle bundleWithPath:[NSString stringWithUTF8String:path+1]];
+    NSString *storyBoard = [NSBundle mainBundle].infoDictionary[@"UIMainStoryboardFile"];
+    lastLoadedNibBundle = [NSBundle bundleWithPath:[NSString stringWithUTF8String:path]];
 
-    UIViewController *rootVC = [[[UIApplication sharedApplication] keyWindow] rootViewController];
-    NSArray *vcs = [rootVC respondsToSelector:@selector(viewControllers)] ?
+    UIViewController *rootVC = [UIApplication sharedApplication].keyWindow.rootViewController;
+    NSArray *vcs = [rootVC isKindOfClass:[UISplitViewController class]] ?
         [(UISplitViewController *)rootVC viewControllers] : [NSArray arrayWithObject:rootVC];
     for ( UIViewController *vc in vcs )
-        [self reloadVisibleVC:vc fromBundle:bundle storyBoard:storyBoard];
+        [self reloadVisibleVC:vc fromBundle:lastLoadedNibBundle storyBoard:storyBoard];
 }
 
 @end
 
 @implementation UINib(BundleInjection)
-- (NSArray *)inInstantiateWithOwner:(id)ownerOrNil options:(NSDictionary *)optionsOrNil {
-    if ( !optionsByVC )
-        optionsByVC = [[NSMutableDictionary alloc] init];
-    if ( ownerOrNil && optionsOrNil )
+
+- (NSArray *)inInstantiateWithOwner:(id)ownerOrNil options:(NSMutableDictionary *)optionsOrNil {
+    NSString *nibName = [ownerOrNil respondsToSelector:@selector(nibName)] ? [ownerOrNil nibName] : nil;
+    //NSLog( @"inInstantiateWithOwner: %@", nibName );
+
+    UINib *nib = nil;
+    if ( nibName && lastLoadedNibBundle && placeholdersByNib[nibName] ) {
+        NSString *storyBoard = [NSBundle mainBundle].infoDictionary[@"UIMainStoryboardFile"];
+        NSString *nibPath = [NSString stringWithFormat:@"%@.storyboardc/%@", storyBoard, nibName];
+        nib = [UINib nibWithNibName:nibPath bundle:lastLoadedNibBundle];
+    }
+    
+    if ( ownerOrNil && optionsOrNil ) {
+        if ( !optionsByVC )
+            optionsByVC = [[NSMutableDictionary alloc] init];
         [optionsByVC setObject:optionsOrNil forKey:[ownerOrNil description]];
 
-    UINib *nib = [ownerOrNil respondsToSelector:@selector(nibName)] ?
-        [nibsByNibName objectForKey:[ownerOrNil nibName]] : nil;
-    return [nib ? nib : self inInstantiateWithOwner:ownerOrNil options:optionsOrNil];
+        if ( !placeholdersByNib )
+            placeholdersByNib = [NSMutableDictionary new];
+        if ( nibName ) {
+            if ( !placeholdersByNib[nibName] )
+                placeholdersByNib[nibName] = recordPlaceholders = [NSMutableArray new];
+            else
+                playbackPlaceholders = [placeholdersByNib[nibName] mutableCopy];
+        }
+    }
+
+    NSArray *topLevel = [nib ?: self inInstantiateWithOwner:ownerOrNil options:optionsOrNil];
+    recordPlaceholders = playbackPlaceholders = nil;
+    return topLevel;
+}
+
+@end
+
+@implementation NSObject(UINibDecoder)
+
+- (id)inDecodeObjectForKey:(id)key {
+    id val = [self inDecodeObjectForKey:key];
+    if ( [key isEqualToString:@"UIProxiedObjectIdentifier"] ) {
+        if ( [val hasPrefix:@"UpstreamPlaceholder-"] ) {
+            if ( recordPlaceholders )
+                [recordPlaceholders addObject:val];
+            else if ( playbackPlaceholders ) {
+                //NSLog( @"%@ -> %@", val, playbackPlaceholders[0] );
+                val = playbackPlaceholders[0];
+                [playbackPlaceholders removeObjectAtIndex:0];
+            }
+        }
+    }
+    return val;
 }
 
 #endif
@@ -926,6 +1124,20 @@ static NSMutableDictionary *nibsByNibName, *optionsByVC;
 
 #ifdef INJECTION_ENABLED
 @implementation NSObject(INParameters)
+#ifndef XPROBE_BUNDLE
++ (INColor * INJECTION_STRONG *)_inColors {
+    return INColors;
+}
++ (float *)_inParameters {
+    return INParameters;
+}
+#endif
++ (INColor * INJECTION_STRONG *)inColors {
+    return INColors;
+}
++ (INColor *)inColor:(int)tag {
+    return INColors[tag];
+}
 + (float *)inParameters {
     return INParameters;
 }

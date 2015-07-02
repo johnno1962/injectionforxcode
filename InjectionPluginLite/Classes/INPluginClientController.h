@@ -56,6 +56,7 @@
 @property (nonatomic,retain) NSString *mainFilePath;
 @property (nonatomic,retain) NSString *executablePath;
 @property (nonatomic,retain) NSString *productPath;
+@property (nonatomic,retain) NSString *deviceRoot;
 @property (nonatomic,retain) NSString *identity;
 @property (nonatomic,retain) NSString *arch;
 
