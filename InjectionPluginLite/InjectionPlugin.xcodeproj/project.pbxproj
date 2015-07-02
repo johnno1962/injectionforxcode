@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		7F2EB89C145057F200E97A87 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F2EB899145057EA00E97A87 /* AppKit.framework */; };
 		BB020F6E16B3CC2D00126E33 /* injectStoryboard.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB020F6D16B3CC2D00126E33 /* injectStoryboard.pl */; };
+		BB2923FE1B45B96700F52DEA /* BundleSweeper.h in Resources */ = {isa = PBXBuildFile; fileRef = BBF225B81B20D2CA00E1B001 /* BundleSweeper.h */; };
+		BB2924001B45B97800F52DEA /* IvarAccess.h in Resources */ = {isa = PBXBuildFile; fileRef = BBF225B91B20D2CA00E1B001 /* IvarAccess.h */; };
 		BB3EFFB116A4B815001F0065 /* INPluginClientController.m in Sources */ = {isa = PBXBuildFile; fileRef = BB3EFFAD16A4B815001F0065 /* INPluginClientController.m */; };
 		BB3EFFB216A4B815001F0065 /* INPluginMenuController.m in Sources */ = {isa = PBXBuildFile; fileRef = BB3EFFAF16A4B815001F0065 /* INPluginMenuController.m */; };
 		BB3EFFBA16A53307001F0065 /* injection.png in Resources */ = {isa = PBXBuildFile; fileRef = BB3EFFB816A53307001F0065 /* injection.png */; };
@@ -245,6 +247,8 @@
 				BB3EFFD716A541A6001F0065 /* INPluginMenuController.xib in Resources */,
 				BB3EFFDA16A541DB001F0065 /* BundleInterface.h in Resources */,
 				BB3EFFDB16A541DB001F0065 /* BundleInjection.h in Resources */,
+				BB2923FE1B45B96700F52DEA /* BundleSweeper.h in Resources */,
+				BB2924001B45B97800F52DEA /* IvarAccess.h in Resources */,
 				BB3EFFBA16A53307001F0065 /* injection.png in Resources */,
 				BB3EFFCF16A535C6001F0065 /* iOSBundleTemplate in Resources */,
 				BB3EFFD016A535C6001F0065 /* OSXBundleTemplate in Resources */,
