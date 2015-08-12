@@ -277,16 +277,14 @@ my $obj = '';
 if ( $learnt ) {
 
     $obj = "$arch/injecting_class.o";
-    my ($out) = $learnt =~ / -o (.*)$/ or die "Could not locate object file in: $learnt";
-    $out =~ s/\\ / /g;
+    $learnt =~ s@( -o ).*$@$1$InjectionBundle/$obj@
+        or die "Could not locate object file in: $learnt";
+    $learnt =~ s/( -DDEBUG\S* )/$1-DINJECTION_BUNDLE /;
 
     (my $lout = $learnt) =~ s/\\/\\\\/g;
-    $lout =~ s/( -DDEBUG\S* )/$1-DINJECTION_BUNDLE /;
     print "Learnt compile: $lout\n";
 
     0 == system "time $learnt" or error "Learnt compile failed";
-
-    0 == system "cp -f '$out' $InjectionBundle/$obj" or error "Could not copy object";
 
     #if ( $isSwift ) {
         my ($toolchain) = $learnt =~ m@(/Applications/Xcode.*?/XcodeDefault.xctoolchain)/@;
