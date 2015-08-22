@@ -22,9 +22,12 @@ my $bundleProjectSource = -f $bundleProjectFile && loadFile( $bundleProjectFile 
 my $mainProjectFile = "$projName.xcodeproj/project.pbxproj";
 my $isSwift = $selectedFile =~ /\.swift$/;
 
-print "buidRoot: $buildRoot\n";
-print "logDir: $logDir\n\n";
-$logDir = "$buildRoot/../Logs/Build" if !-d $logDir;
+if ( !$isAppCode ) {
+    print "buidRoot: $buildRoot\n";
+    print "logDir: $logDir\n\n";
+}
+
+#$logDir = "$buildRoot/../Logs/Build" if !-d $logDir && !$isAppCode;
 
 my $buildRoot = $logDir && "$logDir/../../Build/";
 
@@ -331,7 +334,7 @@ if ( $learnt ) {
 
 if ( -d (my $frameworkDir = "$localBundle/Frameworks") ) {
     my @frameworks = `cd '$frameworkDir'; ls -d *.framework` =~ /(\S+)\.framework/g;
-    $obj .= join "\", \"-F$frameworkDir", map "\", \"-framework\", \"$_", @frameworks;
+    $obj .= join "", "\", \"-F$frameworkDir", map "\", \"-framework\", \"$_", @frameworks;
 }
 
 $bundleProjectSource =~ s/(OTHER_LDFLAGS = \().*?("-undefined)/$1"$obj", $2/sg;
@@ -349,6 +352,7 @@ print "\nBuilding $InjectionBundle/InjectionBundle.xcodeproj\n";
 
 my $builtfile = "$archDir/built.txt";
 unlink $builtfile if !$learnt || $flags & $INJECTION_FLAGCHANGE;
+my $dotdot = $InjectionBundle =~ /^\// ? "" : "../";
 
 my $rebuild = 0;
 
@@ -365,7 +369,7 @@ if ( mtime( $bundleProjectFile ) > mtime( $buildScript ) ) {
 }
 else {
     # used recorded commands to avoid overhead of xcodebuild
-    $build = "bash $buildScript # $build";
+    $build = "bash $dotdot$buildScript # $build";
 }
 
 print "$build\n\n";
@@ -377,7 +381,7 @@ while ( my $line = <BUILD> ) {
     if ( $recording && $line =~ m@/usr/bin/(clang|\S*gcc)@ & $line !~ /-header -arch/  ) {
         chomp (my $cmd = $line);
         if ( $cmd =~ /BundleContents\.m/ ) {
-            $cmd = "if [[ ! -f $builtfile ]]; then $cmd && touch $builtfile; fi";
+            $cmd = "if [[ ! -f $dotdot$builtfile ]]; then $cmd && touch $dotdot$builtfile; fi";
         }
         $recording->print( "echo \"$cmd\"; time $cmd 2>&1 &&\n" );
         $recorded++;

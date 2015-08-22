@@ -334,7 +334,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     NSString *command = [NSString stringWithFormat:@"\"%@/%@\" "
                          "\"%@\" \"%@\" \"%@\" \"%@\" \"%@\" %d %d \"%@\" \"%@\" \"%@\" \"%@\" \"%@\" \"%@\" 2>&1",
                          self.scriptPath, script, self.resourcePath, menuController.workspacePath,
-                         self.mainFilePath ? self.mainFilePath : @"",
+                         self.deviceRoot, //self.mainFilePath ? self.mainFilePath : @"",
                          self.executablePath ? self.executablePath : @"", self.arch, ++patchNumber, flags,
                          [unlockField.stringValue stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""],
                          [[menuController serverAddresses] componentsJoinedByString:@" "],

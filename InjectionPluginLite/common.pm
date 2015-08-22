@@ -12,7 +12,7 @@ use IO::File;
 use strict;
 use Carp;
 
-use vars qw($resources $workspace $mainFile $executable $arch $patchNumber $flags
+use vars qw($resources $workspace $deviceRoot $executable $arch $patchNumber $flags
     $unlockCommand $addresses $selectedFile $isDevice $isSimulator $isAndroid $isAppCode
     $isIOS $productName $appPackage $deviceRoot $projFile $projRoot $projName $projType
     $InjectionBundle $template $header $appClass $RED $xcodeApp $buildRoot $logDir $learnt
@@ -25,11 +25,10 @@ $INJECTION_NOTSILENT  = 1<<2; # print annoying dialogue on injection
 $INJECTION_ORDERFRONT = 1<<3; # order from OSX App or simulator
 $INJECTION_ISAPPCODE  = 1<<4; # injecting from AppCode plugin
 
-($resources, $workspace, $mainFile, $executable, $arch, $patchNumber, $flags,
+($resources, $workspace, $deviceRoot, $executable, $arch, $patchNumber, $flags,
     $unlockCommand, $addresses, $selectedFile, $xcodeApp, $buildRoot, $logDir, $learnt) = @ARGV;
 
-#($appPackage, $deviceRoot, $appName) = $executable =~ m@((^.*)/([^/]+))/[^/]+$@;
-($appPackage, $deviceRoot) = $executable =~ m@((^.*))$@; # for iOS8
+($appPackage, my $appRoot, my $appName) = $executable =~ m@((^.*)/([^/]+))/[^/]+$@;
 
 $productName = "InjectionBundle$patchNumber";
 
@@ -48,7 +47,7 @@ $flags &= ~$INJECTION_NOTSILENT if $isAppCode;
     ("OSXBundleTemplate", "Cocoa/Cocoa.h", "NSApplication");
 
 ($InjectionBundle = $template) =~ s/BundleTemplate/InjectionProject/;
-$InjectionBundle = "$logDir/../$InjectionBundle";
+$InjectionBundle = "$logDir/../$InjectionBundle" if !$isAppCode;
 
 BEGIN { $RED = "{\\colortbl;\\red0\\green0\\blue0;\\red255\\green100\\blue100;}\\cb2"; }
 

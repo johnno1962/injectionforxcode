@@ -908,12 +908,16 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
     if ( !dladdr( hook, &info ) )
         NSLog( @"Could not find load address" );
 
-    if ( notify & INJECTION_STORYBOARD )
+    if ( notify & INJECTION_STORYBOARD ) {
 #if defined(INJECTION_LOADER) || defined(XPROBE_BUNDLE)
         NSLog( @"%s: *** Storyboard injection requires project patching ***", INJECTION_APPNAME );
 #else
-        [self reloadNibs];
+        if ( !sbInjection )
+            NSLog( @"%s: Please restart app after enabling storyboard injection", INJECTION_APPNAME );
+        else
+            [self reloadNibs];
 #endif
+    }
 
 #ifndef __LP64__
     uint32_t size = 0;

@@ -17,6 +17,21 @@ use common;
 my @ip4Addresses = grep $_ !~ /:/, split " ", $addresses;
 shift @ip4Addresses; # bonjour address seems unreliable
 
+my %ipPrecedence = (
+    10 => 2,
+    192 => 1,
+    169 => -1,
+    172 => -2,
+    127 => -9,
+);
+
+sub prec {
+    my ($network) = $_[0] =~ /^(\d+)\./;
+    return $ipPrecedence{$network} || 0;
+}
+
+@ip4Addresses = sort { prec($b) <=> prec($a) } @ip4Addresses;
+
 my $key = "// From here to end of file added by Injection Plugin //";
 my $ifdef = $projName =~ /UICatalog|(iOS|OSX)GLEssentials/ ?
     "__OBJC__ // would normally be DEBUG" : "DEBUG";
