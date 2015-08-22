@@ -37,6 +37,7 @@
 #define INJECTION_NOFILE -2
 #define INJECTION_CLOSE -3
 
+#define INJECTION_FLAGCHANGE (1<<0)
 #define INJECTION_STORYBOARD (1<<1)
 #define INJECTION_NOTSILENT  (1<<2)
 #define INJECTION_ORDERFRONT (1<<3)
@@ -396,8 +397,6 @@ static const char **addrPtr, *connectedAddress;
                 method_exchangeImplementations(class_getInstanceMethod(objc_getClass("UINibDecoder"), @selector(decodeObjectForKey:)),
                                                class_getInstanceMethod([NSObject class], @selector(inDecodeObjectForKey:)));
             }
-#else
-            sbInjection = 0;
 #endif
 
             if ( status & INJECTION_DEVICEIOS8 ) {
@@ -1039,7 +1038,12 @@ static NSBundle *lastLoadedNibBundle;
     CGFloat topBarOffset = vc.topLayoutGuide.length;
 
     playbackPlaceholders = [placeholdersByNib[[vc nibName]] mutableCopy];
-    [nib inInstantiateWithOwner:vc options:savedOptions];
+    @try {
+        [nib inInstantiateWithOwner:vc options:savedOptions];
+    }
+    @catch ( NSException *e ) {
+        return;
+    }
     playbackPlaceholders = nil;
 
     if ( [vc.view isKindOfClass:[UITableView class]] )

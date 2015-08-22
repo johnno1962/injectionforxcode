@@ -16,8 +16,10 @@ use vars qw($resources $workspace $mainFile $executable $arch $patchNumber $flag
     $unlockCommand $addresses $selectedFile $isDevice $isSimulator $isAndroid $isAppCode
     $isIOS $productName $appPackage $deviceRoot $projFile $projRoot $projName $projType
     $InjectionBundle $template $header $appClass $RED $xcodeApp $buildRoot $logDir $learnt
-    $INJECTION_STORYBOARD $INJECTION_NOTSILENT $INJECTION_ORDERFRONT $INJECTION_ISAPPCODE);
+    $INJECTION_FLAGCHANGE $INJECTION_STORYBOARD $INJECTION_NOTSILENT $INJECTION_ORDERFRONT
+    $INJECTION_ISAPPCODE);
 
+$INJECTION_FLAGCHANGE = 1<<0; # flag values have changed
 $INJECTION_STORYBOARD = 1<<1; # storyboard injection enabled/used
 $INJECTION_NOTSILENT  = 1<<2; # print annoying dialogue on injection
 $INJECTION_ORDERFRONT = 1<<3; # order from OSX App or simulator

@@ -1,17 +1,17 @@
 # ![Icon](http://injectionforxcode.johnholdsworth.com/injection.png) Injection for Xcode Source
 
-Copyright (c) John Holdsworth 2012-14
+Copyright (c) John Holdsworth 2012-15
 
 Injection is a plugin for Xcode that allows you to "inject" Objective-C and Swift code changes
 into a running application without having to restart it during development and testing. 
 Injection on longer requires you to patch your project or it's sources for
 iOS projects in the simulator. To use: download this project build it and restart Xcode.
-When your application is running type control-= and any modificatins to the selected
+When your application is running type control-= and any modifications to the selected
 class should be applied to your application while it runs. That's it.
 
 After making a couple of minor changes to your application's "main.m" and pre-compilation header
-known as "patched" injection you can also inject to an iOS device over WiFi. To do this
-selected "Product/Injection Plugin/Patch Project for Injection". You may want to do this
+known as "patched" injection you can also inject to an iOS device over WiFi. To do this,
+select "Product/Injection Plugin/Patch Project for Injection". You may want to do this
 anyway so injection starts more quickly. To patch a Swift project you need to add an
 empty main.m to your project.
 
@@ -72,7 +72,7 @@ or main app target to call the following command.
 
     ~/bin/unhide.sh
 
-This patches the object files in the framework to export any hidden symbols
+This should patch the object files in the framework to export any hidden symbols
 and relinks the executable making all swift symbols available to the dynamic
 link loader facilitating their injection.
 

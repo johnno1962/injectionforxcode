@@ -22,7 +22,11 @@ my $bundleProjectSource = -f $bundleProjectFile && loadFile( $bundleProjectFile 
 my $mainProjectFile = "$projName.xcodeproj/project.pbxproj";
 my $isSwift = $selectedFile =~ /\.swift$/;
 
-my $buildRoot = $logDir && "$logDir/../../Build";
+print "buidRoot: $buildRoot\n";
+print "logDir: $logDir\n\n";
+$logDir = "$buildRoot/../Logs/Build" if !-d $logDir;
+
+my $buildRoot = $logDir && "$logDir/../../Build/";
 
 sub mtime {
     my ($file) = @_;
@@ -125,7 +129,6 @@ if ( $localBinary && $bundleProjectSource =~ s/(BUNDLE_LOADER = )([^;]+;)/$1"$lo
 # Build command for selected file is taken from previous Xcode buils logs
 #
 
-(my $escaped = $selectedFile) =~ s/ /\\\\ /g;
 my @logs;
 
 if ( !$logDir ) {
@@ -174,23 +177,29 @@ if ( !$logDir ) {
     @logs = ($memory)
 }
 else {
-    @logs = split "\n", `ls -t "$logDir"/*.xcactivitylog`
+    @logs = split "\n", `ls -t "$logDir"/*.xcactivitylog`;
 }
 
 #
 # grep build logs for command to build injecting source file
 #
+
+my $sbInjection = $flags & $INJECTION_STORYBOARD;
+$flags &= ~$INJECTION_STORYBOARD;
+
 if ( !$learnt ) {
     foreach my $selectedFile (split ';', $selectedFile) {
         (my $escaped = $selectedFile) =~ s/ /\\\\ /g;
         my ($filename) = $selectedFile =~ /\/([^\/]+)$/;
-        my $isInterface ||= $selectedFile =~ /\.(storyboard|nib)$/;
+        my $isInterface = $selectedFile =~ /\.(storyboard|nib)$/;
     FOUND:
         foreach my $log (@logs) {
             local $/ = "\r";
             open LOG, "gunzip <'$log' 2>&1 |";
             while ( my $line = <LOG> ) {
                 if ( $isInterface ) {
+                    error "Enable storyboard injection on the parameters panel and restart app" if !$sbInjection;
+
                     if ( index( $line, $filename ) != -1 &&
                         $line =~ /usr\/bin\/ibtool.+?("$selectedFile"|$escaped)/ ) {
                             (my $lout = $line) =~ s/\\/\\\\/g;
@@ -205,19 +214,19 @@ if ( !$learnt ) {
                 }
                 else {
                     if ( index( $line, $filename ) != -1 && index( $line, " $arch" ) != -1 &&
-                        $line =~ /XcodeDefault\.xctoolchain.+?@{[
-                            $isSwift ? " -primary-file ": " -c "
+                            $line =~ /XcodeDefault\.xctoolchain.+?@{[
+                                $isSwift ? " -primary-file ": " -c "
                             ]}("$selectedFile"|$escaped)/ ) {
-                                $learnt .= ($learnt?';;':'').$line;
-                                last FOUND;
-                            }
+                        $learnt .= ($learnt?';;':'').$line;
+                        last FOUND;
+                    }
                 }
             }
         }
 
         close LOG;
 
-        error "Could not locate compile command for $escaped" if $isSwift && !$learnt;
+        error "Could not locate compile command for $escaped: @logs" if $isSwift && !$learnt;
     }
 }
 
@@ -339,7 +348,7 @@ saveFile( $bundleProjectFile, $bundleProjectSource );
 print "\nBuilding $InjectionBundle/InjectionBundle.xcodeproj\n";
 
 my $builtfile = "$archDir/built.txt";
-unlink $builtfile if !$learnt;
+unlink $builtfile if !$learnt || $flags & $INJECTION_FLAGCHANGE;
 
 my $rebuild = 0;
 
@@ -448,7 +457,7 @@ print "$command\n";
 $bundlePath = $newBundle;
 
 if ( $flags & $INJECTION_STORYBOARD ) {
-    print "  HERE $localBundle";
+    # print "  HERE $localBundle -- $bundlePath\n\n";
     open NIBS, "cd '$localBundle'; find . |";
     while ( my $nib = <NIBS> ) {
         chomp $nib;

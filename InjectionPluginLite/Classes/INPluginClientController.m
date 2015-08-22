@@ -27,8 +27,8 @@
 #import "INPluginMenuController.h"
 
 static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent",
-    *kINStoryBoard = @"INStoryboard", *kINOrderFront = @"INOrderFront", *colorFormat = @"%f,%f,%f,%f",
-    *pluginAppResources = @"/Applications/Injection Plugin.app/Contents/Resources";
+    *kINStoryBoard = @"INStoryboard", *kINOrderFront = @"INOrderFront", *colorFormat = @"%f,%f,%f,%f"/*,
+    *pluginAppResources = @"/Applications/Injection Plugin.app/Contents/Resources"*/;
 
 @interface INPluginClientController() {
 
@@ -40,7 +40,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     IBOutlet NSView *vals, *sliders, *maxs, *wells;
     IBOutlet NSImageView *imageWell;
 
-    int clientSocket, patchNumber, fdin, fdout, fdfile, lines, status;
+    int clientSocket, patchNumber, fdin, fdout, fdfile, lines, status, lastFlags;
     NSMutableString *output;
     char buffer[1024*1024];
     FILE *scriptOutput;
@@ -112,7 +112,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 - (IBAction)storyChanged:(NSButton *)sender {
     [menuController.defaults setBool:storyButton.state forKey:kINStoryBoard];
     if ( storyButton.state )
-        [self alert:@"Please add the following Run Script/Build Phase: \"$HOME/Library/Application Support/Developer/Shared/Xcode/Plug-ins/InjectionPlugin.xcplugin/Contents/Resources/projectBuilt.pl\""];
+        [self alert:@"It's fair to say storyboard injection has it's limitations (requires project patching.) If you're not using it you should leave this option off."];
 }
 
 - (void)alert:(NSString *)msg {
@@ -144,6 +144,8 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
                                                                     length:strlen(wrapped)
                                                               freeWhenDone:NO]
                                    documentAttributes:nil];
+        if ( !out )
+            [output setString:@""];
 
         if ( !as2 ) {
             NSLog( @"-[InPluginDocument<%p> pasteRTF:] Could not convert '%@'", self, rtf );
@@ -303,8 +305,12 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 }
 
 - (void)mapSimulator {
-    if ( frontButton.state && [self.executablePath rangeOfString:@"/iPhone Simulator/"].location != NSNotFound )
-        [[NSWorkspace sharedWorkspace] openURL:[NSURL fileURLWithPath:@"/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Applications/iPhone Simulator.app"]];
+    if ( frontButton.state &&
+        ([self.executablePath rangeOfString:@"/iPhone Simulator/"].location != NSNotFound ||
+         [self.executablePath rangeOfString:@"/CoreSimulator/"].location != NSNotFound) )
+        [[NSWorkspace sharedWorkspace] openURL:[NSURL fileURLWithPath:
+            [NSString stringWithFormat:@"%@/Contents/Developer/Applications/iOS Simulator.app",
+             [NSBundle mainBundle].bundlePath]]];
 }
 
 - (BOOL)connected {
@@ -317,18 +323,23 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     [menuController startProgress];
     if ( ![selectedFile length] )
         [self.consolePanel orderFront:self];
+
+    int flags = (silentButton.state ? 0 : INJECTION_NOTSILENT) |
+                (frontButton.state ? INJECTION_ORDERFRONT : 0) |
+                (storyButton.state ? INJECTION_STORYBOARD : 0);
+    if ( flags != lastFlags )
+        flags |= INJECTION_FLAGCHANGE;
+    lastFlags = flags & ~INJECTION_FLAGCHANGE;
+
     NSString *command = [NSString stringWithFormat:@"\"%@/%@\" "
                          "\"%@\" \"%@\" \"%@\" \"%@\" \"%@\" %d %d \"%@\" \"%@\" \"%@\" \"%@\" \"%@\" \"%@\" 2>&1",
                          self.scriptPath, script, self.resourcePath, menuController.workspacePath,
                          self.mainFilePath ? self.mainFilePath : @"",
-                         self.executablePath ? self.executablePath : @"", self.arch, ++patchNumber,
-                         (silentButton.state ? 0 : INJECTION_NOTSILENT) |
-                         (frontButton.state ? INJECTION_ORDERFRONT : 0) |
-                         (storyButton.state ? INJECTION_STORYBOARD : 0),
+                         self.executablePath ? self.executablePath : @"", self.arch, ++patchNumber, flags,
                          [unlockField.stringValue stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""],
                          [[menuController serverAddresses] componentsJoinedByString:@" "],
                          selectedFile, [NSBundle mainBundle].bundlePath,
-                         [menuController buildDirectory], [menuController logDirectory]];
+                         [menuController buildDirectory] ?: @"", [menuController logDirectory]];
     [self exec:command];
 }
 
@@ -440,7 +451,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     if ( status != 0 && scriptOutput )
         [self performSelectorOnMainThread:@selector(completed:)
                                withObject:@"\n\n{\\colortbl;\\red0\\green0\\blue0;\\red255\\green100\\blue100;}\\cb2"
-         "*** Bundle build failed ***\\line Check Bundle project." waitUntilDone:NO];
+         "*** Bundle build failed ***" waitUntilDone:NO];
     
     [self performSelectorOnMainThread:@selector(completeRTF:) withObject:nil waitUntilDone:NO];
     scriptOutput = NULL;
@@ -473,7 +484,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     [BundleInjection writeBytes:INJECTION_MAGIC withPath:"#" from:0 to:clientSocket];
 
     NSArray *reps = [[sender image] representations];
-    NSData *data = [[reps objectAtIndex:0] representationUsingType:NSPNGFileType properties:nil];
+    NSData *data = [[reps objectAtIndex:0] representationUsingType:NSPNGFileType properties:@{}];
 
     int len = data.length;
     if ( write( clientSocket, &len, sizeof len ) != sizeof len ||
