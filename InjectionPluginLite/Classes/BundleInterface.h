@@ -25,7 +25,7 @@
 
 #ifndef INJECTION_PLUGIN
 #define INJECTION_PLUGIN "com.johnholdsworth.InjectionPlugin"
-#define INJECTION_VERSION "6.3"
+#define INJECTION_VERSION "6.4"
 
 // ARC dependencies
 

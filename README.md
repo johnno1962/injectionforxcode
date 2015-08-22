@@ -2,29 +2,30 @@
 
 Copyright (c) John Holdsworth 2012-14
 
-Injection is a plugin for Xcode that allows you to "inject" Objective-C code changes into a
-running application without having to restart it during development and testing. After making
-a couple of minor changes to your application's "main.m" and pre-compilation header it
-will connect to a server running inside Xcode during testing to receive commands to
-load bundles containing the code changes. 
+Injection is a plugin for Xcode that allows you to "inject" Objective-C and Swift code changes
+into a running application without having to restart it during development and testing. 
+Injection on longer requires you to patch your project or it's sources for
+iOS projects in the simulator. To use: download this project build it and restart Xcode.
+When your application is running type control-= and any modificatins to the selected
+class should be applied to your application while it runs. That's it.
 
-Patching your project is no longer required and support to run-time patch Swift classes 
-has been added. As Swift uses a binary vtable don't expect the patch to work if you add 
-or remove a method from your class! To run the faster "patched" injection or to inject to a 
-device in your Swift project make sure there is a "main.m" file even if it is empty so 
-injection can patch it. Finally, a new method +injected is called on each class as it is swizzled.
+After making a couple of minor changes to your application's "main.m" and pre-compilation header
+known as "patched" injection you can also inject to an iOS device over WiFi. To do this
+selected "Product/Injection Plugin/Patch Project for Injection". You may want to do this
+anyway so injection starts more quickly. To patch a Swift project you need to add an
+empty main.m to your project.
 
-Stop Press: Injection now calls the long awaited instance level "-injected" method when
-an instance is of a class that has been injected. This is implemented by "sweeping" your
-applications objects using code fro the Xprobe plugin. 
-It is also now integrated with the [XprobePlugin](https://github.com/johnno1962/XprobePlugin).
-Use the Product/Xprobe/Load menu item to inspect the objects in your application
+When classes are injected they receive a +injected message and instances will receive
+a -injected message so you can reload view controllers for example.
+
+The plugin is now integrated with the [XprobePlugin](https://github.com/johnno1962/XprobePlugin).
+Once installed, use the Product/Xprobe/Load menu item to inspect the objects in your application
 and search for the object you wish to execute code against and click it's link to
 inspect/select it. You can then open an editor which allows you to execute any
 Objective-C or Swift code  against the object (implemented as a catgeory/extension.)
 Use Xlog/xprintln to log output back to the Xprobe window.
 
-The InjectionPluginAppCode has also been updated for 3.1 so you can now inject Swift from AppCode!
+The InjectionPluginAppCode project has also been updated for 3.1 so you can now inject Swift from AppCode!
 
 ![Icon](http://injectionforxcode.johnholdsworth.com/overview.png)
 
@@ -42,9 +43,6 @@ https://vimeo.com/50137444
 Announcements of major commits to the repo will be made on twitter [@Injection4Xcode](https://twitter.com/#!/@Injection4Xcode).
 
 To use Injection, open the InjectionPluginLite project, build it and restart Xcode.
-Alternatively, you can download a small installer app "Injection Plugin.app" from 
-[http://injectionforxcode.com](http://injectionforxcode.com) and use the menu item 
-"File/Install Plugin" then restart Xcode (This also installs the AppCode plugin.)
 Injection is also avilable in the [Alcatraz](http://alcatraz.io/) meta plugin.
 This should add a submenu and an "Inject Source" item to Xcode's "Product" menu.
 If at first it doesn't appear, try restarting Xcode again.
@@ -64,25 +62,19 @@ you have problems with injection you can remove the plugin my typing:
 
     rm -rf ~/Library/Application\ Support/Developer/Shared/Xcode/Plug-ins/InjectionPlugin.xcplugin
 
-The most common problem you'll encounter using injection with Objective-C is that you
-will need to edit the "Header Search Paths" of the bundle project injection creates
-to build your code. With Swift, injection "learns" the command to compile your source
-from the project's previous build logs so this is never a problem.
+### Injecting classes using "internal" scope inside Swift
 
-### Injecting classes inside Swift frameworks
-
-With Xcode 6.3.1/Swift 1.2 this has become a little more difficult as "internal"
+With Xcode 6.3.1/Swift 1.2 injection has become a little more difficult as "internal"
 symbols that may be required for the injecting class to link against are now
 given visibility "hidden" which makes them unavailable resulting in crashes.
-This can be resolved by downloading and building the [unhide](https://github.com/johnno1962/unhide)
-project and adding a "Run Script" build phase to your framework target to
-call the following command.
+This can be resolved by adding a "Run Script" build phase to your framework 
+or main app target to call the following command.
 
     ~/bin/unhide.sh
 
 This patches the object files in the framework to export any hidden symbols
-and relinks the framework executable making all swift symbols available to
-the dynamic link loader facilitating their injection.
+and relinks the executable making all swift symbols available to the dynamic
+link loader facilitating their injection.
 
 ### JetBrains AppCode IDE Support
 
@@ -108,7 +100,7 @@ plugin. Then try injecting to the device from AppCode after re-patching the proj
 This source code is provided on github on the understanding it will not be redistributed.
 License is granted to use this software during development for any purpose for two weeks
 (it should never be included in a released application!) After two weeks you
-will be prompted to make a donation $10 (or $25 in a commercial environment)
+will be invited to make a donation $10 (or $25 in a commercial environment)
 as suggested by code included in the software.
 
 If you find (m)any issues in the code, get in contact using the email: support (at) injectionforxcode.com
@@ -174,6 +166,10 @@ __InjectionPluginLite/injectSource.pl__
 The script called when you inject a source file to create/build the injection bundle project
 and signal the client application to load the resulting bundle to apply the code changes.
 
+__InjectionPluginLite/evalCode.pl__
+
+Support for XprobePlugin's "eval code" function.
+
 __InjectionPluginLite/openBundle.pl__
 
 Opens the Xcode project used by injection to build a loadable bundle to track down build problems.
@@ -185,20 +181,6 @@ Un-patches main.m and the project's .pch file when you have finished using injec
 __InjectionPluginLite/common.pm__
 
 Code shared across the above scripts including the code that patches classes into categories.
-
-### Script output line-prefix conventions from -[INPluginClientController monitorScript]:
-
-__>__ open local file for write
-
-__<__ read from local file (and send to local file or to application)
-
-__!>__ open file on device/simulator for write
-
-__!<__ open file on device/simulator for read (can be directory)
-
-__!/__ load bundle at remote path into client application
-
-__?__ display alert to user with message
 
 Otherwise the line is appended as rich text to the console NSTextView.
 
@@ -222,17 +204,37 @@ __$unlockCommand__ Command to be used to make files writable from "app parameter
 
 __$addresses__ IP addresses injection server is running on for connecting from device.
 
+__$xcoodeApp__ Path to Xcode application being used.
+
 __$buildRoot__ build directory for the project being injected.
+
+__$logDir__ more reliable path to project's build logs.
 
 __$selectedFile__ Last source file selected in Xcode editor
 
 ### Bitfields of $flags argument passed to scripts
+
+__1<<1__ Storyboard injection is selected.
 
 __1<<2__ Display UIAlert on load of changes (disabled with the "Silent" tunable parameter)
 
 __1<<3__ Activate application/simulator on load.
 
 __1<<4__ Plugin is running in AppCode.
+
+### Script output line-prefix conventions from -[INPluginClientController monitorScript]:
+
+__>__ open local file for write
+
+__<__ read from local file (and send to local file or to application)
+
+__!>__ open file on device/simulator for write
+
+__!<__ open file on device/simulator for read (can be directory)
+
+__!/__ load bundle at remote path into client application
+
+__?__ display alert to user with message
 
 ### Please note:
 

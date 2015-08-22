@@ -30,22 +30,62 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     *kINStoryBoard = @"INStoryboard", *kINOrderFront = @"INOrderFront", *colorFormat = @"%f,%f,%f,%f",
     *pluginAppResources = @"/Applications/Injection Plugin.app/Contents/Resources";
 
+@interface INPluginClientController() {
+
+    IBOutlet NSTextField *colorLabel, *mainSourceLabel, *msgField, *unlockField;
+    IBOutlet NSButton *silentButton, *frontButton, *storyButton;
+    IBOutlet INPluginMenuController *menuController;
+    IBOutlet NSTextView *consoleTextView;
+
+    IBOutlet NSView *vals, *sliders, *maxs, *wells;
+    IBOutlet NSImageView *imageWell;
+
+    int clientSocket, patchNumber, fdin, fdout, fdfile, lines, status;
+    NSMutableString *output;
+    char buffer[1024*1024];
+    FILE *scriptOutput;
+    BOOL autoOpened;
+}
+
+@property (nonatomic,retain) IBOutlet NSPanel *consolePanel;
+@property (nonatomic,retain) IBOutlet NSPanel *paramsPanel;
+@property (nonatomic,retain) IBOutlet NSPanel *alertPanel;
+@property (nonatomic,retain) IBOutlet NSPanel *errorPanel;
+@property (nonatomic,retain) NSDockTile *docTile;
+
+@property (nonatomic,retain) NSString *resourcePath;
+@property (nonatomic,retain) NSString *mainFilePath;
+@property (nonatomic,retain) NSString *executablePath;
+@property (nonatomic,retain) NSString *productPath;
+@property (nonatomic,retain) NSString *deviceRoot;
+@property (nonatomic,retain) NSString *identity;
+@property (nonatomic,retain) NSString *arch;
+
+@end
+
+#define RESOURCES_LINK "/tmp/injectionforxcode"
+
 @implementation INPluginClientController
 
 - (void)awakeFromNib {
     NSUserDefaults *defaults = menuController.defaults;
     if ( [defaults valueForKey:kINUnlockCommand] )
         unlockField.stringValue = [defaults valueForKey:kINUnlockCommand];
-    silentButton.state = [defaults boolForKey:kINSilent];
+    if ( [defaults valueForKey:kINSilent] )
+        silentButton.state = [defaults boolForKey:kINSilent];
     frontButton.state = [defaults boolForKey:kINOrderFront];
     storyButton.state = [defaults boolForKey:kINStoryBoard];
 
     self.scriptPath = [[NSBundle bundleForClass:[self class]] resourcePath];
-    if ( [[self implementionInDirectory:pluginAppResources]
-          isEqualTo:[self implementionInDirectory:self.scriptPath]] )
-        self.resourcePath = pluginAppResources;
-    else
-        self.resourcePath = self.scriptPath;
+//    if ( [[self implementionInDirectory:pluginAppResources]
+//          isEqualTo:[self implementionInDirectory:self.scriptPath]] )
+//        self.resourcePath = pluginAppResources;
+//    else
+//        self.resourcePath = self.scriptPath;
+    self.resourcePath = @RESOURCES_LINK;
+
+    unlink( RESOURCES_LINK );
+    symlink( [self.scriptPath UTF8String], RESOURCES_LINK );
 
     self.docTile = [[NSApplication sharedApplication] dockTile];
     [self logRTF:@"{\\rtf1\\ansi\\def0}\n"];
@@ -76,6 +116,10 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 }
 
 - (void)alert:(NSString *)msg {
+    [[NSAlert alertWithMessageText:@"Injection Plugin:"
+                     defaultButton:@"OK" alternateButton:nil otherButton:nil
+         informativeTextWithFormat:@"%@", msg] runModal];
+    return;
     msgField.stringValue = msg;
     [self.alertPanel orderFront:self];
 }
@@ -83,6 +127,16 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 #pragma mark - Misc
 
 - (void)logRTF:(NSString *)rtf {
+    if ( !output )
+        output = [NSMutableString new];
+    [output appendFormat:@"{%@\\line}\n", rtf];
+}
+
+- (void)completeRTF:(NSString *)out {
+    NSString *rtf = out ? out : output;
+    if ( ![rtf length] )
+        return;
+
     @try {
         const char *wrapped = [[NSString stringWithFormat:@"{%@\\line}\n", rtf] UTF8String];
         NSAttributedString *as2 = [[NSAttributedString alloc]
@@ -219,7 +273,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 }
 
 - (void)connectionKeepalive {
-    if ( clientSocket ) {
+    if ( clientSocket && !scriptOutput ) {
         [BundleInjection writeBytes:INJECTION_MAGIC withPath:"" from:0 to:clientSocket];
         [self performSelector:@selector(connectionKeepalive) withObject:nil afterDelay:10.];
     }
@@ -231,7 +285,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
         if ( !self.consolePanel.isVisible )
             autoOpened = YES;
         [self.consolePanel orderFront:self];
-        [self.errorPanel orderFront:self];
+        //        [self.errorPanel orderFront:self];
     }
     else {
         [self logRTF:@"\\line Bundle loaded successfully.\\line"];
@@ -245,6 +299,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 
     [[self class] cancelPreviousPerformRequestsWithTarget:self selector:@selector(connectionKeepalive) object:nil];
     [self connectionKeepalive];
+    [self completeRTF:nil];
 }
 
 - (void)mapSimulator {
@@ -263,14 +318,17 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     if ( ![selectedFile length] )
         [self.consolePanel orderFront:self];
     NSString *command = [NSString stringWithFormat:@"\"%@/%@\" "
-                         "\"%@\" \"%@\" \"%@\" \"%@\" \"%@\" %d %d \"%@\" \"%@\" \"%@\" \"%@\" 2>&1",
+                         "\"%@\" \"%@\" \"%@\" \"%@\" \"%@\" %d %d \"%@\" \"%@\" \"%@\" \"%@\" \"%@\" \"%@\" 2>&1",
                          self.scriptPath, script, self.resourcePath, menuController.workspacePath,
                          self.mainFilePath ? self.mainFilePath : @"",
                          self.executablePath ? self.executablePath : @"", self.arch, ++patchNumber,
-                         (silentButton.state ? 0 : INJECTION_NOTSILENT) | (frontButton.state ? INJECTION_ORDERFRONT : 0),
+                         (silentButton.state ? 0 : INJECTION_NOTSILENT) |
+                         (frontButton.state ? INJECTION_ORDERFRONT : 0) |
+                         (storyButton.state ? INJECTION_STORYBOARD : 0),
                          [unlockField.stringValue stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""],
                          [[menuController serverAddresses] componentsJoinedByString:@" "],
-                         selectedFile, [menuController buildDirectory]];
+                         selectedFile, [NSBundle mainBundle].bundlePath,
+                         [menuController buildDirectory], [menuController logDirectory]];
     [self exec:command];
 }
 
@@ -384,6 +442,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
                                withObject:@"\n\n{\\colortbl;\\red0\\green0\\blue0;\\red255\\green100\\blue100;}\\cb2"
          "*** Bundle build failed ***\\line Check Bundle project." waitUntilDone:NO];
     
+    [self performSelectorOnMainThread:@selector(completeRTF:) withObject:nil waitUntilDone:NO];
     scriptOutput = NULL;
 }
 

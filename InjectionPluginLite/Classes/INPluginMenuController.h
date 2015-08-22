@@ -25,47 +25,15 @@
 #import "BundleInjection.h"
 #import <WebKit/WebKit.h>
 
-@interface INPluginMenuController : NSObject <NSNetServiceDelegate> {
-
-    IBOutlet NSTextField *urlLabel;
-    IBOutlet WebView *webView;
-    IBOutlet NSMenuItem *subMenuItem, *introItem;
-
-    Class IDEWorkspaceWindowController;
-    Class DVTSourceTextView;
-    Class IDEWorkspaceDocument;
-    Class IDEConsoleTextView;
-
-    int serverSocket;
-
-    time_t installed;
-    int licensed;
-    int refkey;
-}
-
-@property (nonatomic,retain) IBOutlet NSProgressIndicator *progressIndicator;
-@property (nonatomic,retain) IBOutlet INPluginClientController *client;
-@property (nonatomic,retain) IBOutlet NSPanel *webPanel;
-@property (nonatomic,retain) IBOutlet NSMenu *subMenu;
-@property (nonatomic,retain) NSTextView *lastTextView;
-@property (nonatomic,retain) NSUserDefaults *defaults;
-@property (nonatomic,retain) NSMutableString *mac;
-@property (nonatomic,retain) NSString *bonjourName;
-
-@property (nonatomic,retain) NSButton *pauseResume;
-@property (nonatomic,retain) NSTextView *debugger;
-@property (nonatomic,retain) NSString *lastFile;
-@property (nonatomic,retain) NSWindow *lastWin;
-@property (nonatomic) BOOL hasSaved;
-@property (nonatomic) int continues;
+@interface INPluginMenuController : NSObject
 
 - (NSUserDefaults *)defaults;
 - (NSArray *)serverAddresses;
-- (NSString *)buildDirectory;
 - (NSString *)workspacePath;
-
 - (void)error:(NSString *)format, ...;
-- (void)setProgress:(NSNumber *)fraction;
 - (void)startProgress;
+
+- (NSString *)buildDirectory;
+- (NSString *)logDirectory;
 
 @end

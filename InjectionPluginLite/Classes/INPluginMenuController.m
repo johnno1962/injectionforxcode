@@ -33,6 +33,40 @@
 
 static INPluginMenuController *injectionPlugin;
 
+@interface INPluginMenuController()  <NSNetServiceDelegate> {
+
+    IBOutlet NSTextField *urlLabel;
+    IBOutlet WebView *webView;
+    IBOutlet NSMenuItem *subMenuItem, *introItem;
+
+    Class IDEWorkspaceWindowController;
+    Class DVTSourceTextView;
+    Class IDEWorkspaceDocument;
+    Class IDEConsoleTextView;
+
+    int serverSocket;
+
+    time_t installed;
+    int licensed;
+    int refkey;
+}
+
+@property (nonatomic,retain) IBOutlet NSProgressIndicator *progressIndicator;
+@property (nonatomic,retain) IBOutlet INPluginClientController *client;
+@property (nonatomic,retain) IBOutlet NSPanel *webPanel;
+@property (nonatomic,retain) IBOutlet NSMenu *subMenu;
+@property (nonatomic,retain) NSTextView *lastTextView;
+@property (nonatomic,retain) NSUserDefaults *defaults;
+@property (nonatomic,retain) NSMutableString *mac;
+@property (nonatomic,retain) NSString *bonjourName;
+
+@property (nonatomic,retain) NSWindow *lastKeyWindow;
+@property (nonatomic,retain) NSString *lastFile;
+@property (nonatomic) BOOL hasSaved;
+@property (nonatomic) int continues;
+
+@end
+
 @implementation INPluginMenuController
 
 #pragma mark - Plugin Initialization
@@ -101,10 +135,9 @@ static INPluginMenuController *injectionPlugin;
         }
 
         introItem.title = [NSString stringWithFormat:@"Injection v%s Intro", INJECTION_VERSION];
-        
         [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(selectionDidChange:)
-                                                     name:NSTextViewDidChangeSelectionNotification object:nil];
+                                                 selector:@selector(workspaceDidChange:)
+                                                     name:NSWindowDidBecomeKeyNotification object:nil];
 	}
     else
         [self error:@"InInjectionPlugin: Could not locate Product Menu."];
@@ -131,21 +164,40 @@ static INPluginMenuController *injectionPlugin;
 
 #pragma mark - Text Selection Handling
 
-- (void)selectionDidChange:(NSNotification *)notification {
-    id object = [notification object];
-	if ([object isKindOfClass:DVTSourceTextView] &&
-        [object isKindOfClass:[NSTextView class]] &&
-        [[object delegate] respondsToSelector:@selector(document)])
-        self.lastTextView = object;
+- (void)workspaceDidChange:(NSNotification *)notification {
+    NSWindow *object = [notification object];
+    NSWindowController *currentWindowController = [object windowController];
+    if ([currentWindowController isKindOfClass:IDEWorkspaceWindowController])
+        self.lastKeyWindow = object;
+}
+
+- (NSWindowController *)lastController {
+    return [self.lastKeyWindow windowController];
+}
+
+- (id)lastEditor {
+    return [[self lastController] valueForKeyPath:@"editorArea.lastActiveEditorContext.editor"];
+}
+
+- (NSTextView *)lastTextView {
+    id currentEditor = [self lastEditor];
+    if ( [currentEditor respondsToSelector:@selector(textView)] )
+        return [currentEditor textView];
+    else
+        return nil;
 }
 
 - (NSString *)lastFileSaving:(BOOL)save {
-    NSDocument *doc = [(id)[self.lastTextView delegate] document];
+    NSDocument *doc = [[self lastEditor] document];
     if ( save ) {
-        self.hasSaved = FALSE;
-        [doc saveDocumentWithDelegate:self
-                      didSaveSelector:@selector(document:didSave:contextInfo:)
-                          contextInfo:NULL];
+        if ( [doc isDocumentEdited] ) {
+            self.hasSaved = FALSE;
+            [doc saveDocumentWithDelegate:self
+                          didSaveSelector:@selector(document:didSave:contextInfo:)
+                              contextInfo:NULL];
+        }
+        else
+            self.hasSaved = TRUE;
         [self setupLicensing];
     }
     return [[doc fileURL] path];
@@ -165,12 +217,16 @@ static INPluginMenuController *injectionPlugin;
     return [self.lastTextView valueForKeyPath:@"window.delegate.workspace.executionEnvironment.workspaceArena.buildFolderPath.pathString"];
 }
 
+- (NSString *)logDirectory {
+    return [self.lastController valueForKeyPath:@"workspace.executionEnvironment.logStore.rootDirectoryPath"];
+}
+
 - (NSString *)workspacePath {
     id delegate = [[NSApp keyWindow] delegate];
     if ( ![delegate respondsToSelector:@selector(document)] )
         delegate = [[self.lastTextView window] delegate];
     if ( ![delegate respondsToSelector:@selector(document)] )
-        delegate = [self.lastWin delegate];
+        delegate = [self.lastKeyWindow delegate];
     NSDocument *workspace = [delegate document];
     return [workspace isKindOfClass:IDEWorkspaceDocument] ?
         [[workspace fileURL] path] : nil;
@@ -179,13 +235,13 @@ static INPluginMenuController *injectionPlugin;
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem {
     SEL action = [menuItem action];
     if ( action == @selector(injectSource:) ) {
-        NSString *workspace = [self workspacePath];
-        NSRange range = [workspace rangeOfString:@"([^/]+)(?=\\.(?:xcodeproj|xcworkspace))"
-                                         options:NSRegularExpressionSearch];
-
-        if ( workspace && range.location != NSNotFound )
-            subMenuItem.title = [workspace substringWithRange:range];
-        else
+//        NSString *workspace = [self workspacePath];
+//        NSRange range = [workspace rangeOfString:@"([^/]+)(?=\\.(?:xcodeproj|xcworkspace))"
+//                                         options:NSRegularExpressionSearch];
+//
+//        if ( workspace && range.location != NSNotFound )
+//            subMenuItem.title = [workspace substringWithRange:range];
+//        else
             subMenuItem.title = @"Injection Plugin";
     }
     if ( action == @selector(patchProject:) || action == @selector(revertProject:) )
@@ -226,10 +282,6 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
     [self.client runScript:@"openBundle.pl" withArg:[self lastFileSaving:YES]];
 }
 
-- (NSWindowController *)lastController {
-    return [self.lastWin windowController];
-}
-
 - (DBGLLDBSession *)sessionForController:(NSWindowController *)controller {
     return [controller valueForKeyPath:@"workspace"
             ".executionEnvironment.selectedLaunchSession.currentDebugSession"];
@@ -264,12 +316,12 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
          "Make sure that text is selected and the cursor is inside the file you have edited."];
         return;
     }
-    else if ( [self.lastFile rangeOfString:@"\\.(mm?|swift)$"
-                              options:NSRegularExpressionSearch].location == NSNotFound ) {
-        [self.client alert:@"Only class implementations (.m, .mm or .swift files) can be injected. "
-         "Make sure that text is selected and the cursor is inside the file you have edited."];
-        return;
-    }
+    else if ( [self.lastFile rangeOfString:@"\\.(mm?|swift|storyboard)$"
+                                   options:NSRegularExpressionSearch].location == NSNotFound )
+        [self.client alert:@"Only class implementations (.m, .mm, .swift or .storyboard files) can be injected."];
+    else if ( [self.lastFile rangeOfString:@"/main\\.mm?$"
+                                   options:NSRegularExpressionSearch].location != NSNotFound )
+        [self.client alert:@"You can not inject main.m"];
     else if ( !self.hasSaved ) {
         [self performSelector:@selector(injectSource:) withObject:self afterDelay:.01];
         return;
@@ -278,7 +330,7 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 
         // "unpatched" injection
         if ( sender ) {
-            self.lastWin = [self.lastTextView window];
+            self.lastKeyWindow = [self.lastTextView window];
             [session requestPause];
             [self performSelector:@selector(loadBundle:) withObject:session afterDelay:.1];
         }
@@ -296,10 +348,7 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
     else
         [self.client runScript:@"injectSource.pl" withArg:self.lastFile];
 
-    self.pauseResume = nil;
-    self.debugger = nil;
     self.lastFile = nil;
-    self.lastWin = nil;
 }
 
 - (void)loadBundle:(DBGLLDBSession *)session {

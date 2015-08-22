@@ -26,45 +26,13 @@
 
 @class INPluginMenuController;
 
-@interface INPluginClientController : NSObject {
-
-	//IBOutlet NSPanel *consolePanel, *paramsPanel, *alertPanel, *errorPanel;
-    IBOutlet NSTextField *colorLabel, *mainSourceLabel, *msgField, *unlockField;
-    IBOutlet NSButton *silentButton, *frontButton, *storyButton;
-    IBOutlet INPluginMenuController *menuController;
-    IBOutlet NSTextView *consoleTextView;
-
-    IBOutlet NSView *vals, *sliders, *maxs, *wells;
-    IBOutlet NSImageView *imageWell;
-
-    //NSString *scriptPath, *resourcePath, *mainFilePath, *executablePath, *productPath, *identity;
-    int clientSocket, patchNumber, fdin, fdout, fdfile, lines, status;
-    char buffer[1024*1024];
-    //NSDockTile *docTile;
-    FILE *scriptOutput;
-    BOOL autoOpened;
-}
-
-@property (nonatomic,retain) IBOutlet NSPanel *consolePanel;
-@property (nonatomic,retain) IBOutlet NSPanel *paramsPanel;
-@property (nonatomic,retain) IBOutlet NSPanel *alertPanel;
-@property (nonatomic,retain) IBOutlet NSPanel *errorPanel;
-@property (nonatomic,retain) NSDockTile *docTile;
+@interface INPluginClientController : NSObject
 
 @property (nonatomic,retain) NSString *scriptPath;
-@property (nonatomic,retain) NSString *resourcePath;
-@property (nonatomic,retain) NSString *mainFilePath;
-@property (nonatomic,retain) NSString *executablePath;
-@property (nonatomic,retain) NSString *productPath;
-@property (nonatomic,retain) NSString *deviceRoot;
-@property (nonatomic,retain) NSString *identity;
-@property (nonatomic,retain) NSString *arch;
 
 - (void)alert:(NSString *)msg;
 - (void)setConnection:(int)clientConnection;
 - (void)runScript:(NSString *)script withArg:(NSString *)selectedFile;
 - (BOOL)connected;
-
-- (IBAction)clearConsole: (id)sender;
 
 @end

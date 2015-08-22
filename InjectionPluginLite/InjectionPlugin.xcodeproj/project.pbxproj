@@ -33,6 +33,20 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		BB33DC811B86BD1D003B8481 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BB33DC7D1B86BD1D003B8481 /* unhide.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = BBB499A11B03B11000FF5818;
+			remoteInfo = unhide;
+		};
+		BB82D7A91B86C0F3008E76CA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BB33DC7D1B86BD1D003B8481 /* unhide.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = BBB499A01B03B11000FF5818;
+			remoteInfo = unhide;
+		};
 		BBC2900A18CA703D003436A9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = BBC2900018CA6F46003436A9 /* InjectionLoader.xcodeproj */;
@@ -49,6 +63,7 @@
 		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BB020F6D16B3CC2D00126E33 /* injectStoryboard.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = injectStoryboard.pl; sourceTree = "<group>"; };
 		BB117D2619FD20BD00A9400F /* evalCode.pl */ = {isa = PBXFileReference; lastKnownFileType = text.script.perl; path = evalCode.pl; sourceTree = "<group>"; };
+		BB33DC7D1B86BD1D003B8481 /* unhide.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = unhide.xcodeproj; path = unhide/unhide.xcodeproj; sourceTree = "<group>"; };
 		BB360C021B0E5C0100C39245 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		BB3EFFAC16A4B815001F0065 /* INPluginClientController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INPluginClientController.h; sourceTree = "<group>"; };
 		BB3EFFAD16A4B815001F0065 /* INPluginClientController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = INPluginClientController.m; sourceTree = "<group>"; };
@@ -100,6 +115,7 @@
 				BB3EFFCE16A535C6001F0065 /* OSXBundleTemplate */,
 				089C1671FE841209C02AAC07 /* Frameworks and Libraries */,
 				19C28FB8FE9D52D311CA2CBB /* Products */,
+				BB33DC7D1B86BD1D003B8481 /* unhide.xcodeproj */,
 			);
 			name = QuietXcode;
 			sourceTree = "<group>";
@@ -164,6 +180,14 @@
 			name = Scripts;
 			sourceTree = "<group>";
 		};
+		BB33DC7E1B86BD1D003B8481 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BB33DC821B86BD1D003B8481 /* unhide */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		BBC2900118CA6F46003436A9 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -179,7 +203,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1DEB913A08733D840010E9CD /* Build configuration list for PBXNativeTarget "InjectionPlugin" */;
 			buildPhases = (
-				BBA4081518CCA63E005CE183 /* ShellScript */,
 				8D5B49B1048680CD000E48DA /* Sources */,
 				8D5B49B3048680CD000E48DA /* Frameworks */,
 				BB5251F8160A2EF700276EB3 /* Resources */,
@@ -188,6 +211,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				BB82D7AA1B86C0F3008E76CA /* PBXTargetDependency */,
 			);
 			name = InjectionPlugin;
 			productInstallPath = "$(HOME)/Library/Bundles";
@@ -201,7 +225,7 @@
 		089C1669FE841209C02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0440;
+				LastUpgradeCheck = 0640;
 			};
 			buildConfigurationList = 1DEB913E08733D840010E9CD /* Build configuration list for PBXProject "InjectionPlugin" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -221,6 +245,10 @@
 					ProductGroup = BBC2900118CA6F46003436A9 /* Products */;
 					ProjectRef = BBC2900018CA6F46003436A9 /* InjectionLoader.xcodeproj */;
 				},
+				{
+					ProductGroup = BB33DC7E1B86BD1D003B8481 /* Products */;
+					ProjectRef = BB33DC7D1B86BD1D003B8481 /* unhide.xcodeproj */;
+				},
 			);
 			projectRoot = "";
 			targets = (
@@ -230,6 +258,13 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		BB33DC821B86BD1D003B8481 /* unhide */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = unhide;
+			remoteRef = BB33DC811B86BD1D003B8481 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		BBC2900B18CA703D003436A9 /* InjectionLoader.bundle */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
@@ -279,20 +314,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "chmod +x \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"/*.pl &&\ncp -rf Classes/Xtrace.* InjectionLoader/build/*-iphonesimulator/InjectionLoader.bundle \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\n";
-		};
-		BBA4081518CCA63E005CE183 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "cd InjectionLoader && xcodebuild -sdk iphonesimulator clean && xcodebuild -sdk iphonesimulator";
+			shellScript = "cd InjectionLoader && xcodebuild -sdk iphonesimulator && cd - &&\nchmod +x \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"/*.pl &&\ncp -rf Classes/Xtrace.* InjectionLoader/build/*-iphonesimulator/InjectionLoader.bundle \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -308,6 +330,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		BB82D7AA1B86C0F3008E76CA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = unhide;
+			targetProxy = BB82D7A91B86C0F3008E76CA /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1DEB913B08733D840010E9CD /* Debug */ = {
@@ -339,8 +369,7 @@
 		1DEB913F08733D840010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
-				CURRENT_PROJECT_VERSION = 6.3;
+				CURRENT_PROJECT_VERSION = 6.4;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = DEBUG;
@@ -350,6 +379,7 @@
 				INFOPLIST_PREPROCESSOR_DEFINITIONS = "";
 				INSTALL_PATH = "$(HOME)/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 			};
 			name = Debug;

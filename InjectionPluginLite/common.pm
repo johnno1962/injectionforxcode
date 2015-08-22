@@ -15,14 +15,16 @@ use Carp;
 use vars qw($resources $workspace $mainFile $executable $arch $patchNumber $flags
     $unlockCommand $addresses $selectedFile $isDevice $isSimulator $isAndroid $isAppCode
     $isIOS $productName $appPackage $deviceRoot $projFile $projRoot $projName $projType
-    $InjectionBundle $template $header $appClass $RED $buildRoot $learnt
-    $INJECTION_NOTSILENT $INJECTION_ORDERFRONT $INJECTION_ISAPPCODE);
+    $InjectionBundle $template $header $appClass $RED $xcodeApp $buildRoot $logDir $learnt
+    $INJECTION_STORYBOARD $INJECTION_NOTSILENT $INJECTION_ORDERFRONT $INJECTION_ISAPPCODE);
 
+$INJECTION_STORYBOARD = 1<<1; # storyboard injection enabled/used
 $INJECTION_NOTSILENT  = 1<<2; # print annoying dialogue on injection
 $INJECTION_ORDERFRONT = 1<<3; # order from OSX App or simulator
 $INJECTION_ISAPPCODE  = 1<<4; # injecting from AppCode plugin
 
-($resources, $workspace, $mainFile, $executable, $arch, $patchNumber, $flags, $unlockCommand, $addresses, $selectedFile, $buildRoot, $learnt) = @ARGV;
+($resources, $workspace, $mainFile, $executable, $arch, $patchNumber, $flags,
+    $unlockCommand, $addresses, $selectedFile, $xcodeApp, $buildRoot, $logDir, $learnt) = @ARGV;
 
 #($appPackage, $deviceRoot, $appName) = $executable =~ m@((^.*)/([^/]+))/[^/]+$@;
 ($appPackage, $deviceRoot) = $executable =~ m@((^.*))$@; # for iOS8
@@ -44,11 +46,12 @@ $flags &= ~$INJECTION_NOTSILENT if $isAppCode;
     ("OSXBundleTemplate", "Cocoa/Cocoa.h", "NSApplication");
 
 ($InjectionBundle = $template) =~ s/BundleTemplate/InjectionProject/;
+$InjectionBundle = "$logDir/../$InjectionBundle";
 
 BEGIN { $RED = "{\\colortbl;\\red0\\green0\\blue0;\\red255\\green100\\blue100;}\\cb2"; }
 
 sub error {
-    croak "${RED}@_";
+    croak "\n\\b ${RED}*** @_ ***\n\n";
 }
 
 open STDERR, '>&STDOUT';
@@ -79,7 +82,7 @@ sub saveFile {
     if ( $data ne $current ) {
         unlock( $path );
 
-        rename $path, "$path.save" if -f $path && !-f "$path.save";
+        #rename $path, "$path.save" if -f $path && !-f "$path.save";
 
         if ( my $fh = IO::File->new( "> $path" ) ) {
             my ($rest, $name) = urlprep( my $link = $path );
@@ -88,7 +91,7 @@ sub saveFile {
             $fh->close();
             if ( $path !~ /\.plist$/ ) {
                 print "Modified $link ...\n";
-                if ( !$isAppCode ) {
+                if ( !$isAppCode && 0 ) {
                     (my $diff = `/usr/bin/diff -C 5 \"$path.save\" \"$path\"`) =~ s/([\{\}\\])/\\$1/g;
                     $diff =~ s/\n/\\line/g;
                     print "{\\colortbl;\\red0\\green0\\blue0;\\red245\\green222\\blue179;}\\cb2$diff\n";
@@ -132,9 +135,9 @@ sub patchAll {
     my ($pattern, $change) = @_;
     my $changed = 0;
 
-    foreach my $file (IO::File->new( "find . | grep -E '$pattern\$' |" )->getlines()) {
+    foreach my $file (IO::File->new( "find . | grep -E '($pattern)\$' |" )->getlines()) {
         chomp $file;
-        next if $file =~ /InjectionProject/;
+        next if $file =~ /(InjectionProject|DerivedData|Pods)\//;
         my $contents = loadFile( $file );
         $changed += $change->( $contents )||0;
         if( saveFile( $file, $contents ) ) {

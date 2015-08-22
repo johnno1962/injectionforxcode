@@ -17,10 +17,10 @@ use common;
 
 my ($pathID, $className, $isSwift, $code) = split /\^/, $selectedFile;
 
-print "Searching logs in $buildRoot/../Logs/Build\n";
+print "Searching logs in $logDir\n";
 
 FOUND:
-foreach my $log (split "\n", `ls -t $buildRoot/../Logs/Build/*.xcactivitylog`) {
+foreach my $log (split "\n", `ls -t "$logDir"/*.xcactivitylog`) {
     foreach my $line ( split "\r", `gunzip <$log` ) {
         if ( index( $line, " $arch" ) != -1 && $line =~ /XcodeDefault\.xctoolchain.+@{[$isSwift ?
                 " -primary-file " : " -c "]}("[^"]+\/$className\.(m|mm|swift)"|\S+\/$className\.(m|mm|swift))/ ) {
@@ -36,7 +36,7 @@ if ( !$learnt ) {
     $isSwift = 0;
     $selectedFile = "/tmp/injection_unknown.m";
     chomp( $learnt = <<CANNED );
-/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x objective-c -arch $arch -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -std=gnu99 -Wno-trigraphs -fpascal-strings -fobjc-arc -fmodules -O0 -Wno-missing-field-initializers -Wmissing-prototypes -Wno-implicit-atomic-properties -Wno-receiver-is-weak -Wno-arc-repeated-use-of-weak -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wshorten-64-to-32 -Wpointer-sign -Wno-newline-eof -Wno-selector -Wno-strict-selector-match -Wno-undeclared-selector -Wno-deprecated-implementations -DDEBUG=1 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk -fexceptions -fasm-blocks -fstrict-aliasing -Wprotocol -Wdeprecated-declarations -g -Wno-sign-conversion -fobjc-abi-version=2 -fobjc-legacy-dispatch -mios-simulator-version-min=5.0 -c $selectedFile -o /tmp/injection_unknown.o
+$xcodeApp/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x objective-c -arch $arch -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -std=gnu99 -Wno-trigraphs -fpascal-strings -fobjc-arc -fmodules -O0 -Wno-missing-field-initializers -Wmissing-prototypes -Wno-implicit-atomic-properties -Wno-receiver-is-weak -Wno-arc-repeated-use-of-weak -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wshorten-64-to-32 -Wpointer-sign -Wno-newline-eof -Wno-selector -Wno-strict-selector-match -Wno-undeclared-selector -Wno-deprecated-implementations -DDEBUG=1 -isysroot $xcodeApp/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk -fexceptions -fasm-blocks -fstrict-aliasing -Wprotocol -Wdeprecated-declarations -g -Wno-sign-conversion -fobjc-abi-version=2 -fobjc-legacy-dispatch -mios-simulator-version-min=5.0 -c $selectedFile -o /tmp/injection_unknown.o
 CANNED
     open UNKNOWN, "> $selectedFile" or die "Could not open canned file.";
     print UNKNOWN <<EMPTY;
@@ -132,7 +132,7 @@ close SOURCE;
 
 my $INJECTION_NOTSILENT = 1<<2;
 
-system "$FindBin::Bin/injectSource.pl",$resources, $workspace, $mainFile, $executable, $arch, $patchNumber, $flags&~$INJECTION_NOTSILENT, $unlockCommand, $addresses, $selectedFile, $buildRoot, $learnt;
+system "$FindBin::Bin/injectSource.pl",$resources, $workspace, $mainFile, $executable, $arch, $patchNumber, $flags&~$INJECTION_NOTSILENT, $unlockCommand, $addresses, $selectedFile, $xcodeApp, $buildRoot, $logDir, $learnt;
 
 die if $? >> 8;
 

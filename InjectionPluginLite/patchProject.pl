@@ -27,7 +27,7 @@ print "\\b Patching project contained in: $projRoot\n";
 ###################################################################################################
 # patch project .pch files (if not using AppCode)
 if ( !$isAppCode ) {
-    patchAll( "refix.pch", sub {
+    patchAll( "refix.pch|Bridging-Header.h", sub {
     $_[0] =~ s/\n*($key.*)?$/<<CODE/es;
 
 
@@ -35,9 +35,9 @@ $key
 
 #ifdef $ifdef
 #define INJECTION_ENABLED
-#endif
 
 #import "$resources/BundleInterface.h"
+#endif
 CODE
     } );
 }
@@ -61,7 +61,7 @@ static const char *_inIPAddresses[] = {@{[join ', ', map "\"$_\"", @ip4Addresses
 #import "$resources/BundleInjection.h"
 #endif
 CODE
-    } ) or error "Could not match project's main.(m|mm)";
+    } ) or error "Could not locate project's main.(m|mm) to patch.\nTo patch a Swift project please create an empty main.m";
 }
 
 ###################################################################################################
