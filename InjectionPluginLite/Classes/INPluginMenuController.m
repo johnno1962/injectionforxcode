@@ -55,7 +55,6 @@ static INPluginMenuController *injectionPlugin;
 @property (nonatomic,retain) IBOutlet INPluginClientController *client;
 @property (nonatomic,retain) IBOutlet NSPanel *webPanel;
 @property (nonatomic,retain) IBOutlet NSMenu *subMenu;
-@property (nonatomic,retain) NSTextView *lastTextView;
 @property (nonatomic,retain) NSUserDefaults *defaults;
 @property (nonatomic,retain) NSMutableString *mac;
 @property (nonatomic,retain) NSString *bonjourName;
@@ -167,7 +166,8 @@ static INPluginMenuController *injectionPlugin;
 - (void)workspaceDidChange:(NSNotification *)notification {
     NSWindow *object = [notification object];
     NSWindowController *currentWindowController = [object windowController];
-    if ([currentWindowController isKindOfClass:IDEWorkspaceWindowController])
+    if ( [currentWindowController isKindOfClass:IDEWorkspaceWindowController] &&
+        [[currentWindowController document] fileURL] )
         self.lastKeyWindow = object;
 }
 
@@ -222,14 +222,15 @@ static INPluginMenuController *injectionPlugin;
 }
 
 - (NSString *)workspacePath {
-    id delegate = [[NSApp keyWindow] delegate];
-    if ( ![delegate respondsToSelector:@selector(document)] )
-        delegate = [[self.lastTextView window] delegate];
-    if ( ![delegate respondsToSelector:@selector(document)] )
-        delegate = [self.lastKeyWindow delegate];
-    NSDocument *workspace = [delegate document];
-    return [workspace isKindOfClass:IDEWorkspaceDocument] ?
-        [[workspace fileURL] path] : nil;
+    return [[[[self debugController] document] fileURL] path];
+//    id delegate = [[NSApp keyWindow] delegate];
+//    if ( ![delegate respondsToSelector:@selector(document)] )
+//        delegate = [[self.lastTextView window] delegate];
+//    if ( ![delegate respondsToSelector:@selector(document)] )
+//        delegate = [self.lastKeyWindow delegate];
+//    NSDocument *workspace = [delegate document];
+//    return [workspace isKindOfClass:IDEWorkspaceDocument] ?
+//        [[workspace fileURL] path] : nil;
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem {
@@ -336,19 +337,18 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
         }
         else
             [self performSelector:@selector(injectSource:) withObject:nil afterDelay:.1];
-
-        return;
     }
+    else {
+        if ( ![self workspacePath] )
+            [self.client alert:@"No project is debugging. Make sure the project you are working on is the \"Key Window\"."];
+        else if ( !self.client.connected )
+            [self.client alert:@"No  application has connected to injection. "
+             "Patch the project and make sure DEBUG is #defined then run project again."];
+        else
+            [self.client runScript:@"injectSource.pl" withArg:self.lastFile];
 
-    if ( ![self workspacePath] )
-        [self.client alert:@"No project is open. Make sure the project you are working on is the \"Key Window\"."];
-    else if ( !self.client.connected )
-        [self.client alert:@"No  application has connected to injection. "
-         "Patch the project and make sure DEBUG is #defined then run project again."];
-    else
-        [self.client runScript:@"injectSource.pl" withArg:self.lastFile];
-
-    self.lastFile = nil;
+        self.lastFile = nil;
+    }
 }
 
 - (void)loadBundle:(DBGLLDBSession *)session {
