@@ -47,7 +47,7 @@ $flags &= ~$INJECTION_NOTSILENT if $isAppCode;
     ("OSXBundleTemplate", "Cocoa/Cocoa.h", "NSApplication");
 
 ($InjectionBundle = $template) =~ s/BundleTemplate/InjectionProject/;
-$InjectionBundle = "$logDir/../$InjectionBundle" if !$isAppCode;
+#$InjectionBundle = "$logDir/../$InjectionBundle" if !$isAppCode;
 
 BEGIN { $RED = "{\\colortbl;\\red0\\green0\\blue0;\\red255\\green100\\blue100;}\\cb2"; }
 

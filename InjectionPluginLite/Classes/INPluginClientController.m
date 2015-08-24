@@ -212,7 +212,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
         return;
     }
 
-    status = (storyButton.state ? INJECTION_STORYBOARD : 1) | INJECTION_DEVICEIOS8;
+    status = (storyButton.state ? INJECTION_STORYBOARD : 1);// | INJECTION_DEVICEIOS8;
     write( appConnection, &status, sizeof status );
 
     [BundleInjection readHeader:&header forPath:path from:appConnection];
