@@ -217,9 +217,9 @@ if ( !$learnt ) {
                 }
                 else {
                     if ( index( $line, $filename ) != -1 && index( $line, " $arch" ) != -1 &&
-                            $line =~ /XcodeDefault\.xctoolchain.+?@{[
+                        $line =~ m!@{[$xcodeApp||"/Applications/Xcode.app"]}/Contents/Developer/Toolchains/XcodeDefault\.xctoolchain.+?@{[
                                 $isSwift ? " -primary-file ": " -c "
-                            ]}("$selectedFile"|$escaped)/ ) {
+                            ]}("$selectedFile"|$escaped)! ) {
                         $learnt .= ($learnt?';;':'').$line;
                         last FOUND;
                     }
@@ -229,7 +229,7 @@ if ( !$learnt ) {
 
         close LOG;
 
-        error "Could not locate compile command for $escaped: @logs" if $isSwift && !$learnt;
+        error "Could not locate compile command for $escaped\nIf you have switched xcode versions, please cmd-shift-k to clean then rebuild the project so there is a complete build history logged and try again.\n@logs" if $isSwift && !$learnt;
     }
 }
 

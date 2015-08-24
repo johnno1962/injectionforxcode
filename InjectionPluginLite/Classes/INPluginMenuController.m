@@ -312,7 +312,11 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
         self.lastFile = [self lastFileSaving:YES];
 
     DBGLLDBSession *session = [self session];
-    if ( !self.lastFile ) {
+    if ( !session ) {
+        [self.client alert:@"No project is running."];
+        return;
+    }
+    else if ( !self.lastFile ) {
         [self.client alert:@"No source file is selected. "
          "Make sure that text is selected and the cursor is inside the file you have edited."];
         return;
@@ -327,6 +331,8 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
         [self performSelector:@selector(injectSource:) withObject:self afterDelay:.01];
         return;
     }
+    else if ( ![self workspacePath] )
+        [self.client alert:@"No project selected. Make sure the project you are working on is the \"Key Window\"."];
     else if ( !self.client.connected ) {
 
         // "unpatched" injection
@@ -339,14 +345,7 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
             [self performSelector:@selector(injectSource:) withObject:nil afterDelay:.1];
     }
     else {
-        if ( ![self workspacePath] )
-            [self.client alert:@"No project is debugging. Make sure the project you are working on is the \"Key Window\"."];
-        else if ( !self.client.connected )
-            [self.client alert:@"No  application has connected to injection. "
-             "Patch the project and make sure DEBUG is #defined then run project again."];
-        else
-            [self.client runScript:@"injectSource.pl" withArg:self.lastFile];
-
+        [self.client runScript:@"injectSource.pl" withArg:self.lastFile];
         self.lastFile = nil;
     }
 }
