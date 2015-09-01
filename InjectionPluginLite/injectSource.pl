@@ -29,6 +29,11 @@ if ( !$executable ) {
     exit 0;
 }
 
+print "buildRoot: $buildRoot\n";
+print "logDir: $logDir\n";
+
+$logDir ||= "$buildRoot/../Logs/Build" if $buildRoot;
+
 ############################################################################
 #
 # If project has not been injected before, copy template bundle project
@@ -123,7 +128,7 @@ if ( $localBinary && $bundleProjectSource =~ s/(BUNDLE_LOADER = )([^;]+;)/$1"$lo
 (my $escaped = $selectedFile) =~ s/ /\\\\ /g;
 my @logs;
 
-if ( !$buildRoot ) {
+if ( !$logDir ) {
     my $learn = "xcodebuild@{[$isSwift?'':' -dry-run']} $config";
     $learn .= " -project \"$projName.xcodeproj\"" if $projName;
     my $memory = "$archDir/learnt_commands.gz";
@@ -169,16 +174,18 @@ if ( !$buildRoot ) {
     @logs = ($memory)
 }
 else {
-    @logs = split "\n", `ls -t $buildRoot/../Logs/Build/*.xcactivitylog`
+    @logs = split "\n", `ls -t $logDir/*.xcactivitylog`
 }
 
 #
 # grep build logs for command to build injecting source file
 #
 if ( !$learnt ) {
+    local $/ = "\r";
 FOUND:
     foreach my $log (@logs) {
-        foreach my $line ( split "\r", `gunzip <$log` ) {
+        open LOG, "gunzip <$log |";
+        while ( my $line = <LOG> ) {
             if ( index( $line, " $arch" ) != -1 && $line =~ /XcodeDefault\.xctoolchain.+@{[$isSwift ?
                     " -primary-file ": " "]}("$selectedFile"|$escaped)/ ) {
                 $learnt = $line;
@@ -186,6 +193,7 @@ FOUND:
             }
         }
     }
+    close LOG;
 
     if ( !$learnt ) {
         error "Could not locate compile command for $escaped" if $isSwift;
