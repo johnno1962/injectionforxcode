@@ -289,7 +289,7 @@ if ( $learnt ) {
 
     #if ( $isSwift ) {
         my ($toolchain) = $learnt =~ m@(/Applications/Xcode.*?/XcodeDefault.xctoolchain)/@;
-        $obj .= "\", \"-L'$toolchain'/usr/lib/swift/iphonesimulator";
+        $obj .= "\", \"-L'$toolchain'/usr/lib/swift/@{[$isIOS?'iphonesimulator':'macosx']}";
         $obj .= "\", \"-F$buildRoot/Products/Debug-$sdk" if $buildRoot;
     #}
 }

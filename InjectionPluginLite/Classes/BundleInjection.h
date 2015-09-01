@@ -399,11 +399,15 @@ static const char **addrPtr, *connectedAddress;
             }
 #endif
 
+#if TARGET_OS_IPHONE
             if ( status & INJECTION_DEVICEIOS8 ) {
+#endif
                 NSString *executablePath = [[NSBundle mainBundle] executablePath];
                 [executablePath getCString:path maxLength:sizeof path encoding:NSUTF8StringEncoding];
                 [self writeBytes:0 withPath:path from:0 to:loaderSocket];
+#if TARGET_OS_IPHONE
             }
+#endif
 
             NSString *deviceRoot = NSHomeDirectory();
             [deviceRoot getCString:path maxLength:sizeof path encoding:NSUTF8StringEncoding];
