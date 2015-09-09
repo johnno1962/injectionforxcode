@@ -117,7 +117,8 @@
         Ivar *ivars = class_copyIvarList(aClass, &ic);
         const char *currentClassName = class_getName(aClass), firstChar = currentClassName[0];
 
-        if ( firstChar != '_' && !(firstChar == 'N' && currentClassName[1] == 'S') )
+        if ( firstChar != '_' && !(firstChar == 'N' && currentClassName[1] == 'S') &&
+            strncmp( currentClassName, "RAC", 3 ) != 0 ) // uses unsafe_unretained
             for ( unsigned i=0 ; i<ic ; i++ ) {
                 __unused const char *currentIvarName = ivar_getName(ivars[i]);
                 const char *type = ivar_getTypeEncodingSwift(ivars[i],aClass);

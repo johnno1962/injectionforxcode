@@ -96,7 +96,7 @@ if ( !$bundleProjectSource ) {
 # the code signing identity for when we are injecting to a device.
 #
 
-my $xcodebuild = "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild";
+my $xcodebuild = "$xcodeApp/Contents/Developer/usr/bin/xcodebuild";
 
 mkdir my $archDir = "$InjectionBundle/$arch";
 my $config = " -configuration Debug -arch $arch";
@@ -125,11 +125,10 @@ if ( $localBinary && $bundleProjectSource =~ s/(BUNDLE_LOADER = )([^;]+;)/$1"$lo
 # Build command for selected file is taken from previous Xcode buils logs
 #
 
-(my $escaped = $selectedFile) =~ s/ /\\\\ /g;
 my @logs;
 
 if ( !$logDir ) {
-    my $learn = "xcodebuild@{[$isSwift?'':' -dry-run']} $config";
+    my $learn = "$xcodebuild@{[$isSwift?'':' -dry-run']} $config";
     $learn .= " -project \"$projName.xcodeproj\"" if $projName;
     my $memory = "$archDir/learnt_commands.gz";
     my $mainProjectChanged = mtime( $mainProjectFile ) > mtime( $memory );
@@ -174,7 +173,7 @@ if ( !$logDir ) {
     @logs = ($memory)
 }
 else {
-    @logs = split "\n", `ls -t $logDir/*.xcactivitylog`
+    @logs = split "\n", `ls -t "$logDir"/*.xcactivitylog`
 }
 
 #
@@ -182,12 +181,16 @@ else {
 #
 if ( !$learnt ) {
     local $/ = "\r";
+    (my $escaped = $selectedFile) =~ s/ /\\\\ /g;
+    my ($filename) = $selectedFile =~ /\/([^\/]+)$/;
 FOUND:
     foreach my $log (@logs) {
-        open LOG, "gunzip <$log |";
+        open LOG, "gunzip <'$log' 2>/dev/null |";
         while ( my $line = <LOG> ) {
-            if ( index( $line, " $arch" ) != -1 && $line =~ /XcodeDefault\.xctoolchain.+@{[$isSwift ?
-                    " -primary-file ": " "]}("$selectedFile"|$escaped)/ ) {
+            if ( index( $line, $filename ) != -1 && index( $line, " $arch" ) != -1 &&
+                $line =~ /XcodeDefault\.xctoolchain.+?@{[
+                    $isSwift ? " -primary-file ": " -c "
+                ]}("$selectedFile"|$escaped)/ ) {
                 $learnt = $line;
                 last FOUND;
             }
@@ -287,7 +290,7 @@ if ( $learnt ) {
     $obj = "$arch/injecting_class.o";
     $learnt =~ s@( -o ).*$@$1$InjectionBundle/$obj@
         or die "Could not locate object file in: $learnt";
-    $learnt =~ s/( -DDEBUG\S* )/$1-DINJECTION_BUNDLE /;
+    ####$learnt =~ s/( -DDEBUG\S* )/$1-DINJECTION_BUNDLE /;
 
     print "!!Compiling $selectedFile\n";
     (my $lout = $learnt) =~ s/\\/\\\\/g;
@@ -323,7 +326,7 @@ print "\nBuilding $InjectionBundle/InjectionBundle.xcodeproj\n";
 my $rebuild = 0;
 
 build:
-my $build = "xcodebuild $config";
+my $build = "$xcodebuild $config";
 
 my $buildScript = "$archDir/compile_commands.sh";
 my ($recording, $recorded);
@@ -392,7 +395,7 @@ unlink $buildScript if $? || $recording && !$recorded;
 
 # If there has been a .pch file change it's worth trying again once
 if ( $rebuild++ == 1 ) {
-    system "cd $InjectionBundle && xcodebuild $config clean";
+    system "cd $InjectionBundle && $xcodebuild $config clean";
     goto build;
 }
 
