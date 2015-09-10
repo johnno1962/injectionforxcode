@@ -14,10 +14,21 @@ use FindBin;
 use lib $FindBin::Bin;
 use common;
 
+my $compileHighlight = "{\\colortbl;\\red0\\green0\\blue0;\\red160\\green255\\blue160;}\\cb2\\i1";
+my $errorHighlight = "{\\colortbl;\\red0\\green0\\blue0;\\red255\\green255\\blue130;}\\cb2";
+
 my $bundleProjectFile = "$InjectionBundle/InjectionBundle.xcodeproj/project.pbxproj";
 my $bundleProjectSource = -f $bundleProjectFile && loadFile( $bundleProjectFile );
 my $mainProjectFile = "$projName.xcodeproj/project.pbxproj";
 my $isSwift = $selectedFile =~ /\.swift$/;
+
+if ( !$isAppCode ) {
+    print "buidRoot: $buildRoot\n";
+    print "logDir: $logDir\n\n";
+}
+
+$logDir = "$buildRoot/../Logs/Build" if !-d $logDir && !$isAppCode;
+$buildRoot = $logDir && "$logDir/../../Build/" if !$buildRoot;
 
 sub mtime {
     my ($file) = @_;
@@ -28,11 +39,6 @@ if ( !$executable ) {
     print "Application is not connected.\n";
     exit 0;
 }
-
-print "buildRoot: $buildRoot\n";
-print "logDir: $logDir\n";
-
-$logDir ||= "$buildRoot/../Logs/Build" if $buildRoot;
 
 ############################################################################
 #
@@ -83,11 +89,11 @@ if ( !$bundleProjectSource ) {
     # This should allow injection to work for all classes in this project but you may
     # still mean you need to open the injection bundle project to add to this path if
     # you are injecting classes in frameworks.
-    if ( my @includePath = loadFile( "find . -name '*.h' | sed -e 's!/[^/]*\$!!' | sort -u | grep -v InjectionProject |" ) ) {
-        $bundleProjectSource =~ s!(HEADER_SEARCH_PATHS = \(\n)(\s+)"../\*\*",!
-            $1.join "\n", map "$2\"\\\".$_\\\"\",", @includePath;
-        !eg;
-    }
+    #if ( my @includePath = loadFile( "find . -name '*.h' | sed -e 's!/[^/]*\$!!' | sort -u | grep -v InjectionProject |" ) ) {
+    #    $bundleProjectSource =~ s!(HEADER_SEARCH_PATHS = \(\n)(\s+)"../\*\*",!
+    #        $1.join "\n", map "$2\"\\\".$_\\\"\",", @includePath;
+    #    !eg;
+    #}
 }
 
 ############################################################################
@@ -96,7 +102,7 @@ if ( !$bundleProjectSource ) {
 # the code signing identity for when we are injecting to a device.
 #
 
-my $xcodebuild = "$xcodeApp/Contents/Developer/usr/bin/xcodebuild";
+my $xcodebuild = $xcodeApp ? "$xcodeApp/Contents/Developer/usr/bin/xcodebuild" : "xcodebuild";
 
 mkdir my $archDir = "$InjectionBundle/$arch";
 my $config = " -configuration Debug -arch $arch";
@@ -173,36 +179,58 @@ if ( !$logDir ) {
     @logs = ($memory)
 }
 else {
-    @logs = split "\n", `ls -t "$logDir"/*.xcactivitylog`
+    @logs = split "\n", `ls -t "$logDir"/*.xcactivitylog`;
 }
 
 #
 # grep build logs for command to build injecting source file
 #
+
+my $sbInjection = $flags & $INJECTION_STORYBOARD;
+$flags &= ~$INJECTION_STORYBOARD;
+
 if ( !$learnt ) {
-    local $/ = "\r";
-    (my $escaped = $selectedFile) =~ s/ /\\\\ /g;
-    my ($filename) = $selectedFile =~ /\/([^\/]+)$/;
-FOUND:
-    foreach my $log (@logs) {
-        open LOG, "gunzip <'$log' 2>/dev/null |";
-        while ( my $line = <LOG> ) {
-            if ( index( $line, $filename ) != -1 && index( $line, " $arch" ) != -1 &&
-                $line =~ /XcodeDefault\.xctoolchain.+?@{[
-                    $isSwift ? " -primary-file ": " -c "
-                ]}("$selectedFile"|$escaped)/ ) {
-                $learnt = $line;
-                last FOUND;
+    foreach my $selectedFile (split ';', $selectedFile) {
+        (my $escaped = $selectedFile) =~ s/ /\\\\ /g;
+        my ($filename) = $selectedFile =~ /\/([^\/]+)$/;
+        my $isInterface = $selectedFile =~ /\.(storyboard|nib)$/;
+        local $/ = "\r";
+    FOUND:
+        foreach my $log (@logs) {
+            open LOG, "gunzip <'$log' 2>/dev/null |";
+            if ( $isInterface ) {
+                while ( my $line = <LOG> ) {
+                    error "Enable storyboard injection on the parameters panel and restart app" if !$sbInjection;
+
+                    if ( index( $line, $filename ) != -1 &&
+                        $line =~ /usr\/bin\/ibtool.+?("$selectedFile"|$escaped)/ ) {
+                            (my $lout = $line) =~ s/\\/\\\\/g;
+                            print "!!Injection: Compiling $filename (just a sec...)\n";
+                            print "Interface compile: $compileHighlight $lout\n";
+                            0 == system "time $line 2>&1"
+                            or die "Interface compile failed";
+                            print "!!Injection: Compile completes\n";
+                            $flags |= $INJECTION_STORYBOARD;
+                            last FOUND;
+                    }
+                }
+            }
+            else {
+                while ( my $line = <LOG> ) {
+                    if ( index( $line, $filename ) != -1 && index( $line, " $arch" ) != -1 &&
+                        $line =~ m!@{[$xcodeApp||""]}/Contents/Developer/Toolchains/XcodeDefault\.xctoolchain.+?@{[
+                                $isSwift ? " -primary-file ": " -c "
+                            ]}("$selectedFile"|$escaped)! ) {
+                        $learnt .= ($learnt?';;':'').$line;
+                        last FOUND;
+                    }
+                }
             }
         }
-    }
-    close LOG;
 
-    if ( !$learnt ) {
-        error "Could not locate compile command for $escaped" if $isSwift;
-    }
-    else {
-        $learnt =~ s/( -o .*?\.o).*/$1/g;
+        close LOG;
+
+        error "Could not locate compile command for $escaped\nIf you have switched xcode versions, please cmd-shift-k to clean then rebuild the project so there is a complete build history logged and try again.\n@logs" if $isSwift && !$learnt;
     }
 }
 
@@ -267,7 +295,7 @@ int injectionHook() {
     return YES;
 }
 
-@{[$learnt ? "" : "#import \"$selectedFile\"\n\n"]}
+@{[$learnt||$selectedFile!~/\.mm?$/ ? "" : "#import \"$selectedFile\"\n\n"]}
 
 CODE
 
@@ -290,17 +318,18 @@ if ( $learnt ) {
     $obj = "$arch/injecting_class.o";
     $learnt =~ s@( -o ).*$@$1$InjectionBundle/$obj@
         or die "Could not locate object file in: $learnt";
-    ####$learnt =~ s/( -DDEBUG\S* )/$1-DINJECTION_BUNDLE /;
+    ###$learnt =~ s/( -DDEBUG\S* )/$1-DINJECTION_BUNDLE /;
+
+    (my $lout = $learnt) =~ s/\\/\\\\/g;
+    print "Learnt compile: $compileHighlight $lout\n";
 
     print "!!Compiling $selectedFile\n";
-    (my $lout = $learnt) =~ s/\\/\\\\/g;
-    print "Learnt compile: $lout\n";
-
     0 == system "time $learnt" or error "Learnt compile failed";
 
     #if ( $isSwift ) {
         my ($toolchain) = $learnt =~ m@(/Applications/Xcode.*?/XcodeDefault.xctoolchain)/@;
-        $obj .= "\", \"-L'$toolchain'/usr/lib/swift/@{[$isIOS?'iphonesimulator':'macosx']}";
+        my $family = $isIOS ? $isDevice ? 'iphoneos' : 'iphonesimulator' : 'macosx';
+        $obj .= "\", \"-L'$toolchain'/usr/lib/swift/$family";
         $obj .= "\", \"-F$buildRoot/Products/Debug-$sdk" if $buildRoot;
     #}
 }
@@ -323,6 +352,10 @@ saveFile( $bundleProjectFile, $bundleProjectSource );
 
 print "\nBuilding $InjectionBundle/InjectionBundle.xcodeproj\n";
 
+my $builtfile = "$archDir/built.txt";
+unlink $builtfile if !$learnt || $flags & $INJECTION_FLAGCHANGE;
+my $dotdot = $InjectionBundle =~ /^\// ? "" : "../";
+
 my $rebuild = 0;
 
 build:
@@ -334,10 +367,11 @@ my ($recording, $recorded);
 if ( mtime( $bundleProjectFile ) > mtime( $buildScript ) ) {
     $recording = IO::File->new( "> $buildScript" )
         or die "Could not open '$buildScript' as: $!";
+    print "!!... First time learning of project, one second ...\n";
 }
 else {
     # used recorded commands to avoid overhead of xcodebuild
-    $build = "bash ../$buildScript # $build";
+    $build = "bash $dotdot$buildScript # $build";
 }
 
 print "$build\n\n";
@@ -348,7 +382,10 @@ while ( my $line = <BUILD> ) {
 
     if ( $recording && $line =~ m@/usr/bin/(clang|\S*gcc)@ & $line !~ /-header -arch/  ) {
         chomp (my $cmd = $line);
-        $recording->print( "echo '$cmd'; time $cmd 2>&1 &&\n" );
+        if ( $cmd =~ /BundleContents\.m/ ) {
+            $cmd = "if [[ ! -f $dotdot$builtfile ]]; then $cmd && touch $dotdot$builtfile; fi";
+        }
+        $recording->print( "echo \"$cmd\"; time $cmd 2>&1 &&\n" );
         $recorded++;
     }
 
@@ -369,7 +406,7 @@ while ( my $line = <BUILD> ) {
 
     if ( !$isAppCode ) {
         if ( $line =~ /gcc|clang/ ) {
-            $line = "{\\colortbl;\\red0\\green0\\blue0;\\red160\\green255\\blue160;}\\cb2\\i1$line";
+            $line = "$compileHighlight $line";
         }
         if ( $line =~ /\b(error|warning|note):/ ) {
             $line =~ s@^(.*?/)([^/:]+):@
@@ -377,8 +414,7 @@ while ( my $line = <BUILD> ) {
                 (my $f = $p) =~ s!^(\.\.?/)!$projRoot/$InjectionBundle/$1!;
                 "$p\{\\field{\\*\\fldinst HYPERLINK \"file://$f$n\"}{\\fldrslt $n}}:";
             @ge;
-            $line = "{\\colortbl;\\red0\\green0\\blue0;\\red255\\green255\\blue130;}\\cb2$line"
-                if $line =~ /\berror:/;
+            $line = "$errorHighlight $line" if $line =~ /\berror:/;
         }
     }
 
@@ -425,6 +461,24 @@ print "$command\n";
 0 == system $command or error "Could not copy bundle to: $newBundle";
 
 $bundlePath = $newBundle;
+
+if ( $flags & $INJECTION_STORYBOARD ) {
+    # print "  HERE $localBundle -- $bundlePath\n\n";
+    open NIBS, "cd '$localBundle'; find . |";
+    while ( my $nib = <NIBS> ) {
+        chomp $nib;
+        last if !$nib;
+        if ( -d "$localBundle/$nib" ) {
+            mkdir "$bundlePath/$nib";
+        }
+        elsif ( $nib =~ /\.nib$/ ) {
+            print "$nib\n";
+            print ">$bundlePath/$nib\n";
+            print "<$localBundle/$nib\n";
+        }
+    }
+    close NIBS;
+}
 
 if ( $isDevice ) {
     print "Codesigning with identity '$identity' for iOS device\n";
