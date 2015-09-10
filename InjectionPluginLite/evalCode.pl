@@ -132,7 +132,7 @@ close SOURCE;
 
 my $INJECTION_NOTSILENT = 1<<2;
 
-system "$FindBin::Bin/injectSource.pl",$resources, $workspace, $mainFile, $executable, $arch, $patchNumber, $flags&~$INJECTION_NOTSILENT, $unlockCommand, $addresses, $selectedFile, $xcodeApp, $buildRoot, $logDir, $learnt;
+system "$FindBin::Bin/injectSource.pl",$resources, $workspace, $deviceRoot, $executable, $arch, $patchNumber, $flags&~$INJECTION_NOTSILENT, $unlockCommand, $addresses, $selectedFile, $xcodeApp, $buildRoot, $logDir, $learnt;
 
 die if $? >> 8;
 
