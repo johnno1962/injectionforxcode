@@ -175,4 +175,9 @@ sub copyToDevice {
     return $to;
 }
 
+sub rtfEscape {
+    $_[0] =~ s/([\{\}\\])/\\$1/g;
+    return $_[0];
+}
+
 1;

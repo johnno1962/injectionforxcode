@@ -144,15 +144,15 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
                                                                     length:strlen(wrapped)
                                                               freeWhenDone:NO]
                                    documentAttributes:nil];
-        if ( !out )
-            [output setString:@""];
-
         if ( !as2 ) {
             NSLog( @"-[InPluginDocument<%p> pasteRTF:] Could not convert '%@'", self, rtf );
             [consoleTextView insertText:rtf];
         }
         else
             [consoleTextView insertText:as2];
+
+        if ( !out )
+            [output setString:@""];
     }
     @catch ( NSException *e ) {
         NSLog( @"-[InPluginDocument<%p> pasteRTF:] exception '%@' converting '%@': %@",

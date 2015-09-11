@@ -203,7 +203,7 @@ if ( !$learnt ) {
                     error "Enable storyboard injection on the parameters panel and restart app" if !$sbInjection;
 
                     if ( index( $line, $filename ) != -1 &&
-                        $line =~ /usr\/bin\/ibtool.+?("$selectedFile"|$escaped)/ ) {
+                        $line =~ /usr\/bin\/ibtool.+?("$selectedFile"|\Q$escaped\E)/ ) {
                             (my $lout = $line) =~ s/\\/\\\\/g;
                             print "!!Injection: Compiling $filename (just a sec...)\n";
                             print "Interface compile: $compileHighlight $lout\n";
@@ -220,7 +220,7 @@ if ( !$learnt ) {
                     if ( index( $line, $filename ) != -1 && index( $line, " $arch" ) != -1 &&
                         $line =~ m!@{[$xcodeApp||""]}/Contents/Developer/Toolchains/XcodeDefault\.xctoolchain.+?@{[
                                 $isSwift ? " -primary-file ": " -c "
-                            ]}("$selectedFile"|$escaped)! ) {
+                            ]}("$selectedFile"|\Q$escaped\E)! ) {
                         $learnt .= ($learnt?';;':'').$line;
                         last FOUND;
                     }
@@ -310,7 +310,6 @@ $changesSource->close();
 # the JSON "-output-file-map".
 #
 
-my $sdk = ($config =~ /-sdk (\w+)/)[0] || 'macosx';
 my $obj = '';
 
 if ( $learnt ) {
@@ -320,16 +319,18 @@ if ( $learnt ) {
         or die "Could not locate object file in: $learnt";
     ###$learnt =~ s/( -DDEBUG\S* )/$1-DINJECTION_BUNDLE /;
 
-    (my $lout = $learnt) =~ s/\\/\\\\/g;
+    ##$learnt =~ s/([()])/\\$1/g;
+    rtfEscape( my $lout = $learnt );
     print "Learnt compile: $compileHighlight $lout\n";
 
     print "!!Compiling $selectedFile\n";
-    0 == system "time $learnt" or error "Learnt compile failed";
+    print rtfEscape( scalar `(time $learnt) 2>&1` );
+    error "Learnt compile failed" if $?;
 
     #if ( $isSwift ) {
         my ($toolchain) = $learnt =~ m@(/Applications/Xcode.*?/XcodeDefault.xctoolchain)/@;
-        my $family = $isIOS ? $isDevice ? 'iphoneos' : 'iphonesimulator' : 'macosx';
-        $obj .= "\", \"-L'$toolchain'/usr/lib/swift/$family";
+        my $sdk = ($config =~ /-sdk (\w+)/)[0] || 'macosx';
+        $obj .= "\", \"-L'$toolchain'/usr/lib/swift/$sdk";
         $obj .= "\", \"-F$buildRoot/Products/Debug-$sdk" if $buildRoot;
     #}
 }
@@ -402,7 +403,7 @@ while ( my $line = <BUILD> ) {
         $recording->print( "echo && echo '$cmd' &&\n" ) if $recording;
     }
 
-    $line =~ s/([\{\}\\])/\\$1/g;
+    rtfEscape( $line );
 
     if ( !$isAppCode ) {
         if ( $line =~ /gcc|clang/ ) {
