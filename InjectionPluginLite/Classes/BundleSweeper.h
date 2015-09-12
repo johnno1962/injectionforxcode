@@ -25,6 +25,9 @@
 
 #import <objc/runtime.h>
 #import "IvarAccess.h"
+#import <dlfcn.h>
+
+static NSMutableArray *sharedInstances;
 
 #ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
 #ifndef XPROBE_BUNDLE
@@ -40,6 +43,8 @@
     UIApplication *app = [UIApplication sharedApplication];
     NSMutableArray *seeds = [[app windows] mutableCopy];
     [seeds insertObject:app atIndex:0];
+    if ( sharedInstances )
+        [seeds addObjectsFromArray:sharedInstances];
 
     // support for cocos2d
     Class ccDirectorClass = NSClassFromString(@"CCDirector");
@@ -121,11 +126,20 @@
             strncmp( currentClassName, "RAC", 3 ) != 0 ) // uses unsafe_unretained
             for ( unsigned i=0 ; i<ic ; i++ ) {
                 __unused const char *currentIvarName = ivar_getName(ivars[i]);
-                const char *type = ivar_getTypeEncodingSwift(ivars[i],aClass);
+                const char *type = ivar_getTypeEncodingSwift( ivars[i], aClass );
                 if ( type && type[0] == '@' ) {
                     id subObject = xvalueForIvarType( self, ivars[i], type, aClass );
                     if ( [subObject respondsToSelector:@selector(bsweep)] )
                         [subObject bsweep];////( subObject );
+                }
+                else if ( type && type[0] == 'a' ) {
+                    Method m = class_getInstanceMethod( aClass, sel_registerName( currentIvarName ) );
+                    if ( m && method_getTypeEncoding( m )[0] == '@' ) {
+                        id (*imp)( id, SEL ) = (id (*)( id, SEL ))method_getImplementation( m );
+                        id subObject = imp( self, method_getName( m ) );
+                        if ( [subObject respondsToSelector:@selector(bsweep)] )
+                            [subObject bsweep];////( subObject );
+                    }
                 }
             }
 
@@ -256,6 +270,38 @@ static NSMutableArray *liveInstances;
     bundleInjection.instancesSeen = nil;
     bundleInjection.liveInstances = nil;
     return liveInstances;
+}
+
++ (NSArray *)sweepSharedInstances {
+    if ( !sharedInstances ) {
+        sharedInstances = [NSMutableArray new];
+
+        unsigned nc;
+        Class *classes = objc_copyClassList( &nc );
+        for ( int i=0 ; i<nc ; i++ ) {
+            Method m = class_getInstanceMethod( object_getClass( classes[i] ), @selector(sharedInstance) );
+            if ( m ) {
+                Dl_info info;
+                dladdr( (__bridge const void *)classes[i], &info );
+
+#if TARGET_IPHONE_SIMULATOR
+                static char userClass[] = "/Users/";
+#else
+                static char userClass[] = "/private/var/";
+#endif
+                if ( strncmp( info.dli_fname, userClass, sizeof userClass-1 ) == 0 &&
+                    strstr( info.dli_fname, "/InjectionBundle" ) == 0 ) {
+                    id (*imp)( Class, SEL ) = (id (*)( Class, SEL ))method_getImplementation( m );
+                    NSLog( @"BundleSweeper: +[%@ sharedInstance] == %p()", classes[i], imp );
+                    [sharedInstances addObject:imp( classes[i], @selector(sharedInstance))];
+                }
+            }
+        }
+
+        free(classes);
+    }
+
+    return [self sweepForLiveObjects];
 }
 
 @end

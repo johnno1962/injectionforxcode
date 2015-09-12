@@ -788,7 +788,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
         IMP newIMPL = method_getImplementation(methods[i]);
         const char *type = method_getTypeEncoding(methods[i]);
 
-        //INLog( @"Swizzling: %c[%s %s] %s to: %p", which, className, sel_getName(name), type, newIMPL );
+        //NSLog( @"Swizzling: %c[%s %s] %s to: %p", which, className, sel_getName(sel), type, newIMPL );
 #ifdef XTRACE_EXCLUSIONS
         if ( originals.find(oldClass) != originals.end() &&
             originals[oldClass].find(sel) != originals[oldClass].end() )
@@ -1002,6 +1002,18 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
                         [oldClass instancesRespondToSelector:@selector(injected)] ) {
                         if ( !liveObjects )
                             liveObjects = [self sweepForLiveObjects];
+
+                        BOOL messaged = FALSE;
+                        for ( NSObject *obj in liveObjects )
+                            if ( ![obj isProxy] && [obj isKindOfClass:oldClass] ) {
+                                [obj injected];
+                                messaged = TRUE;
+                            }
+
+                        if ( messaged )
+                            continue;
+
+                        liveObjects = [self sweepSharedInstances];
 
                         for ( NSObject *obj in liveObjects )
                             if ( ![obj isProxy] && [obj isKindOfClass:oldClass] )
