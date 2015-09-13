@@ -18,7 +18,7 @@ my $xprobePath = $selectedFile;
 my $bundlePath = ($isIOS ? $isDevice ? "Device" : "Sim" : "OSX")."Bundle.loader";
 
 if ( !$isIOS ) {
-    my $newBundle = "$appPackage/$productName.loader";
+    my $newBundle = "$appPackage/$patchNumber$productName.loader";
     system "cp -r '$xprobePath/$bundlePath' '$newBundle'";
     $bundlePath = $newBundle;
 }
