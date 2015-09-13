@@ -24,7 +24,7 @@ if ( !$isIOS ) {
 }
 elsif ( $isDevice ) {
     print "Copying $bundlePath to device..\n";
-    $bundlePath = copyToDevice( "$xprobePath/$bundlePath", "$deviceRoot/tmp/$bundlePath" );
+    $bundlePath = copyToDevice( "$xprobePath/$bundlePath", "$deviceRoot/tmp/$patchNumber$bundlePath" );
 }
 else {
     $bundlePath = "$xprobePath/$bundlePath";
