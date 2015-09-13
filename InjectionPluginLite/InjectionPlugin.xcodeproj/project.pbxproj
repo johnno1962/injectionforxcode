@@ -23,6 +23,7 @@
 		BB5DEF9C16A55E1800E97DD4 /* injectSource.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB5DEF9816A55E1800E97DD4 /* injectSource.pl */; };
 		BB5DEF9D16A55E1800E97DD4 /* openBundle.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB5DEF9916A55E1800E97DD4 /* openBundle.pl */; };
 		BB63E0FB160CA89800E95F5D /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB63E0F8160CA89800E95F5D /* IOKit.framework */; };
+		BB781C2D1BA4DDA8006587FD /* xprobeLoad.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB781C2C1BA4DDA8006587FD /* xprobeLoad.pl */; settings = {ASSET_TAGS = (); }; };
 		BB8D68AB17F1BB64009E02EE /* listDevice.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB8D68AA17F1BB64009E02EE /* listDevice.pl */; };
 		BB98CE5716DB5E3C00B90297 /* appcode.txt in Resources */ = {isa = PBXBuildFile; fileRef = BB98CE5616DB5E3C00B90297 /* appcode.txt */; };
 		BBCDA04819FD229F009AC8C5 /* evalCode.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB117D2619FD20BD00A9400F /* evalCode.pl */; };
@@ -79,6 +80,7 @@
 		BB5DEF9816A55E1800E97DD4 /* injectSource.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = injectSource.pl; sourceTree = "<group>"; };
 		BB5DEF9916A55E1800E97DD4 /* openBundle.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = openBundle.pl; sourceTree = "<group>"; };
 		BB63E0F8160CA89800E95F5D /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		BB781C2C1BA4DDA8006587FD /* xprobeLoad.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = xprobeLoad.pl; sourceTree = "<group>"; };
 		BB8D68AA17F1BB64009E02EE /* listDevice.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = listDevice.pl; sourceTree = "<group>"; };
 		BB98CE5616DB5E3C00B90297 /* appcode.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = appcode.txt; sourceTree = "<group>"; };
 		BBC2900018CA6F46003436A9 /* InjectionLoader.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = InjectionLoader.xcodeproj; path = InjectionLoader/InjectionLoader.xcodeproj; sourceTree = "<group>"; };
@@ -167,13 +169,14 @@
 		BB26EB8D160DE85B00A62DFC /* Scripts */ = {
 			isa = PBXGroup;
 			children = (
-				BB117D2619FD20BD00A9400F /* evalCode.pl */,
-				BB8D68AA17F1BB64009E02EE /* listDevice.pl */,
 				BB5DEF9616A55D2A00E97DD4 /* common.pm */,
 				BBEC640016A756F600DC5E08 /* patchProject.pl */,
+				BB5DEF9816A55E1800E97DD4 /* injectSource.pl */,
 				BBEC640116A756F600DC5E08 /* revertProject.pl */,
 				BB5DEF9916A55E1800E97DD4 /* openBundle.pl */,
-				BB5DEF9816A55E1800E97DD4 /* injectSource.pl */,
+				BB781C2C1BA4DDA8006587FD /* xprobeLoad.pl */,
+				BB117D2619FD20BD00A9400F /* evalCode.pl */,
+				BB8D68AA17F1BB64009E02EE /* listDevice.pl */,
 				BBEADCF516B12EAE003EF366 /* projectBuilt.pl */,
 				BB020F6D16B3CC2D00126E33 /* injectStoryboard.pl */,
 			);
@@ -297,6 +300,7 @@
 				BBEADCF616B12EAE003EF366 /* projectBuilt.pl in Resources */,
 				BB020F6E16B3CC2D00126E33 /* injectStoryboard.pl in Resources */,
 				BB98CE5716DB5E3C00B90297 /* appcode.txt in Resources */,
+				BB781C2D1BA4DDA8006587FD /* xprobeLoad.pl in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -353,8 +357,6 @@
 				DEPLOYMENT_POSTPROCESSING = YES;
 				DSTROOT = "$(HOME)";
 				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_OBJC_GC = unsupported;
-				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				INFOPLIST_FILE = Info.plist;

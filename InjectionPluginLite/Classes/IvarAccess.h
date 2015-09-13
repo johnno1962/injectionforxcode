@@ -4,7 +4,7 @@
 //
 //  Generic access to get/set ivars - functions so they work with Swift.
 //
-//  $Id: //depot/XprobePlugin/Classes/IvarAccess.h#24 $
+//  $Id: //depot/XprobePlugin/Classes/IvarAccess.h#35 $
 //
 //  Source Repo:
 //  https://github.com/johnno1962/Xprobe/blob/master/Classes/IvarAccess.h
@@ -54,12 +54,20 @@ NSString *utf8String( const char *chars ) {
     return chars ? [NSString stringWithUTF8String:chars] : @"";
 }
 
+int xstrncmp( const char *str1, const char *str2 ) {
+    return strncmp( str1, str2, strlen( str2 ) );
+}
+
 static const char *isOOType( const char *type ) {
     return strncmp( type, "{OO", 3 ) == 0 ? strstr( type, "\"ref\"" ) : NULL;
 }
 
 static BOOL isCFType( const char *type ) {
     return type && strncmp( type, "^{__CF", 6 ) == 0;
+}
+
+static BOOL isSwiftObject( const char *type ) {
+    return (type[-1] == 'S' && (type[0] == 'a' || type[0] == 'S')) || xstrncmp( type, "{Dictionary}" ) == 0;
 }
 
 #pragma mark ivar_getTypeEncoding() for swift
@@ -221,10 +229,6 @@ int xprotect( void (^blockToProtect)() ) {
     return signum;
 }
 
-int xstrncmp( const char *str1, const char *str2 ) {
-    return strncmp( str1, str2, strlen( str2 ) );
-}
-
 @interface XprobeSwift : NSObject
 + (NSString *)string:(void *)stringPtr;
 + (NSString *)stringOpt:(void *)stringPtr;
@@ -232,7 +236,7 @@ int xstrncmp( const char *str1, const char *str2 ) {
 + (NSString *)arrayOpt:(void *)arrayPtr;
 @end
 
-Class xloadXprobeSwift() {
+Class xloadXprobeSwift( const char *ivarName ) {
     static Class xprobeSwift;
     static int triedLoad;
     if ( !xprobeSwift && !(xprobeSwift = objc_getClass("XprobeSwift")) && !triedLoad++ ) {
@@ -240,24 +244,20 @@ Class xloadXprobeSwift() {
         NSBundle *thisBundle = [NSBundle bundleForClass:[Xprobe class]];
         NSString *bundlePath = [[thisBundle bundlePath] stringByAppendingPathComponent:@"XprobeSwift.loader"];
         if ( ![[NSBundle bundleWithPath:bundlePath] load] )
-            NSLog( @"Xprobe: Could not load XprobeSwift bundle: %@", bundlePath );
+            NSLog( @"Xprobe: Could not load XprobeSwift bundle for ivar '%s': %@", ivarName, bundlePath );
         xprobeSwift = objc_getClass("XprobeSwift");
 #endif
     }
     return xprobeSwift;
 }
 
-id xvalueForPointer( id self, void *iptr, const char *type ) {
+id xvalueForPointer( id self, const char *name, void *iptr, const char *type ) {
     if ( !type )
         return notype;
     switch ( type[0] ) {
         case 'V':
         case 'v': return @"void";
 
-        case 'a':
-            return type[1] != '?' ?
-                [xloadXprobeSwift() array:iptr] ?: @"unavailable" :
-                [xloadXprobeSwift() arrayOpt:iptr] ?: @"unavailable";
         case 'b': // for now, for swift
         case 'B': return @(*(bool *)iptr);// ? @"true" : @"false";
 
@@ -265,11 +265,30 @@ id xvalueForPointer( id self, void *iptr, const char *type ) {
         case 'C': return [NSString stringWithFormat:@"0x%x", *(unsigned char *)iptr];
 
         case 's': return @(*(short *)iptr);
-        case 'S': if ( type[-1] == 'S' )
-            return type[1] != '?' ?
-                [xloadXprobeSwift() string:iptr] ?: @"unavailable" :
-                [xloadXprobeSwift() stringOpt:iptr] ?: @"unavailable";
-        else
+
+        case 'a':
+        case 'S':
+            if ( type[-1] == 'S' ) {
+                const char *suffix = strchr( name, '.' );
+                const char *mname = suffix ? strndup( name, suffix-name ) : name;
+                Method m = class_getInstanceMethod( object_getClass( self ), sel_registerName( mname ) );
+                if ( m && method_getTypeEncoding( m )[0] == '@' ) {
+                    id (*imp)( id, SEL ) = (id (*)( id, SEL ))method_getImplementation( m );
+                    return imp ? imp( self, method_getName( m ) ) : @"nomethod";
+                }
+                else
+                    switch ( type[0] ) {
+                        case 'a':
+                            return type[1] != '?' ?
+                            [xloadXprobeSwift( name ) array:iptr] ?: @"unavailable" :
+                            [xloadXprobeSwift( name ) arrayOpt:iptr] ?: @"unavailable";
+                        case 'S':
+                            return type[1] != '?' ?
+                            [xloadXprobeSwift( name ) string:iptr] ?: @"unavailable" :
+                            [xloadXprobeSwift( name ) stringOpt:iptr] ?: @"unavailable";
+                    }
+            }
+
             return [NSString stringWithFormat:@"0x%x", *(unsigned short *)iptr];
 
         case 'e': return @(*(int *)iptr);
@@ -306,7 +325,7 @@ id xvalueForPointer( id self, void *iptr, const char *type ) {
                 else if ( uptr & 0xffffffff ) {
                     id obj = *(const id *)iptr;
 #ifdef XPROBE_MAGIC
-                    [obj description];
+                    //[obj description];
 #endif
                     out = obj;
                 }
@@ -327,7 +346,7 @@ id xvalueForPointer( id self, void *iptr, const char *type ) {
                 strcpy(buff, "@\"NS" );
                 strcat(buff,type+6);
                 strcpy(strchr(buff,'='),"\"");
-                return xvalueForPointer( self, iptr, buff );
+                return xvalueForPointer( self, name, iptr, buff );
             }
             return [NSValue valueWithPointer:*(void **)iptr];
 
@@ -338,12 +357,23 @@ id xvalueForPointer( id self, void *iptr, const char *type ) {
                 return @(*(short *)iptr);
             else if ( xstrncmp( type+1, "Int32" ) == 0 )
                 return @(*(int *)iptr);
+            else if ( xstrncmp( type, "{Dictionary}" ) == 0 ) {
+                const char *suffix = strchr( name, '.' );
+                const char *mname = suffix ? strndup( name, suffix-name ) : name;
+                Method m = class_getInstanceMethod( object_getClass( self ), sel_registerName( mname ) );
+                if ( m && method_getTypeEncoding( m )[0] == '@' ) {
+                    id (*imp)( id, SEL ) = (id (*)( id, SEL ))method_getImplementation( m );
+                    return imp ? imp( self, method_getName( m ) ) : @"unavailable";
+                }
+                else
+                    return @"unavailable";
+            }
 
             const char *ooType = isOOType( type );
             if ( ooType )
-                return xvalueForPointer( self, iptr, ooType+5 );
+                return xvalueForPointer( self, name, iptr, ooType+5 );
             else if ( type[1] == '?' )
-                return xvalueForPointer( self, iptr, "I" );
+                return xvalueForPointer( self, name, iptr, "I" );
 
             // remove names for valueWithBytes:objCType:
             char cleanType[1000], *tptr = cleanType;
@@ -404,7 +434,7 @@ id xvalueForPointer( id self, void *iptr, const char *type ) {
 
 id xvalueForIvarType( id self, Ivar ivar, const char *type, Class aClass ) {
     void *iptr = (char *)(__bridge void *)self + ivar_getOffset(ivar);
-    return xvalueForPointer( self, iptr, type );
+    return xvalueForPointer( self, ivar_getName( ivar ), iptr, type );
 }
 
 id xvalueForIvar( id self, Ivar ivar, Class aClass ) {
@@ -430,7 +460,7 @@ id xvalueForMethod( id self, Method method ) {
         char buffer[size];
         if ( returnType[0] != 'v' )
             [invocation getReturnValue:buffer];
-        return xvalueForPointer( self, buffer, returnType );
+        return xvalueForPointer( self, sel_getName( method_getName( method ) ), buffer, returnType );
     }
     @catch ( NSException *e ) {
         NSLog( @"Xprobe: exception on invoke: %@", e );
@@ -503,6 +533,9 @@ NSString *xtypeStar( const char *type, const char *star ) {
                 end++;
     NSData *data = [NSData dataWithBytesNoCopy:(void *)type length:end-type freeWhenDone:NO];
     NSString *typeName = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    Class theClass = NSClassFromString( typeName );
+    if ( theClass )
+        typeName = NSStringFromClass( theClass );
     if ( type[-1] == '<' )
         return [NSString stringWithFormat:@"id&lt;%@&gt;",
                 xlinkForProtocol( typeName )];

@@ -127,19 +127,10 @@ static NSMutableArray *sharedInstances;
             for ( unsigned i=0 ; i<ic ; i++ ) {
                 __unused const char *currentIvarName = ivar_getName(ivars[i]);
                 const char *type = ivar_getTypeEncodingSwift( ivars[i], aClass );
-                if ( type && type[0] == '@' ) {
+                if ( type && (type[0] == '@' || isSwiftObject( type )) ) {
                     id subObject = xvalueForIvarType( self, ivars[i], type, aClass );
                     if ( [subObject respondsToSelector:@selector(bsweep)] )
                         [subObject bsweep];////( subObject );
-                }
-                else if ( type && type[0] == 'a' ) {
-                    Method m = class_getInstanceMethod( aClass, sel_registerName( currentIvarName ) );
-                    if ( m && method_getTypeEncoding( m )[0] == '@' ) {
-                        id (*imp)( id, SEL ) = (id (*)( id, SEL ))method_getImplementation( m );
-                        id subObject = imp( self, method_getName( m ) );
-                        if ( [subObject respondsToSelector:@selector(bsweep)] )
-                            [subObject bsweep];////( subObject );
-                    }
                 }
             }
 
@@ -234,6 +225,10 @@ static NSMutableArray *sharedInstances;
 - (void)bsweep {
 }
 
+@end
+
+@interface NSObject(SharedInstances)
++ (id)sharedInstance;
 @end
 
 static NSMutableDictionary *instancesSeen;

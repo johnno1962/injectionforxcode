@@ -88,6 +88,19 @@ static INPluginMenuController *injectionPlugin;
         [injectionPlugin.client runScript:@"evalCode.pl" withArg:code];
 }
 
++ (BOOL)loadXprobe:(NSString *)resourcePath {
+    if ( injectionPlugin.client.connected ) {
+        [injectionPlugin.client runScript:@"xprobeLoad.pl" withArg:resourcePath];
+        return YES;
+    }
+    else
+        return NO;
+}
+
++ (BOOL)loadRemote:(NSString *)resourcePath {
+    return [self loadXprobe:resourcePath];
+}
+
 - (void)error:(NSString *)format, ... {
     va_list argp;
     va_start(argp, format);

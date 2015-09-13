@@ -1415,7 +1415,7 @@ cm9qZWN0IHRvIHJlc29sdmUgdGhlc2UgcHJvYmxlbXM/A</string>
 					</object>
 					<object class="NSMenuItem" id="592153601">
 						<reference key="NSMenu" ref="557975400"/>
-						<bool key="NSIsHidden">YES</bool>
+						<bool key="NSIsHidden">NO</bool>
 						<string key="NSTitle">Donate to Injection</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
