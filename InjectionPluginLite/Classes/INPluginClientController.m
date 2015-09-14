@@ -411,9 +411,14 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
                     case '/':
                     case '@':
                     case '!':
-                        if ( self.connected )
+                        if ( self.connected ) {
+                            if ( self.withReset )
+                                [BundleInjection writeBytes:INJECTION_MAGIC
+                                                   withPath:"~" from:0 to:clientSocket];
                             [BundleInjection writeBytes:INJECTION_MAGIC
                                                withPath:file from:0 to:clientSocket];
+                            self.withReset = NO;
+                        }
                         else
                             [self scriptText:@"\\line Application no longer running/connected."];
                         break;

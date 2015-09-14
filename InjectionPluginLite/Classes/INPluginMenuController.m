@@ -375,6 +375,11 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
     });
 }
 
+- (IBAction)injectWithReset:(id)sender {
+    self.client.withReset = YES;
+    [self injectSource:sender];
+}
+
 #pragma mark - Injection Service
 
 static CFDataRef copy_mac_address(void)

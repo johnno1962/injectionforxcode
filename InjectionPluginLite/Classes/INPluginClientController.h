@@ -29,6 +29,7 @@
 @interface INPluginClientController : NSObject
 
 @property (nonatomic,retain) NSString *scriptPath;
+@property (nonatomic) BOOL withReset;
 
 - (void)alert:(NSString *)msg;
 - (void)setConnection:(int)clientConnection;

@@ -982,9 +982,11 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
                 UIViewController *newVc = vc.storyboard.instantiateInitialViewController;
                 if ( !newVc )
                     newVc = [[[vc class] alloc] initWithNibName:vc.nibName bundle:nil];
+                if ( [newVc respondsToSelector:@selector(setDelegate:)] )
+                    [(id)newVc setDelegate:vc.delegate];
+                [app.windows[0] setRootViewController:newVc];
                 if ( [app.delegate respondsToSelector:@selector(setViewController:)] )
                     [(NSObject *)app.delegate setViewController:newVc];
-                [app.windows[0] setRootViewController:newVc];
                 //[app.delegate application:app didFinishLaunchingWithOptions:nil];
                 injectAndReset = NO;
             }
@@ -1062,6 +1064,7 @@ static NSBundle *lastLoadedNibBundle;
         [nib inInstantiateWithOwner:vc options:savedOptions];
     }
     @catch ( NSException *e ) {
+        NSLog( @"Reload exception: %@", e );
         return;
     }
     playbackPlaceholders = nil;

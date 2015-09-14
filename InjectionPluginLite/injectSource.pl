@@ -187,6 +187,7 @@ else {
 #
 
 my $sbInjection = $flags & $INJECTION_STORYBOARD;
+$flags &= ~$INJECTION_STORYBOARD;
 my $nibCompiled;
 
 if ( !$learnt ) {
@@ -211,6 +212,7 @@ if ( !$learnt ) {
                             or die "Interface compile failed";
                             print "!!Injection: Compile completes\n";
                             ($nibCompiled) = $line =~ /-compilation-directory (.*?)\/\w+.lproj/;
+                            $flags |= $INJECTION_STORYBOARD;
                             last FOUND;
                     }
                 }
@@ -319,7 +321,7 @@ if ( $learnt ) {
         or die "Could not locate object file in: $learnt";
     ###$learnt =~ s/( -DDEBUG\S* )/$1-DINJECTION_BUNDLE /;
 
-    ##$learnt =~ s/([()])/\\$1/g;
+    $learnt =~ s/([()])/\\$1/g;
     rtfEscape( my $lout = $learnt );
     print "Learnt compile: $compileHighlight $lout\n";
 
@@ -466,7 +468,7 @@ print "$command\n";
 
 $bundlePath = $newBundle;
 
-if ( $nibCompiled ) {
+if ( $flags & $INJECTION_STORYBOARD ) {
     print "Copying nibs $nibCompiled -> $bundlePath\n\n";
     open NIBS, "cd '$nibCompiled'; find . |";
     while ( my $nib = <NIBS> ) {

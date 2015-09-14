@@ -82,6 +82,27 @@ This works on a device and you need to have selected "Inject Strybds" in the
 "Tunable App Parameters" panel before running the applpication. Unfortunately,
 segues are not preserved and are not reliable after injection.
 
+### "Inject and Reset"
+
+It may be useful to inject code and reset your application to it's initial
+interafce without the delay of a relaunch by using the new "control-shift-=".
+This executes the following code which resets the app storyboard:
+
+    if ( injectAndReset ) {
+        UIApplication *app = UIApplication.sharedApplication;
+        UIViewController *vc = [app.windows[0] rootViewController];
+        UIViewController *newVc = vc.storyboard.instantiateInitialViewController;
+        if ( !newVc )
+            newVc = [[[vc class] alloc] initWithNibName:vc.nibName bundle:nil];
+        if ( [newVc respondsToSelector:@selector(setDelegate:)] )
+            [(id)newVc setDelegate:vc.delegate];
+        [app.windows[0] setRootViewController:newVc];
+        if ( [app.delegate respondsToSelector:@selector(setViewController:)] )
+            [(NSObject *)app.delegate setViewController:newVc];
+        //[app.delegate application:app didFinishLaunchingWithOptions:nil];
+        injectAndReset = NO;
+    }
+
 ### Injecting classes using "internal" scope inside Swift
 
 With Xcode 6.3.1/Swift 1.2 injection has become a little more difficult as "internal"

@@ -2,7 +2,7 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="8.00">
 	<data>
 		<int key="IBDocument.SystemTarget">1070</int>
-		<string key="IBDocument.SystemVersion">14E46</string>
+		<string key="IBDocument.SystemVersion">14F27</string>
 		<string key="IBDocument.InterfaceBuilderVersion">7706</string>
 		<string key="IBDocument.AppKitVersion">1348.17</string>
 		<string key="IBDocument.HIToolboxVersion">758.70</string>
@@ -99,7 +99,7 @@
 											<string key="NSFrameSize">{465, 247}</string>
 											<reference key="NSSuperview" ref="1053138527"/>
 											<reference key="NSWindow"/>
-											<reference key="NSNextKeyView" ref="361555004"/>
+											<reference key="NSNextKeyView" ref="591467781"/>
 											<object class="NSTextContainer" key="NSTextContainer" id="340944595">
 												<object class="NSLayoutManager" key="NSLayoutManager">
 													<object class="NSTextStorage" key="NSTextStorage">
@@ -218,7 +218,7 @@
 							<string key="NSFrame">{{-1, 28}, {482, 249}}</string>
 							<reference key="NSSuperview" ref="678498147"/>
 							<reference key="NSWindow"/>
-							<reference key="NSNextKeyView" ref="1053138527"/>
+							<reference key="NSNextKeyView" ref="361555004"/>
 							<int key="NSsFlags">133138</int>
 							<reference key="NSVScroller" ref="591467781"/>
 							<reference key="NSHScroller" ref="361555004"/>
@@ -265,6 +265,7 @@
 							<string key="NSFrame">{{436, 2}, {41, 25}}</string>
 							<reference key="NSSuperview" ref="678498147"/>
 							<reference key="NSWindow"/>
+							<reference key="NSNextKeyView"/>
 							<string key="NSReuseIdentifierKey">_NS:22</string>
 							<object class="NSAppearance" key="NSAppearance" id="968380656">
 								<string key="NSAppearanceName">NSAppearanceNameAqua</string>
@@ -983,6 +984,7 @@
 							<string key="NSFrame">{{544, 20}, {43, 17}}</string>
 							<reference key="NSSuperview" ref="1033120942"/>
 							<reference key="NSWindow"/>
+							<reference key="NSNextKeyView"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="474164952">
 								<int key="NSCellFlags">68157504</int>
@@ -1415,7 +1417,6 @@ cm9qZWN0IHRvIHJlc29sdmUgdGhlc2UgcHJvYmxlbXM/A</string>
 					</object>
 					<object class="NSMenuItem" id="592153601">
 						<reference key="NSMenu" ref="557975400"/>
-						<bool key="NSIsHidden">NO</bool>
 						<string key="NSTitle">Donate to Injection</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
@@ -1470,6 +1471,15 @@ cm9qZWN0IHRvIHJlc29sdmUgdGhlc2UgcHJvYmxlbXM/A</string>
 						<reference key="NSMenu" ref="557975400"/>
 						<string key="NSTitle">Tunable App Parameters</string>
 						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="657384776"/>
+						<reference key="NSMixedImage" ref="1016713451"/>
+					</object>
+					<object class="NSMenuItem" id="266391528">
+						<reference key="NSMenu" ref="557975400"/>
+						<string key="NSTitle">Inject and Reset App</string>
+						<string key="NSKeyEquiv">=</string>
+						<int key="NSKeyEquivModMask">393216</int>
 						<int key="NSMnemonicLoc">2147483647</int>
 						<reference key="NSOnImage" ref="657384776"/>
 						<reference key="NSMixedImage" ref="1016713451"/>
@@ -1806,6 +1816,14 @@ cm9qZWN0IHRvIHJlc29sdmUgdGhlc2UgcHJvYmxlbXM/A</string>
 						<reference key="destination" ref="429290479"/>
 					</object>
 					<string key="id">633</string>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">injectWithReset:</string>
+						<reference key="source" ref="152687523"/>
+						<reference key="destination" ref="266391528"/>
+					</object>
+					<string key="id">XfU-LG-SwT</string>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -2995,6 +3013,7 @@ cm9qZWN0IHRvIHJlc29sdmUgdGhlc2UgcHJvYmxlbXM/A</string>
 							<reference ref="635540752"/>
 							<reference ref="429290479"/>
 							<reference ref="385794392"/>
+							<reference ref="266391528"/>
 						</array>
 						<reference key="parent" ref="0"/>
 					</object>
@@ -3177,6 +3196,11 @@ cm9qZWN0IHRvIHJlc29sdmUgdGhlc2UgcHJvYmxlbXM/A</string>
 						<string key="id">AuY-7q-bAB</string>
 						<reference key="object" ref="11402808"/>
 						<reference key="parent" ref="909529663"/>
+					</object>
+					<object class="IBObjectRecord">
+						<string key="id">seg-m5-x2R</string>
+						<reference key="object" ref="266391528"/>
+						<reference key="parent" ref="557975400"/>
 					</object>
 				</array>
 			</object>
@@ -3553,6 +3577,8 @@ cm9qZWN0IHRvIHJlc29sdmUgdGhlc2UgcHJvYmxlbXM/A</string>
 				<boolean value="NO" key="631.showNotes"/>
 				<string key="AuY-7q-bAB.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="ngf-5m-GWO.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="seg-m5-x2R.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<boolean value="NO" key="seg-m5-x2R.showNotes"/>
 			</dictionary>
 			<dictionary class="NSMutableDictionary" key="unlocalizedProperties"/>
 			<nil key="activeLocalization"/>
@@ -3771,6 +3797,7 @@ cm9qZWN0IHRvIHJlc29sdmUgdGhlc2UgcHJvYmxlbXM/A</string>
 					<string key="className">INPluginMenuController</string>
 					<dictionary class="NSMutableDictionary" key="actions">
 						<string key="injectSource:">id</string>
+						<string key="injectWithReset:">id</string>
 						<string key="license:">id</string>
 						<string key="listDevice:">id</string>
 						<string key="openBundle:">id</string>
@@ -3782,6 +3809,10 @@ cm9qZWN0IHRvIHJlc29sdmUgdGhlc2UgcHJvYmxlbXM/A</string>
 					<dictionary class="NSMutableDictionary" key="actionInfosByName">
 						<object class="IBActionInfo" key="injectSource:">
 							<string key="name">injectSource:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="injectWithReset:">
+							<string key="name">injectWithReset:</string>
 							<string key="candidateClassName">id</string>
 						</object>
 						<object class="IBActionInfo" key="license:">
@@ -3918,6 +3949,14 @@ cm9qZWN0IHRvIHJlc29sdmUgdGhlc2UgcHJvYmxlbXM/A</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">AppKit.framework/Headers/NSControl.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSFormatter</string>
+					<string key="superclassName">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">Foundation.framework/Headers/NSFormatter.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
