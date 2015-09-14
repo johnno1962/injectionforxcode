@@ -17,7 +17,7 @@ empty main.m to your project.
 
 When classes are injected they receive a +injected message and instances will receive
 a -injected message so you can reload view controllers for example. This is achieved
-using a sweep of objects visable from [UIApplication sharedApplication] and it's windows.
+using a sweep of objects visible from [UIApplication sharedApplication] and it's windows.
 If required, for all classes that have a +sharedInstance method in your app or frameworks,
 this method is called and the result added to the list of seeds for the sweep.
 
@@ -46,11 +46,11 @@ https://vimeo.com/50137444
 Announcements of major commits to the repo will be made on twitter [@Injection4Xcode](https://twitter.com/#!/@Injection4Xcode).
 
 To use Injection, open the InjectionPluginLite project, build it and restart Xcode.
-Injection is also avilable in the [Alcatraz](http://alcatraz.io/) meta plugin.
+Injection is also available in the [Alcatraz](http://alcatraz.io/) meta plugin.
 This should add a submenu and an "Inject Source" item to Xcode's "Product" menu.
 If at first it doesn't appear, try restarting Xcode again.
 
-In the simulator, Injection can be used "unpatched", loading a bundle on demmand
+In the simulator, Injection can be used "unpatched", loading a bundle on demand
 to provide support for injection. You should be able to type ctrl-= at any time you
 are editing a method implementation to have the changes updated in your application.
 
@@ -68,7 +68,7 @@ you have problems with injection you can remove the plugin my typing:
 ### Storyboard Injection currently working
 
 When editing the storyboard of the currently displayed view controller you can
-inject it to experiement with colors and layout and it will reload with the following
+inject it to experiment with colors and layout and it will reload with the following
 methods being called:
 
 ```objc
@@ -81,14 +81,14 @@ methods being called:
 ```
 
 This works on a device and you need to have selected "Inject Strybds" in the
-"Tunable App Parameters" panel before running the applpication. Unfortunately,
+"Tunable App Parameters" panel before running the application. Unfortunately,
 segues are not preserved and are not reliable after injection.
 
 ### "Inject and Reset"
 
 It may be useful to inject code and reset your application to it's initial
-interafce without the delay of a relaunch by using the new "control-shift-=".
-This executes the following code which resets the app storyboard:
+interface without the delay of a relaunch by using the new "control-shift-=".
+This executes the following code which attempts to reset the app storyboard:
 
 ```objc
     if ( injectAndReset ) {
@@ -173,7 +173,7 @@ turning off the message dialogue each time classes are injected.
 
 With patched injection, the global variables INParameters and INColors are exposed to all
 classes in the project through it's .pch file. These variables are linked in real time to
-the sliders and color wells on the Tunable Parameters panel once the aplictaion has started.
+the sliders and colour wells on the Tunable Parameters panel once the application has started.
 These can be used for micro-tuning your application or it's appearance.
 
 The projects in the source tree are related as follows:
