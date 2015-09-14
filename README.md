@@ -71,12 +71,14 @@ When editing the storyboard of the currently displayed view controller you can
 inject it to experiement with colors and layout and it will reload with the following
 methods being called:
 
+```objc
     [vc.view setNeedsLayout];
     [vc.view layoutIfNeeded];
 
     [vc viewDidLoad];
     [vc viewWillAppear:NO];
     [vc viewDidAppear:NO];
+```
 
 This works on a device and you need to have selected "Inject Strybds" in the
 "Tunable App Parameters" panel before running the applpication. Unfortunately,
@@ -88,6 +90,7 @@ It may be useful to inject code and reset your application to it's initial
 interafce without the delay of a relaunch by using the new "control-shift-=".
 This executes the following code which resets the app storyboard:
 
+```objc
     if ( injectAndReset ) {
         UIApplication *app = UIApplication.sharedApplication;
         UIViewController *vc = [app.windows[0] rootViewController];
@@ -102,6 +105,7 @@ This executes the following code which resets the app storyboard:
         //[app.delegate application:app didFinishLaunchingWithOptions:nil];
         injectAndReset = NO;
     }
+```
 
 ### Injecting classes using "internal" scope inside Swift
 
