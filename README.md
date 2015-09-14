@@ -16,13 +16,16 @@ anyway so injection starts more quickly. To patch a Swift project you need to ad
 empty main.m to your project.
 
 When classes are injected they receive a +injected message and instances will receive
-a -injected message so you can reload view controllers for example.
+a -injected message so you can reload view controllers for example. This is achieved
+using a sweep of objects visable from [UIApplication sharedApplication] and it's windows.
+If required, for all classes that have a +sharedInstance method in your app or frameworks,
+this method is called and the result added to the list of seeds for the sweep.
 
 The plugin is now integrated with the [XprobePlugin](https://github.com/johnno1962/XprobePlugin).
 Once installed, use the Product/Xprobe/Load menu item to inspect the objects in your application
 and search for the object you wish to execute code against and click it's link to
-inspect/select it. You can then open an editor which allows you to execute any
-Objective-C or Swift code  against the object (implemented as a catgeory/extension.)
+inspect/select it. You can then open an editor which allows you to execute
+Objective-C or Swift code against the object (implemented as a catgeory/extension.)
 Use Xlog/xprintln to log output back to the Xprobe window.
 
 The InjectionPluginAppCode project has also been updated for 3.1 so you can now inject Swift from AppCode!
@@ -62,11 +65,29 @@ you have problems with injection you can remove the plugin my typing:
 
     rm -rf ~/Library/Application\ Support/Developer/Shared/Xcode/Plug-ins/InjectionPlugin.xcplugin
 
+### Storyboard Injection currently working
+
+When editing the storyboard of the currently displayed view controller you can
+inject it to experiement with colors and layout and it will reload with the following
+methods being called:
+
+    [vc.view setNeedsLayout];
+    [vc.view layoutIfNeeded];
+
+    [vc viewDidLoad];
+    [vc viewWillAppear:NO];
+    [vc viewDidAppear:NO];
+
+This works on a device and you need to have selected "Inject Strybds" in the
+"Tunable App Parameters" panel before running the applpication. Unfortunately,
+segues are not preserved and are not reliable after injection.
+
 ### Injecting classes using "internal" scope inside Swift
 
 With Xcode 6.3.1/Swift 1.2 injection has become a little more difficult as "internal"
 symbols that may be required for the injecting class to link against are now
-given visibility "hidden" which makes them unavailable resulting in crashes.
+given visibility "hidden" which makes them unavailable resulting in crashes
+if you refer to functions or variables outside classes that are not public.
 This can be resolved by adding a "Run Script" build phase to your framework 
 or main app target to call the following command.
 

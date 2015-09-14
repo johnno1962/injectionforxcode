@@ -187,13 +187,13 @@ else {
 #
 
 my $sbInjection = $flags & $INJECTION_STORYBOARD;
-$flags &= ~$INJECTION_STORYBOARD;
+my $nibCompiled;
 
 if ( !$learnt ) {
     foreach my $selectedFile (split ';', $selectedFile) {
         (my $escaped = $selectedFile) =~ s/ /\\\\ /g;
         my ($filename) = $selectedFile =~ /\/([^\/]+)$/;
-        my $isInterface = $selectedFile =~ /\.(storyboard|nib)$/;
+        my $isInterface = $selectedFile =~ /\.(storyboard|xib)$/;
         local $/ = "\r";
     FOUND:
         foreach my $log (@logs) {
@@ -210,7 +210,7 @@ if ( !$learnt ) {
                             0 == system "time $line 2>&1"
                             or die "Interface compile failed";
                             print "!!Injection: Compile completes\n";
-                            $flags |= $INJECTION_STORYBOARD;
+                            ($nibCompiled) = $line =~ /-compilation-directory (.*?)\/\w+.lproj/;
                             last FOUND;
                     }
                 }
@@ -324,7 +324,10 @@ if ( $learnt ) {
     print "Learnt compile: $compileHighlight $lout\n";
 
     print "!!Compiling $selectedFile\n";
-    print rtfEscape( scalar `(time $learnt) 2>&1` );
+    foreach my $out (`time $learnt 2>&1`) {
+        print "!!$out";
+        print rtfEscape( $out );
+    }
     error "Learnt compile failed" if $?;
 
     #if ( $isSwift ) {
@@ -463,19 +466,19 @@ print "$command\n";
 
 $bundlePath = $newBundle;
 
-if ( $flags & $INJECTION_STORYBOARD ) {
-    # print "  HERE $localBundle -- $bundlePath\n\n";
-    open NIBS, "cd '$localBundle'; find . |";
+if ( $nibCompiled ) {
+    print "Copying nibs $nibCompiled -> $bundlePath\n\n";
+    open NIBS, "cd '$nibCompiled'; find . |";
     while ( my $nib = <NIBS> ) {
         chomp $nib;
         last if !$nib;
-        if ( -d "$localBundle/$nib" ) {
+        if ( -d "$nibCompiled/$nib" ) {
             mkdir "$bundlePath/$nib";
         }
         elsif ( $nib =~ /\.nib$/ ) {
             print "$nib\n";
             print ">$bundlePath/$nib\n";
-            print "<$localBundle/$nib\n";
+            print "<$nibCompiled/$nib\n";
         }
     }
     close NIBS;
