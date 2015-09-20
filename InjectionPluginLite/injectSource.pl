@@ -192,9 +192,10 @@ my $nibCompiled;
 
 if ( !$learnt ) {
     foreach my $selectedFile (split ';', $selectedFile) {
-        (my $escaped = $selectedFile) =~ s/ /\\\\ /g;
+        (my $escaped = $selectedFile) =~ s/([' ])/\\$1/g;
         my ($filename) = $selectedFile =~ /\/([^\/]+)$/;
         my $isInterface = $selectedFile =~ /\.(storyboard|xib)$/;
+
         local $/ = "\r";
     FOUND:
         foreach my $log (@logs) {
