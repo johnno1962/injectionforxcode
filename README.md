@@ -13,7 +13,8 @@ After making a couple of minor changes to your application's "main.m" and pre-co
 known as "patched" injection you can also inject to an iOS device over WiFi. To do this,
 select "Product/Injection Plugin/Patch Project for Injection". You may want to do this
 anyway so injection starts more quickly. To patch a Swift project you need to add an
-empty main.m to your project.
+empty main.m to your project. If you don't like control-= as a shortcut it is a
+preference in the "Tunable App Parameters Panel".
 
 When classes are injected they receive a +injected message and instances will receive
 a -injected message so you can reload view controllers for example. This is achieved
@@ -28,11 +29,12 @@ inspect/select it. You can then open an editor which allows you to execute
 Objective-C or Swift code against the object (implemented as a catgeory/extension.)
 Use Xlog/xprintln to log output back to the Xprobe window.
 
-The InjectionPluginAppCode project has also been updated for 3.1 so you can now inject Swift from AppCode!
+The InjectionPluginAppCode project has also been updated for 3.1 so you can now inject Swift from
+AppCode if you patch your project from inside AppCode.
 
 ![Icon](http://injectionforxcode.johnholdsworth.com/overview.png)
 
-The "unpatched" version of Injection now includes "Xtrace" which will allow
+The "unpatched" auto-loading version of Injection now includes "Xtrace" which will allow
 you to log all messages sent to a class or instance using the following commands:
 
     (lldb) p [UITableView xtrace] // trace all table view instances

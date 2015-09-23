@@ -35,9 +35,10 @@ static INPluginMenuController *injectionPlugin;
 
 @interface INPluginMenuController()  <NSNetServiceDelegate> {
 
-    IBOutlet NSTextField *urlLabel;
-    IBOutlet WebView *webView;
+    IBOutlet NSTextField *urlLabel, *shortcut;
     IBOutlet NSMenuItem *subMenuItem, *introItem;
+    IBOutlet WebView *webView;
+    NSMenuItem *menuItem;
 
     Class IDEWorkspaceWindowController;
     Class DVTSourceTextView;
@@ -115,7 +116,6 @@ static INPluginMenuController *injectionPlugin;
     DVTSourceTextView = NSClassFromString(@"DVTSourceTextView");
     IDEConsoleTextView = NSClassFromString(@"IDEConsoleTextView");
 
-    self.defaults = [NSUserDefaults standardUserDefaults];
 
     if ( ![NSBundle loadNibNamed:@"INPluginMenuController" owner:self] )
         if ( [[NSAlert alertWithMessageText:@"Injection Plugin:"
@@ -125,19 +125,24 @@ static INPluginMenuController *injectionPlugin;
                "This will install the plugin."] runModal] == NSAlertAlternateReturn )
             [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"https://github.com/johnno1962/injectionforxcode"]];
 
+    self.defaults = [NSUserDefaults standardUserDefaults];
+
+    NSString *currentShortcut = [self.defaults valueForKey:@"INShortcut"] ?: shortcut.stringValue;
+    [shortcut setStringValue:currentShortcut];
+
 	NSMenu *productMenu = [[[NSApp mainMenu] itemWithTitle:@"Product"] submenu];
 	if (productMenu) {
 		[productMenu addItem:[NSMenuItem separatorItem]];
 
-        struct { char *item,  *key; SEL action; } items[] = {
+        struct { const char *item,  *key; SEL action; } items[] = {
             {"Injection Plugin", "", NULL},
-            {"Inject Source", "=", @selector(injectSource:)}
+            {"Inject Source", [currentShortcut UTF8String], @selector(injectSource:)}
         };
 
         for ( int i=0 ; i<sizeof items/sizeof items[0] ; i++ ) {
-            NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:items[i].item]
-                                                              action:items[i].action
-                                                       keyEquivalent:[NSString stringWithUTF8String:items[i].key]];
+            menuItem = [[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:items[i].item]
+                                                  action:items[i].action
+                                           keyEquivalent:[NSString stringWithUTF8String:items[i].key]];
             [menuItem setKeyEquivalentModifierMask:NSControlKeyMask];
             if ( i==0 )
                 [subMenuItem = menuItem setSubmenu:self.subMenu];
@@ -158,6 +163,12 @@ static INPluginMenuController *injectionPlugin;
     webView.drawsBackground = NO;
     [self setProgress:@-1];
     [self startServer];
+}
+
+- (IBAction)shortcutChanged:sender {
+    [self.defaults setValue:shortcut.stringValue forKey:@"INShortcut"];
+    [self.defaults synchronize];
+    [menuItem setKeyEquivalent:shortcut.stringValue];
 }
 
 - (void)setProgress:(NSNumber *)fraction {
