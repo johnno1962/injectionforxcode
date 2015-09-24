@@ -36,7 +36,7 @@ static INPluginMenuController *injectionPlugin;
 @interface INPluginMenuController()  <NSNetServiceDelegate> {
 
     IBOutlet NSTextField *urlLabel, *shortcut;
-    IBOutlet NSMenuItem *subMenuItem, *introItem;
+    IBOutlet NSMenuItem *subMenuItem, *introItem, *injectAndReset;
     IBOutlet WebView *webView;
     NSMenuItem *menuItem;
 
@@ -159,6 +159,8 @@ static INPluginMenuController *injectionPlugin;
     else
         [self error:@"InInjectionPlugin: Could not locate Product Menu."];
 
+    [injectAndReset setKeyEquivalent:currentShortcut];
+
     self.progressIndicator.frame = NSMakeRect(60, 20, 200, 10);
     webView.drawsBackground = NO;
     [self setProgress:@-1];
@@ -169,6 +171,7 @@ static INPluginMenuController *injectionPlugin;
     [self.defaults setValue:shortcut.stringValue forKey:@"INShortcut"];
     [self.defaults synchronize];
     [menuItem setKeyEquivalent:shortcut.stringValue];
+    [injectAndReset setKeyEquivalent:shortcut.stringValue];
 }
 
 - (void)setProgress:(NSNumber *)fraction {
@@ -257,8 +260,8 @@ static INPluginMenuController *injectionPlugin;
 //        [[workspace fileURL] path] : nil;
 }
 
-- (BOOL)validateMenuItem:(NSMenuItem *)menuItem {
-    SEL action = [menuItem action];
+- (BOOL)validateMenuItem:(NSMenuItem *)aMenuItem {
+    SEL action = [aMenuItem action];
     if ( action == @selector(injectSource:) ) {
 //        NSString *workspace = [self workspacePath];
 //        NSRange range = [workspace rangeOfString:@"([^/]+)(?=\\.(?:xcodeproj|xcworkspace))"
@@ -271,7 +274,7 @@ static INPluginMenuController *injectionPlugin;
     }
     if ( action == @selector(patchProject:) || action == @selector(revertProject:) )
         return [self workspacePath] != nil;
-    else if ( [menuItem action] == @selector(openBundle:) || [menuItem action] == @selector(listDevice:) )
+    else if ( [aMenuItem action] == @selector(listDevice:) )
         return self.client.connected;
     else
         return YES;
