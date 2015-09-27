@@ -4,8 +4,8 @@ Copyright (c) John Holdsworth 2012-15
 
 Injection is a plugin for Xcode that allows you to "inject" Objective-C and Swift code changes
 into a running application without having to restart it during development and testing. 
-Injection on longer requires you to patch your project or it's sources for
-iOS projects in the simulator. To use: download this project build it and restart Xcode.
+Injection no longer requires you to patch your project or it's sources for
+iOS projects in the simulator. To use: download this project, build it and restart Xcode.
 When your application is running type control-= and any modifications to the selected
 class should be applied to your application while it runs. That's it.
 
@@ -53,7 +53,7 @@ This should add a submenu and an "Inject Source" item to Xcode's "Product" menu.
 If at first it doesn't appear, try restarting Xcode again.
 
 In the simulator, Injection can be used "unpatched", loading a bundle on demand
-to provide support for injection. You should be able to type ctrl-= at any time you
+to provide support for injection. You should be able to type control-= at any time you
 are editing a method implementation to have the changes updated in your application.
 
 If you want to use injection from a device you will need to patch your project using
