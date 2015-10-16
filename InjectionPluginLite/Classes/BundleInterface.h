@@ -56,7 +56,10 @@
 
 #define _inglobal
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wvariadic-macros"
 #define _inval( _val... ) = _val
+#pragma clang diagnostic pop
 
 #import <Foundation/Foundation.h>
 

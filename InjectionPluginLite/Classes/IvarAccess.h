@@ -39,6 +39,17 @@
 
  */
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wreserved-id-macro"
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#pragma clang diagnostic ignored "-Wcstring-format-directive"
+#pragma clang diagnostic ignored "-Wgnu-conditional-omitted-operand"
+#pragma clang diagnostic ignored "-Wcast-align"
+#pragma clang diagnostic ignored "-Wmissing-noreturn"
+#pragma clang diagnostic ignored "-Wunused-exception-parameter"
+#pragma clang diagnostic ignored "-Wvla-extension"
+#pragma clang diagnostic ignored "-Wvla"
+
 #ifndef _IvarAccess_h
 #define _IvarAccess_h
 
@@ -50,11 +61,19 @@
 #import <Cocoa/Cocoa.h>
 #endif
 
-NSString *utf8String( const char *chars ) {
+extern const char *ivar_getTypeEncodingSwift( Ivar ivar, Class aClass );
+extern id xvalueForPointer( id self, const char *name, void *iptr, const char *type );
+extern id xvalueForIvarType( id self, Ivar ivar, const char *type, Class aClass );
+extern id xvalueForIvar( id self, Ivar ivar, Class aClass );
+extern id xvalueForMethod( id self, Method method );
+extern BOOL xvalueUpdateIvar( id self, Ivar ivar, NSString *value );
+extern NSString *xlinkForProtocol( NSString *protolName );
+
+static NSString *utf8String( const char *chars ) {
     return chars ? [NSString stringWithUTF8String:chars] : @"";
 }
 
-int xstrncmp( const char *str1, const char *str2 ) {
+static int xstrncmp( const char *str1, const char *str2 ) {
     return strncmp( str1, str2, strlen( str2 ) );
 }
 
@@ -204,7 +223,7 @@ static void handler( int sig ) {
     longjmp( jmp_env, sig );
 }
 
-int xprotect( void (^blockToProtect)() ) {
+static int xprotect( void (^blockToProtect)() ) {
     void (*savetrap)(int) = signal( SIGTRAP, handler );
     void (*savesegv)(int) = signal( SIGSEGV, handler );
     void (*savebus )(int) = signal( SIGBUS,  handler );
@@ -236,7 +255,7 @@ int xprotect( void (^blockToProtect)() ) {
 + (NSString *)arrayOpt:(void *)arrayPtr;
 @end
 
-Class xloadXprobeSwift( const char *ivarName ) {
+static Class xloadXprobeSwift( const char *ivarName ) {
     static Class xprobeSwift;
     static int triedLoad;
     if ( !xprobeSwift && !(xprobeSwift = objc_getClass("XprobeSwift")) && !triedLoad++ ) {
@@ -469,7 +488,7 @@ id xvalueForMethod( id self, Method method ) {
 }
 
 BOOL xvalueUpdateIvar( id self, Ivar ivar, NSString *value ) {
-    const char *iptr = (char *)(__bridge void *)self + ivar_getOffset(ivar);
+    char *iptr = (char *)(__bridge void *)self + ivar_getOffset(ivar);
     const char *type = ivar_getTypeEncodingSwift( ivar, [self class] );
     switch ( type[0] ) {
         case 'b': // Swift
@@ -513,9 +532,9 @@ NSString *xlinkForProtocol( NSString *protolName ) {
             protolName, protolName, [protocolName isEqualToString:@"nil"] ? protolName : protocolName];
 }
 
-NSString *xtype( const char *type );
+static NSString *xtype( const char *type );
 
-NSString *xtypeStar( const char *type, const char *star ) {
+static NSString *xtypeStar( const char *type, const char *star ) {
     if ( type[-1] == '@' ) {
         if ( type[0] != '"' )
             return @"id";
@@ -545,7 +564,7 @@ NSString *xtypeStar( const char *type, const char *star ) {
                 typeName, typeName, typeName, star];
 }
 
-NSString *xtype_( const char *type ) {
+static NSString *xtype_( const char *type ) {
     if ( !type )
         return @"notype";
     switch ( type[0] ) {
@@ -594,10 +613,11 @@ NSString *xtype_( const char *type ) {
     }
 }
 
-NSString *xtype( const char *type ) {
+static NSString *xtype( const char *type ) {
     NSString *typeStr = xtype_( type );
     return [NSString stringWithFormat:@"<span class=\\'%@\\' title=\\'%s\\'>%@</span>",
             [typeStr hasSuffix:@"*"] ? @"classStyle" : @"typeStyle", type, typeStr];
 }
 
 #endif
+#pragma clang diagnostic pop

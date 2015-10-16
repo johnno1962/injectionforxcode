@@ -22,7 +22,22 @@
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
+#ifdef WYSIWYG_IPADDRS
+static char _inMainFilePath[] = __FILE__;
+static const char *_inIPAddresses[100] = {WYSIWYG_IPADDRS};
+#define INJECTION_PORT WYSIWYG_PORT
+#define INJECTION_APPNAME "Wysiwyg"
+#define INJECTION_ENABLED
+#define INJECTION_ENABLED2
+#endif
+
 #import "BundleInterface.h"
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcstring-format-directive"
+#pragma clang diagnostic ignored "-Wgnu-conditional-omitted-operand"
+#pragma clang diagnostic ignored "-Wgnu-statement-expression"
+#pragma clang diagnostic ignored "-Wold-style-cast"
 
 #ifndef INJECTION_PORT
 #define INJECTION_PORT 31442
@@ -128,12 +143,23 @@ struct _in_header { int pathLength, dataLength; };
 @implementation BundleInjection
 
 + (BOOL)readHeader:(struct _in_header *)header forPath:(char *)path from:(int)fdin {
-    return read( fdin, header, sizeof *header ) == sizeof *header &&
-        read( fdin, path, header->pathLength ) == header->pathLength;
+    int hdrsize = sizeof  *header;
+    struct { void *ptr; int *length; } expected[] = {
+        {header, &hdrsize},
+        {path, &header->pathLength}};
+    for ( unsigned i=0 ; i<sizeof expected/sizeof expected[0] && expected[i].length ; i++ ) {
+        int length = *expected[i].length;
+        int bytes = (int)read( fdin, expected[i].ptr, length );
+        if ( bytes != length ) {
+            NSLog( @"%s: Read error %d != %d", INJECTION_APPNAME, (int)bytes, length );
+            return false;
+        }
+    }
+    return true;
 }
 
 + (BOOL)writeBytes:(off_t)bytes withPath:(const char *)path from:(int)fdin to:(int)fdout {
-    BOOL ok = 1;
+    BOOL ok = TRUE;
     if ( path ) {
         struct _in_header header;
         header.pathLength = (int)strlen( path )+1;
@@ -142,9 +168,9 @@ struct _in_header { int pathLength, dataLength; };
             write( fdout, path, header.pathLength ) == header.pathLength;
     }
 
-    char buffer[1024];
+    char buffer[8*1024];
     while ( ok && bytes > 0 && fdin ) {
-        ssize_t rc = read( fdin, buffer, bytes < (int)sizeof buffer ? (int)bytes : (int)sizeof buffer );
+        ssize_t rc = read( fdin, buffer, (int)MIN( sizeof buffer, (unsigned long)bytes ) );
         ok = ok && rc > 0 && fdout > 0 ? write( fdout, buffer, rc ) == rc : TRUE;
         bytes -= rc;
     }
@@ -230,9 +256,9 @@ static NSNetService *service;
 #endif
 
 #if TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR
-#ifdef JUICE_IPADDRS
+#ifdef WYSIWYG_IPADDRS
     const char **addrptr = _inIPAddresses;
-    for ( NSString *addr in [@JUICE_IPADDRS componentsSeparatedByString:@" "] )
+    for ( NSString *addr in [@WYSIWYG_IPADDRS componentsSeparatedByString:@" "] )
         *addrptr++ = strdup( [addr UTF8String] );
 #endif
     const char *firstAddress = _inIPAddresses[0];
@@ -614,7 +640,8 @@ static const char **addrPtr, *connectedAddress;
         NSLog( @"Could not initalise bundle at \"%s\"", path );
     else
         ;//INLog( @"Injecting Bundle: %s", path );
-    [bundle load];
+    if ( ![bundle load] )
+        NSLog( @"Bundle Load Error" );
 }
 
 // a little inside knowledge of Objective-C data structures for the new version of the class ...
@@ -906,6 +933,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 #endif
 
 + (void)autoLoadedNotify:(int)notify hook:(void *)hook {
+
 #ifndef ANDROID
     __block BOOL seenInjectionClass = NO;
     Dl_info info;
@@ -965,7 +993,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
                     [newClass class];
 #endif
                     Class oldClass = [self loadedClass:newClass notify:notify];
-                    INLog( @"Swizzled %@ %p -> %p", className, newClass, oldClass );
+                    NSLog( @"Swizzled %@ %p -> %p", className, newClass, oldClass );
                     [injectedClasses addObject:oldClass];
                 }
             }
@@ -1184,3 +1212,4 @@ static NSBundle *lastLoadedNibBundle;
 @end
 #endif
 #endif
+#pragma clang diagnostic pop

@@ -63,7 +63,10 @@ static NSMutableArray *sharedInstances;
     NSApplication *app = [NSApplication sharedApplication];
     NSMutableArray *seeds = [[app windows] mutableCopy];
     if ( app.delegate )
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnullable-to-nonnull-conversion"
         [seeds addObject:app.delegate];
+#pragma clang diagnostic pop
     return seeds;
 }
 @end
@@ -273,7 +276,7 @@ static NSMutableArray *liveInstances;
 
         unsigned nc;
         Class *classes = objc_copyClassList( &nc );
-        for ( int i=0 ; i<nc ; i++ ) {
+        for ( unsigned i=0 ; i<nc ; i++ ) {
             Method m = class_getInstanceMethod( object_getClass( classes[i] ), @selector(sharedInstance) );
             if ( m ) {
                 Dl_info info;
