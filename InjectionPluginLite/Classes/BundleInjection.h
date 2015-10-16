@@ -35,9 +35,11 @@ static const char *_inIPAddresses[100] = {WYSIWYG_IPADDRS};
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wcstring-format-directive"
+#pragma clang diagnostic ignored "-Wnullable-to-nonnull-conversion"
 #pragma clang diagnostic ignored "-Wgnu-conditional-omitted-operand"
 #pragma clang diagnostic ignored "-Wgnu-statement-expression"
 #pragma clang diagnostic ignored "-Wold-style-cast"
+#pragma clang diagnostic ignored "-Wauto-import"
 
 #ifndef INJECTION_PORT
 #define INJECTION_PORT 31442
@@ -108,7 +110,7 @@ struct _in_header { int pathLength, dataLength; };
 #ifndef INJECTION_LOADER
 #import <UIKit/UIKit.h>
 @interface UINib(BundleInjection)
-- (NSArray *)inInstantiateWithOwner:(id)ownerOrNil options:(NSDictionary *)optionsOrNil;
+- (NSArray *)inInstantiateWithOwner:(id)ownerOrNil options:(NSMutableDictionary *)optionsOrNil;
 @end
 #endif
 @implementation UIAlertView(Injection)
@@ -212,9 +214,9 @@ static NSNetService *service;
 }
 
 +(void)netServiceDidResolveAddress:(NSNetService *)service {
-    char **addressPtr = (char **)_inIPAddresses;
+    const char **addressPtr = (const char **)_inIPAddresses;
     for ( NSData *addr in service.addresses ) {
-        struct sockaddr_in *ip = (struct sockaddr_in *)[addr bytes];
+        const struct sockaddr_in *ip = (const struct sockaddr_in *)[addr bytes];
         if ( ip->sin_family == AF_INET ) {
             *addressPtr = strdup( inet_ntoa( ip->sin_addr ) );
             NSLog( @"%s: Bonjour reports service on %s", INJECTION_APPNAME, *addressPtr );
@@ -1083,7 +1085,7 @@ static NSBundle *lastLoadedNibBundle;
     if ( !nib )
         NSLog( @"%s: Could not open nib named '%@' in bundle: %@", INJECTION_APPNAME, nibPath, bundle );
 
-    NSDictionary *savedOptions = [optionsByVC objectForKey:[vc description]];
+    NSMutableDictionary *savedOptions = [optionsByVC objectForKey:[vc description]];
     INLog( @"Reloading nib %@ onto %@", nibPath, vc );
     CGFloat topBarOffset = vc.topLayoutGuide.length;
 

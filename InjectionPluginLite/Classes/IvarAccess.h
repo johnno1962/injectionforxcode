@@ -47,6 +47,7 @@
 #pragma clang diagnostic ignored "-Wcast-align"
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
 #pragma clang diagnostic ignored "-Wunused-exception-parameter"
+#pragma clang diagnostic ignored "-Wc11-extensions"
 #pragma clang diagnostic ignored "-Wvla-extension"
 #pragma clang diagnostic ignored "-Wvla"
 
@@ -550,8 +551,7 @@ static NSString *xtypeStar( const char *type, const char *star ) {
         else
             while ( isalnum(*end) || *end == '_' || *end == ',' || *end == '.' || *end < 0 )
                 end++;
-    NSData *data = [NSData dataWithBytesNoCopy:(void *)type length:end-type freeWhenDone:NO];
-    NSString *typeName = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    NSString *typeName = [[NSString alloc] initWithBytes:type length:end-type encoding:NSUTF8StringEncoding];
     Class theClass = NSClassFromString( typeName );
     if ( theClass )
         typeName = NSStringFromClass( theClass );

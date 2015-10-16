@@ -23,9 +23,14 @@
 //
 //
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wauto-import"
+
 #import <objc/runtime.h>
 #import "IvarAccess.h"
 #import <dlfcn.h>
+
+#pragma clang diagnostic pop
 
 static NSMutableArray *sharedInstances;
 

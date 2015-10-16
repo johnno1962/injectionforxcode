@@ -61,7 +61,7 @@
 #define _inval( _val... ) = _val
 #pragma clang diagnostic pop
 
-#import <Foundation/Foundation.h>
+@import Foundation;
 
 #if TARGET_OS_IPHONE == 1
 #define INColor UIColor
