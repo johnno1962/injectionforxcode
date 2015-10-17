@@ -57,11 +57,14 @@
 #define _inglobal
 
 #pragma clang diagnostic push
+
 #pragma clang diagnostic ignored "-Wvariadic-macros"
 #define _inval( _val... ) = _val
-#pragma clang diagnostic pop
 
-@import Foundation;
+#pragma clang diagnostic ignored "-Wauto-import"
+#import <Foundation/Foundation.h>
+
+#pragma clang diagnostic pop
 
 #if TARGET_OS_IPHONE == 1
 #define INColor UIColor

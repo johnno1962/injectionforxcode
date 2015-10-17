@@ -22,11 +22,11 @@
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifdef WYSIWYG_IPADDRS
+#ifdef INJECTOR_IPADDRS
 static char _inMainFilePath[] = __FILE__;
-static const char *_inIPAddresses[100] = {WYSIWYG_IPADDRS};
-#define INJECTION_PORT WYSIWYG_PORT
-#define INJECTION_APPNAME "Wysiwyg"
+static const char *_inIPAddresses[100] = {INJECTOR_IPADDRS};
+#define INJECTION_PORT INJECTOR_PORT
+#define INJECTION_APPNAME "Injector"
 #define INJECTION_ENABLED
 #define INJECTION_ENABLED2
 #endif
@@ -258,9 +258,9 @@ static NSNetService *service;
 #endif
 
 #if TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR
-#ifdef WYSIWYG_IPADDRS
+#ifdef INJECTOR_IPADDRS
     const char **addrptr = _inIPAddresses;
-    for ( NSString *addr in [@WYSIWYG_IPADDRS componentsSeparatedByString:@" "] )
+    for ( NSString *addr in [@INJECTOR_IPADDRS componentsSeparatedByString:@" "] )
         *addrptr++ = strdup( [addr UTF8String] );
 #endif
     const char *firstAddress = _inIPAddresses[0];
