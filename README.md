@@ -22,7 +22,7 @@ using a sweep of objects visible from [UIApplication sharedApplication] and it's
 If required, for all classes that have a +sharedInstance method in your app or frameworks,
 this method is called and the result added to the list of seeds for the sweep.
 
-The plugin is now integrated with the [XprobePlugin](https://github.com/johnno1962/XprobePlugin).
+The plugin is now integrated with the [XprobePlugin](https://github.com/johnno1962/Xprobe).
 Once installed, use the Product/Xprobe/Load menu item to inspect the objects in your application
 and search for the object you wish to execute code against and click it's link to
 inspect/select it. You can then open an editor which allows you to execute
