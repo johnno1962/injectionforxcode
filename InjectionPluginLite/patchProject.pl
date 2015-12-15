@@ -42,7 +42,7 @@ print "\\b Patching project contained in: $projRoot\n";
 ###################################################################################################
 # patch project .pch files (if not using AppCode)
 if ( !$isAppCode ) {
-    patchAll( "refix.pch|Bridging-Header.h", sub {
+    patchAll( "refix.pch|Bridging-Header-Not.h", sub {
     $_[0] =~ s/\n*($key.*)?$/<<CODE/es;
 
 
