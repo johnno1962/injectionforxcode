@@ -40,6 +40,7 @@ static const char *_inIPAddresses[100] = {INJECTOR_IPADDRS};
 #pragma clang diagnostic ignored "-Wgnu-statement-expression"
 #pragma clang diagnostic ignored "-Wold-style-cast"
 #pragma clang diagnostic ignored "-Wauto-import"
+#pragma clang diagnostic ignored "-Wdeprecated"
 
 #ifndef INJECTION_PORT
 #define INJECTION_PORT 31442
