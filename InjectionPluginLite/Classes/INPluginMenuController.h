@@ -31,6 +31,7 @@
 - (NSArray *)serverAddresses;
 - (NSString *)workspacePath;
 - (void)error:(NSString *)format, ...;
+- (void)enableFileWatcher:(BOOL)enabled;
 - (void)startProgress;
 
 - (NSString *)buildDirectory;

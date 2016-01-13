@@ -243,6 +243,8 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     for ( NSColorWell *well in [wells subviews] )
         [self colorChanged:well];
 
+    [menuController enableFileWatcher:YES];
+
     [self performSelectorInBackground:@selector(connectionMonitor) withObject:nil];
 }
 
@@ -268,6 +270,8 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     close( clientSocket );
     clientSocket = 0;
     patchNumber = 1;
+
+    [menuController enableFileWatcher:NO];
 
     [self.docTile
      performSelectorOnMainThread:@selector(setBadgeLabel:)

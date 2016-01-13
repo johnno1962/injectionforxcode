@@ -23,7 +23,8 @@
 		BB5DEF9C16A55E1800E97DD4 /* injectSource.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB5DEF9816A55E1800E97DD4 /* injectSource.pl */; };
 		BB5DEF9D16A55E1800E97DD4 /* openBundle.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB5DEF9916A55E1800E97DD4 /* openBundle.pl */; };
 		BB63E0FB160CA89800E95F5D /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB63E0F8160CA89800E95F5D /* IOKit.framework */; };
-		BB781C2D1BA4DDA8006587FD /* xprobeLoad.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB781C2C1BA4DDA8006587FD /* xprobeLoad.pl */; settings = {ASSET_TAGS = (); }; };
+		BB66FF921C469277008634C5 /* FileWatcher.m in Sources */ = {isa = PBXBuildFile; fileRef = BB66FF911C469277008634C5 /* FileWatcher.m */; };
+		BB781C2D1BA4DDA8006587FD /* xprobeLoad.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB781C2C1BA4DDA8006587FD /* xprobeLoad.pl */; };
 		BB8D68AB17F1BB64009E02EE /* listDevice.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB8D68AA17F1BB64009E02EE /* listDevice.pl */; };
 		BB98CE5716DB5E3C00B90297 /* appcode.txt in Resources */ = {isa = PBXBuildFile; fileRef = BB98CE5616DB5E3C00B90297 /* appcode.txt */; };
 		BBCDA04819FD229F009AC8C5 /* evalCode.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB117D2619FD20BD00A9400F /* evalCode.pl */; };
@@ -80,6 +81,8 @@
 		BB5DEF9816A55E1800E97DD4 /* injectSource.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = injectSource.pl; sourceTree = "<group>"; };
 		BB5DEF9916A55E1800E97DD4 /* openBundle.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = openBundle.pl; sourceTree = "<group>"; };
 		BB63E0F8160CA89800E95F5D /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		BB66FF901C469277008634C5 /* FileWatcher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileWatcher.h; sourceTree = "<group>"; };
+		BB66FF911C469277008634C5 /* FileWatcher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileWatcher.m; sourceTree = "<group>"; };
 		BB781C2C1BA4DDA8006587FD /* xprobeLoad.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = xprobeLoad.pl; sourceTree = "<group>"; };
 		BB8D68AA17F1BB64009E02EE /* listDevice.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = listDevice.pl; sourceTree = "<group>"; };
 		BB98CE5616DB5E3C00B90297 /* appcode.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = appcode.txt; sourceTree = "<group>"; };
@@ -158,6 +161,8 @@
 				BB3EFFB016A4B815001F0065 /* INPluginMenuController.xib */,
 				BB3EFFAC16A4B815001F0065 /* INPluginClientController.h */,
 				BB3EFFAD16A4B815001F0065 /* INPluginClientController.m */,
+				BB66FF901C469277008634C5 /* FileWatcher.h */,
+				BB66FF911C469277008634C5 /* FileWatcher.m */,
 				BB3EFFD916A541B8001F0065 /* BundleInterface.h */,
 				BB3EFFD816A541B8001F0065 /* BundleInjection.h */,
 				BBF225B81B20D2CA00E1B001 /* BundleSweeper.h */,
@@ -330,6 +335,7 @@
 			files = (
 				BB3EFFB216A4B815001F0065 /* INPluginMenuController.m in Sources */,
 				BB3EFFB116A4B815001F0065 /* INPluginClientController.m in Sources */,
+				BB66FF921C469277008634C5 /* FileWatcher.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

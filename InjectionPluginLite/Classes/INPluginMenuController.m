@@ -23,6 +23,11 @@
 
 #import "INPluginMenuController.h"
 #import "INPluginClientController.h"
+#import "FileWatcher.h"
+
+#define MIN_CHANGE_INTERVAL 1.5
+
+static NSString *kINShortcut = @"INShortcut", *kINFileWatch = @"INFileWatch";
 
 @interface DBGLLDBSession : NSObject
 - (void)requestPause;
@@ -37,6 +42,7 @@ static INPluginMenuController *injectionPlugin;
 
     IBOutlet NSTextField *urlLabel, *shortcut;
     IBOutlet NSMenuItem *subMenuItem, *introItem, *injectAndReset;
+    IBOutlet NSButton *watchButton;
     IBOutlet WebView *webView;
     NSMenuItem *menuItem;
 
@@ -47,6 +53,8 @@ static INPluginMenuController *injectionPlugin;
 
     int serverSocket;
 
+    NSTimeInterval lastChanged;
+    int skipLastSaved;
     time_t installed;
     int licensed;
     int refkey;
@@ -61,6 +69,7 @@ static INPluginMenuController *injectionPlugin;
 @property (nonatomic,retain) NSString *bonjourName;
 
 @property (nonatomic,retain) NSWindow *lastKeyWindow;
+@property (nonatomic,retain) FileWatcher *fileWatcher;
 @property (nonatomic,retain) NSString *lastFile;
 @property (nonatomic) BOOL hasSaved;
 @property (nonatomic) int continues;
@@ -72,14 +81,16 @@ static INPluginMenuController *injectionPlugin;
 #pragma mark - Plugin Initialization
 
 + (void)pluginDidLoad:(NSBundle *)plugin {
-	static dispatch_once_t onceToken;
-	dispatch_once(&onceToken, ^{
-		injectionPlugin = [[self alloc] init];
-        //NSLog( @"Preparing Injection: %@", injectionPlugin );
-        [[NSNotificationCenter defaultCenter] addObserver:injectionPlugin
-                                                 selector:@selector(applicationDidFinishLaunching:)
-                                                     name:NSApplicationDidFinishLaunchingNotification object:nil];
-	});
+    if ([[NSBundle mainBundle].infoDictionary[@"CFBundleName"] isEqual:@"Xcode"]) {
+        static dispatch_once_t onceToken;
+        dispatch_once( &onceToken, ^{
+            injectionPlugin = [[self alloc] init];
+            //NSLog( @"Preparing Injection: %@", injectionPlugin );
+            dispatch_async( dispatch_get_main_queue(), ^{
+                [injectionPlugin applicationDidFinishLaunching:nil];
+            } );
+        } );
+    }
 }
 
 + (void)evalCode:(NSString *)code {
@@ -127,8 +138,11 @@ static INPluginMenuController *injectionPlugin;
 
     self.defaults = [NSUserDefaults standardUserDefaults];
 
-    NSString *currentShortcut = [self.defaults valueForKey:@"INShortcut"] ?: shortcut.stringValue;
+    NSString *currentShortcut = [self.defaults valueForKey:kINShortcut] ?: shortcut.stringValue;
     [shortcut setStringValue:currentShortcut];
+
+    if ( [self.defaults valueForKey:kINFileWatch] )
+        watchButton.state = [self.defaults boolForKey:kINFileWatch];
 
 	NSMenu *productMenu = [[[NSApp mainMenu] itemWithTitle:@"Product"] submenu];
 	if (productMenu) {
@@ -168,10 +182,17 @@ static INPluginMenuController *injectionPlugin;
 }
 
 - (IBAction)shortcutChanged:sender {
-    [self.defaults setValue:shortcut.stringValue forKey:@"INShortcut"];
+    [self.defaults setValue:shortcut.stringValue forKey:kINShortcut];
     [self.defaults synchronize];
     [menuItem setKeyEquivalent:shortcut.stringValue];
     [injectAndReset setKeyEquivalent:shortcut.stringValue];
+}
+
+- (IBAction)watchChanged:sender {
+    [self.defaults setBool:watchButton.state forKey:kINFileWatch];
+    [self.defaults synchronize];
+    if ( self.client.connected )
+        [self enableFileWatcher:YES];
 }
 
 - (void)setProgress:(NSNumber *)fraction {
@@ -219,6 +240,7 @@ static INPluginMenuController *injectionPlugin;
     if ( save ) {
         if ( [doc isDocumentEdited] ) {
             self.hasSaved = FALSE;
+            skipLastSaved = 1;
             [doc saveDocumentWithDelegate:self
                           didSaveSelector:@selector(document:didSave:contextInfo:)
                               contextInfo:NULL];
@@ -339,6 +361,7 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
         self.lastFile = [self lastFileSaving:YES];
 
     DBGLLDBSession *session = [self session];
+    NSLog( @"injectSource: %@ %@", sender, session );
     if ( !session ) {
         [self.client alert:@"No project is running."];
         return;
@@ -374,6 +397,7 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
     else {
         [self.client runScript:@"injectSource.pl" withArg:self.lastFile];
         self.lastFile = nil;
+        [self enableFileWatcher:YES];
     }
 }
 
@@ -392,6 +416,33 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 - (IBAction)injectWithReset:(id)sender {
     self.client.withReset = YES;
     [self injectSource:sender];
+}
+
+- (void)enableFileWatcher:(BOOL)enabled {
+    if ( enabled && watchButton.state ) {
+        if ( !self.fileWatcher ) {
+            static NSRegularExpression *regexp;
+            if ( !regexp )
+                regexp = [[NSRegularExpression alloc] initWithPattern:@"^(.+?/([^/]+))/(([^/]*)\\.(xcodeproj|xcworkspace|(idea/misc.xml)))" options:0 error:nil];
+
+            NSString *workspacePath = [self workspacePath];
+            NSRange range = [regexp rangeOfFirstMatchInString:workspacePath options:0
+                                                        range:NSMakeRange( 0, workspacePath.length )];
+
+            NSString *projectRoot = [[workspacePath substringWithRange:range] stringByDeletingLastPathComponent];
+            [self.fileWatcher = [[FileWatcher alloc] initWithRoot:projectRoot plugin:^( NSArray *filesChanged ) {
+                NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+                if ( --skipLastSaved < 0 && now - lastChanged > MIN_CHANGE_INTERVAL ) {
+                    self.lastFile = filesChanged[0];
+                    self.hasSaved = YES;
+                    [self injectSource:self];
+                    lastChanged = now;
+                }
+            }] release];
+        }
+    }
+    else
+        self.fileWatcher = nil;
 }
 
 #pragma mark - Injection Service

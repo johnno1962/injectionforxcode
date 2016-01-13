@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="9052" systemVersion="14F27" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="10089" systemVersion="15C50" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="9052"/>
-        <plugIn identifier="com.apple.WebKitIBPlugin" version="9052"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="10089"/>
+        <plugIn identifier="com.apple.WebKitIBPlugin" version="10089"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="INPluginMenuController">
@@ -14,6 +14,7 @@
                 <outlet property="progressIndicator" destination="530" id="531"/>
                 <outlet property="shortcut" destination="3hc-s2-iEW" id="bMl-LT-VOv"/>
                 <outlet property="subMenu" destination="305" id="532"/>
+                <outlet property="watchButton" destination="66M-yr-guc" id="pxw-Iq-9zL"/>
                 <outlet property="webPanel" destination="364" id="501"/>
                 <outlet property="webView" destination="366" id="374"/>
             </connections>
@@ -400,7 +401,7 @@
                         </connections>
                     </button>
                     <textField verticalHuggingPriority="750" id="255">
-                        <rect key="frame" x="172" y="17" width="253" height="22"/>
+                        <rect key="frame" x="172" y="17" width="105" height="22"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" title="chmod +w &quot;%s&quot; # e.g. p4 edit &quot;%s&quot;" drawsBackground="YES" id="256">
                             <font key="font" metaFont="system"/>
@@ -459,7 +460,7 @@
                         </textFieldCell>
                     </textField>
                     <textField verticalHuggingPriority="750" id="3hc-s2-iEW">
-                        <rect key="frame" x="496" y="17" width="21" height="22"/>
+                        <rect key="frame" x="387" y="17" width="21" height="22"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="center" title="=" drawsBackground="YES" id="pYz-ib-djK">
                             <font key="font" metaFont="system"/>
@@ -471,14 +472,34 @@
                         </connections>
                     </textField>
                     <textField verticalHuggingPriority="750" id="MF6-PU-1BH">
-                        <rect key="frame" x="429" y="20" width="61" height="17"/>
+                        <rect key="frame" x="280" y="20" width="107" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Shortcut:" id="Cfe-0M-bY2">
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Keybd Shortcut:" id="Cfe-0M-bY2">
                             <font key="font" metaFont="system"/>
                             <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
+                    <textField verticalHuggingPriority="750" id="6XP-06-HXg">
+                        <rect key="frame" x="435" y="20" width="84" height="17"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="File Watcher" id="MrS-xn-ssp">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <button id="66M-yr-guc">
+                        <rect key="frame" x="416" y="19" width="22" height="18"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="left" inset="2" id="sdS-Y4-hMX">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="watchChanged:" target="-2" id="3nX-9E-OcZ"/>
+                        </connections>
+                    </button>
                 </subviews>
             </view>
             <point key="canvasLocation" x="282" y="334"/>

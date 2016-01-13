@@ -996,7 +996,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
                     [newClass class];
 #endif
                     Class oldClass = [self loadedClass:newClass notify:notify];
-                    NSLog( @"Swizzled %@ %p -> %p", className, newClass, oldClass );
+                    NSLog( @"Ignore warning, Swizzled %@ %p -> %p", className, newClass, oldClass );
                     [injectedClasses addObject:oldClass];
                 }
             }
