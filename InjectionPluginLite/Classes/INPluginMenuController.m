@@ -361,14 +361,14 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
         self.lastFile = [self lastFileSaving:YES];
 
     DBGLLDBSession *session = [self session];
-    NSLog( @"injectSource: %@ %@", sender, session );
+    //NSLog( @"injectSource: %@ %@", sender, session );
     if ( !session ) {
         [self.client alert:@"No project is running."];
         return;
     }
     else if ( !self.lastFile ) {
-        [self.client alert:@"No source file is selected. "
-         "Make sure that text is selected and the cursor is inside the file you have edited."];
+//        [self.client alert:@"No source file is selected. "
+//         "Make sure that text is selected and the cursor is inside the file you have edited."];
         return;
     }
     else if ( [self.lastFile rangeOfString:@"\\.(mm?|swift|storyboard)$"
@@ -389,7 +389,7 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
         if ( sender ) {
             self.lastKeyWindow = [self.lastTextView window];
             [session requestPause];
-            [self performSelector:@selector(loadBundle:) withObject:session afterDelay:.1];
+            [self performSelector:@selector(loadBundle:) withObject:session afterDelay:.005];
         }
         else
             [self performSelector:@selector(injectSource:) withObject:nil afterDelay:.1];
@@ -403,7 +403,8 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 
 - (void)loadBundle:(DBGLLDBSession *)session {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND,0), ^{
-        NSString *loader = [NSString stringWithFormat:@"p (void)[[NSBundle bundleWithPath:"
+        NSString *loader = [NSString stringWithFormat:@"expr -l objc++ -O -- "
+                            "(void)[[NSClassFromString(@\"NSBundle\")  bundleWithPath:"
                             "@\"%@/InjectionLoader.bundle\"] load]\r", self.client.scriptPath];
         [session executeConsoleCommand:loader threadID:1 stackFrameID:0];
         dispatch_async(dispatch_get_main_queue(), ^{
