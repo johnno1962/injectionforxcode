@@ -54,7 +54,7 @@ static void fileCallback( ConstFSEventStreamRef streamRef,
             [fileManager fileExistsAtPath:path] )
             [changed addObject:path];
 
-    NSLog( @"filesChanged: %@", changed );
+    //NSLog( @"filesChanged: %@", changed );
     if ( changed.count )
         self.callback( [[changed objectEnumerator] allObjects] );
 }
