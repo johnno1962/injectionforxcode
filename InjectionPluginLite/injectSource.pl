@@ -27,6 +27,21 @@ if ( !$isAppCode ) {
     print "logDir: $logDir\n\n";
 }
 
+my $logLink = "$InjectionBundle/Logs";
+if ( !-d $logLink ) {
+    if ( !$logDir ) {
+        error "Please inject with Xcode before using AppCode";
+    }
+    else {
+        symlink $logDir, $logLink;
+    }
+}
+
+if ( !$logDir ) {
+    print "Using Log Link\n";
+    $logDir = $logLink;
+}
+
 $logDir = "$buildRoot/../Logs/Build" if !-d $logDir && !$isAppCode;
 $buildRoot = $logDir && "$logDir/../../Build/" if !$buildRoot;
 
