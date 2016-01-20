@@ -27,7 +27,7 @@ if ( !$isAppCode ) {
     print "logDir: $logDir\n\n";
 }
 
-my $logLink = "$InjectionBundle/Logs";
+my $logLink = "$projRoot$InjectionBundle/Logs";
 if ( !-d $logLink ) {
     if ( !$logDir ) {
         error "Please inject with Xcode before using AppCode";
@@ -43,7 +43,7 @@ if ( !$logDir ) {
 }
 
 $logDir = "$buildRoot/../Logs/Build" if !-d $logDir && !$isAppCode;
-$buildRoot = $logDir && "$logDir/../../Build/" if !$buildRoot;
+$buildRoot = $logDir && "$logDir/../../Build/" if !$buildRoot && $logDir !~ / /;
 
 sub mtime {
     my ($file) = @_;

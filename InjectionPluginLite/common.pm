@@ -35,7 +35,9 @@ $productName = "InjectionBundle$patchNumber";
 $isDevice = $executable =~ m@^(/private)?/var/mobile/@;
 $isSimulator = $executable =~ m@/(iPhone |Core)Simulator/@;
 $isAndroid = $executable =~ m@^/data/app/@;
+
 $isAppCode = $flags & $INJECTION_ISAPPCODE;
+$deviceRoot = $executable if $isAppCode;
 
 $isIOS = $isDevice || $isSimulator || $isAndroid;
 
