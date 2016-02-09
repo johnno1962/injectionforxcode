@@ -5,18 +5,18 @@ Copyright (c) John Holdsworth 2012-16
 injectionforxcode is an extension to the Xcode IDE that allows you to patch the implementation
 of a class method without having to restart the application. It preforms this by parsing the
 build logs of the application to determine how a source file was last compiled then wraps
-the result of re-compiling into a bundle which is loaded into the application. At this point
+the result of re-compiling into a bundle which is loaded into the application. At this stage
 there are two version of the class available to the app, one with the modified versions of
 method implementations that are "swizzled" onto the original class so they take effect.
 
 This swizzling takes advantage of the fact that Objective-C's binds method invocations to
 implementations at run time. Provided that the method or class is not final or private 
-i.e. the method can be overridden this can also be performed on Swift classes by patching the
+(i.e. the method can be overridden) this can also be performed on Swift classes by patching the
 class "vtable". This excludes the injection of methods of structs.
 
 To use injectionforxcode, downloading this project and building it and restarting Xcode is sufficient
 to install the plugin or if you have the [Alcatraz Package Manager](http://alcatraz.io/) installed
-you can use that for an automated install. Once installed, if you are working in the simulator
+you can use that for an automated install. Once installed, if you are working in the simulator,
 all that is required to inject a source is to use the new "Product/Inject Source" menu item
 and the source will be recompiled, bundled, loaded and swizzled into your application (you
 can ignore any messages about duplicate class definitions your code changes to method
@@ -39,7 +39,7 @@ functions and their Swift equivalents. Consider the following Objective-C code.
 ![Icon](http://injectionforxcode.johnholdsworth.com/injection1.png)
 
 One potential problem is that when the new version of the class is loaded it comes with it's own
-versions of static varaibles such as "sharedInstance" and "once" and after injection has occured 
+versions of static variables such as "sharedInstance" and "once" and after injection has occurred 
 would generate a new singleton instance. To prevent this class methods that have the prefix
 "shared" are not swizzled on injection to support this common idiom.
 
@@ -49,10 +49,10 @@ later case is more difficult to realise as it requires a list of instances for a
 class. In order to determine this injection performs a "sweep" or all instances of the app
 and instances those instances point to etc which is then filtered by the injecting class.
 This process is seeded using the application delegate and all windows. This list is
-suplimented by the values returned by method "sharedInstance" of all appplication classes
+supplemented by the values returned by method "sharedInstance" of all application classes
 if required.
 
-The function dispatch_on_main does of course not inject as it has been staicallylinked into
+The function dispatch_on_main does of course not inject as it has been statically linked into
 the application. It does however inject by proxy in the case shown in the "doSomething"
 method as it will have been linked locally to version in the object file being injected.
 
@@ -60,9 +60,9 @@ method as it will have been linked locally to version in the object file being i
 
 ![Icon](http://injectionforxcode.johnholdsworth.com/injection2.png)
 
-Swift, presents a few more stumbling blocks for the uninitiated. Provided methods are of
+Swift, presents a few more stumbling blocks for the uninitiated. Provided that methods are of
 a non final class and a non final (this excludes structs alas) they can be injected.
-In this exmaple the shared instance variable is declared "static" rather than "class" to make
+In this example the shared instance variable is declared "static" rather than "class" to make
 sure it is not injected ensure there is only ever one singleton. For the "injected"
 methods to work you class must inherit from NSObject.
 
@@ -70,29 +70,29 @@ More problematic is the more common use of variable or functions outside a class
 referred to across files of a bundle. Swift 1.2+ takes the view these "internal" scope
 symbols should not be available across bundles and are made "private extern" in
 their object file making them unavailable at run time. This means that the above code
-will inject but another file refering to the dispatch_on_main function will fail
+will inject but another file referring to the dispatch_on_main function will fail
 with obscure dynamic loading errors.
 
-The simplest solution is to make these variables and functions public though for a framework
+The simplest solution is to make these variables and functions public though, for a framework
 this may be unsatisfactory. The alternative is to patch the object files of the project to remove the
 private extern flag and relink the bundle. In order to do this a script ~/bin/unhide.sh
 is created by the plugin build which should be called as an additional 
 "Run Script" build phase to perform this patch and relink. 
 
-### Use with Appcode 
+### Use with AppCode 
 
-Injection can be used from inside AppCode provided the appplication has been patched and
+Injection can be used from inside AppCode provided the application has been patched and
 you have previously injected that project fro inside Xcode to set up a link to it's 
-build logs. To use, copy the jar file InjectionPluginAppCode/Injection.jar to
-"~/Library/Application Support/AppCode33". You will need to repatch the project
-from inside AppCode as it uses a differrent port number to connect.
+build logs. To use, copy the jar file “InjectionPluginAppCode/Injection.jar” to
+"~/Library/Application Support/AppCode33". You’ll need to re-patch the project
+from inside AppCode as it uses a different port number to connect.
 
 ### Storyboard injection and "Inject and Reset"
 
 Provided you are running with patched injection and have selected "Inject Strybds" in
 the "Product/Injection Plugin/Tunable App Parameters" panel you may be able to inject
 storyboards to some extent. It will recompile the storyboard being edited and reload
-the current view contorller in the applpication and call the following.
+the current view controller in the application and call the following.
 
     [vc.view setNeedsLayout];
     [vc.view layoutIfNeeded];
@@ -148,29 +148,6 @@ will be invited to make a donation $10 (or $25 in a commercial environment)
 as suggested by code included in the software.
 
 If you find (m)any issues in the code, get in contact using the email: support (at) injectionforxcode.com
-
-### How it works
-
-A project patched for injection #imports the file "BundleInjection.h" from the resources of the 
-plugin into it's "main.m" source file. Code in this header uses a +load method to connect back
-through a socket to a server running inside Xcode and waits in a thread for commands to load bundles.
-
-When you inject a source, it is #imported into "BundleContents.m" in a bundle project which is then built
-and the application messaged by Xcode through the socket connection to load the bundle. When the bundle
-loads, it too has a +load method which calls the method [BundleInjection loadClass:theNewClass notify:flags].
-This method aligns the instance variables of the newly loaded class to the original (as @properties can be reordered) 
-and then swizzles the new implementations onto the original class.
-
-Support for injecting projects using "CocoaPods" and "workspaces" has been added since version 2.7.
-Classes in the project or Pods can be injected as well as categories or extensions.
-The only limitation is that the class being injected must not itself have a +load method.
-Other options are on the "Project..Tunable Parameters" page such as the "Silent" option for
-turning off the message dialogue each time classes are injected.
-
-With patched injection, the global variables INParameters and INColors are exposed to all
-classes in the project through it's .pch file. These variables are linked in real time to
-the sliders and colour wells on the Tunable Parameters panel once the application has started.
-These can be used for micro-tuning your application or it's appearance.
 
 ### Please note:
 
