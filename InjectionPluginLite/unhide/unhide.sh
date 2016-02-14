@@ -8,8 +8,8 @@
 #
 if [ "$CONFIGURATION" != "Debug" ]; then
     echo "Your build configuration is $CONFIGURATION, and unhide.sh only can work with Debug build configuration"
-    echo "Please change your build configuration to Debug build configuration"
-    osascript -e 'display notification "unhide.sh only work with Debug build configuration" with title "Warning"'
+    echo "Please change your build configuration to Debug build configuration if it's necessary"
+    osascript -e 'display notification "unhide.sh only works with Debug build configuration" with title "Warning"'
 fi
 
 if [ "$CONFIGURATION" = "Debug" ]; then
