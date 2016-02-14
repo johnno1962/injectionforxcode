@@ -6,6 +6,11 @@
 #  Created by John Holdsworth on 15/05/2015.
 #  Copyright (c) 2015 John Holdsworth. All rights reserved.
 #
+if [ "$CONFIGURATION" != "Debug" ]; then
+    echo "Your build configuration is $CONFIGURATION, and unhide.sh only can work with Debug build configuration"
+    echo "Please change your build configuration to Debug build configuration"
+    osascript -e 'display notification "unhide.sh only work with Debug build configuration" with title "Warning"'
+fi
 
 if [ "$CONFIGURATION" = "Debug" ]; then
     UNHIDE_LDFLAGS=${1:-$UNHIDE_LDFLAGS}
