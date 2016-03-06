@@ -74,7 +74,7 @@
 
 #define INJECTION_PARAMETERS 5
 
-#if defined(INJECTION_ENABLED) || defined(INJECTION_ENABLED2) // preprocessor probelems??
+#if defined(INJECTION_ENABLED) || defined(INJECTION_ENABLED2) // preprocessor problems??
 
 // global variable interface to control panel
 

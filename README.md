@@ -2,71 +2,108 @@
 
 Copyright (c) John Holdsworth 2012-16
 
-injectionforxcode is an extension to the Xcode IDE that allows you to patch the implementation
-of a class' method without having to restart the application. It preforms this by parsing the
-build logs of the application to determine how a source file was last compiled then wraps
-the result of re-compiling into a bundle which is loaded into the application. At this stage
-there are two version of the class available to the app, one with the modified versions of
-method implementations that are "swizzled" onto the original class so they take effect.
+# TLDR:
+
+Injection for Xcode is an Xcode plugin (available via [Alcatraz](http://alcatraz.io/)) or [AppCode](#user-content-use-with-appcode) that 
+dynamically inserts new Swift / Objective-C code into a running app in order to speed up your build process. It does this without making _any_ changes to your project.
+
+![Injection Example](documentation/images/injected.gif)
+
+Announcements of major additions to the project will be made on twitter [@Injection4Xcode](https://twitter.com/@Injection4Xcode).
+
+## How to Use Injection for Xcode
+
+For installation and usage for AppCode [see below](#user-content-use-with-appcode). If you're a visual learner, you may appreciate [this video post](http://artsy.github.io/blog/2016/03/05/iOS-Code-Injection/) from [@Orta](https://twitter.com/@orta) covering the basics.
+
+With Xcode, either install via Alcatraz, or install by cloning this repo and build `InjectionPluginLite/InjectionPlugin.xcodeproj`. 
+
+The plugin can be removed either via Alcatraz, or by running: `rm -rf ~/Library/Application\ Support/Developer/Shared/Xcode/Plug-ins/InjectionPlugin.xcplugin`
+
+### Simple Proof of Concept Once Installed
+
+Once it is installed, compile and run a project as normal. From here you should take any class that would exist when your 
+app is loaded, add a new function `- injection`  and add a breakpoint on that line.
+
+``` objc
+- (void)injected
+{
+    NSLog(@"I've been injected: %@", self);
+}
+```
+or
+``` swift
+func injected() {
+    print("I've been injected: \(self)")
+}
+```
+
+Then press <kbd>ctrl</kbd>+<kbd>=</kbd>, and you'll see Xcode stop at the breakpoint. You've just injected new code into a running app. **Awesome right?**
+
+### Callbacks in Your Code
+
+You can build on top of Injection from three callbacks:
+
+* `- (void)injected` as an instance method, which gives you the chance to re-update an object with new contexts.
+* `+ (void)injected` as a class method, making it possible to update globals with new information
+* Listening for `INJECTION_BUNDLE_NOTIFICATION`, allowing other classes to listen out for injection calls, this is useful for providing [app level changes](https://github.com/artsy/eigen/pull/1236).
+
+If you are interested in diving even deeper into callbacks, check out [Tunable Parameters](documentation/tunable_parameters.md).
+
+![Tunable Example](documentation/images/injection_tunable.gif)
+
+## Swift Support
+
+Swift support works great when working with a collection of classes. 
+However, there are a number of cases where re-injection won't work elegantly with Swift:
+
+ * Making changes to Structs.
+ * Changing `func` or `class`es that are marked as `final`.
+ * Global `func` or variables that are not constrained into a class.
+ 
+In day-to-day development against Cocoa/UIKit, it's rare, but possible to hit these cases, 
+for more information see [What Happens With Swift?](#what-happens-with-swift)
+
+## How it Works
+
+Injection for Xcode is an extension to the Xcode IDE that allows you to patch the implementation
+of a class's method without having to restart the application. 
+
+It performs this by parsing the build logs of the application to determine how a source file was 
+last compiled. With this it wraps the result of re-compiling into a bundle which is injected into 
+the application as a separate bundle. At this point there are two versions of a class in the app,
+the original and a new modified version from the bundle. At this point the modified version is swizzled
+onto the original class so changes take effect.
 
 This swizzling takes advantage of the fact that Objective-C binds method invocations to
 implementations at run time. This can also be performed on Swift classes provided that
 the method or class is not final or private (i.e. the method can be overridden) by
 patching the class' "vtable". This excludes the injection of methods of structs.
 
-To use injectionforxcode, it's sufficient to download this project, build it and restarting Xcode 
-which installs the plugin or, if you have the [Alcatraz Package Manager](http://alcatraz.io/) installed
-you can use that for an automated install. Once installed, if you are working in the simulator,
-all that is required to inject a source is to use the new "Product/Inject Source" menu item
-and the source will be recompiled, bundled, loaded and swizzled into your application (you
-can ignore any messages about duplicate class definitions your code changes to method
-implementations should take effect.) To remove the plugin, type the following into a console:
+## What Else Does This Plugin Do?
 
-    rm -rf ~/Library/Application\ Support/Developer/Shared/Xcode/Plug-ins/InjectionPlugin.xcplugin
+* There is support for working specifically with [Storyboard-based iOS projects](documentation/storyboards.md).
 
-Announcements of major commits to the repo will be made on twitter [@Injection4Xcode](https://twitter.com/#!/@Injection4Xcode).
+* The plugin offers a way to quickly change a [collection of tunable parameters](documentation/tunable_parameters.md)
 
-### Patched injection
+* Xcode is given a badge, showing the number of active Injection connections to apps.
 
-If you are working on the device or using AppCode you need to patch your project slightly
-to use injection. This adds a small stub of code to your application's main.m that bootstraps
-the injection process connecting back to Xcode using the address patched into the main.m file.
-This patch can be applied automatically using the "Product/Injection Plugin/Patch Project for Injection"
-menu item. For a Swift project you'll need to add an empty main.m so it can be patched. Once
-your application has run and connected to the plugin it should be able to inject as before.
+* When you start using Injection, a new Xcode Project is added to the same folder as your
+project (either `iOSInjectionProject` or `OSXInjectionProject`.) This is the xcode project base
+for the changes which are injected into your project, it is recommended to add this to your `.gitignore`.
 
-There are limitations of course, largely centering around static variables and static or global
-functions and their Swift equivalents. Consider the following Objective-C code.
+* The injection key command can be customised from <kbd>ctrl</kbd>+<kbd>=</kbd> in the "Tunable App Parameters" panel.
 
-![Icon](http://injectionforxcode.johnholdsworth.com/injection1.png)
+* Works on a device, if you apply a [patch to your project.](documentation/patching_injection.md).
 
-One potential problem is that when the new version of the class is loaded it comes with it's own
-versions of static variables such as "sharedInstance" and "once" and after injection has occurred 
-would generate a new singleton instance. To prevent this, class methods that have the prefix
-"shared" are not swizzled on injection to support this common idiom.
-
-When a class has been injected it calls the class method "+(void)injected" as well as the
-instance level "-(void)injected" method on all instances of the class being injected. The 
-later case is more difficult to realise as it requires a list of instances for a particular
-class. In order to determine this injection performs a "sweep" or all instances of the app
-and instances those instances point to etc which is then filtered by the injecting class.
-This process is seeded using the application delegate and all windows. This list is
-supplemented by the values returned by method "sharedInstance" of all application classes
-if required. You can also subscribe to "INJECTION_BUNDLE_NOTIFICATION" notifications.
-
-The function dispatch_on_main does of course not inject as it has been statically linked into
-the application. It does however inject by proxy in the case shown in the "doSomething"
-method as it will have been linked locally to version in the object file being injected.
-
-### What about Swift?
+## What Happens with Swift?
 
 ![Icon](http://injectionforxcode.johnholdsworth.com/injection2.png)
 
 Swift, presents a few more stumbling blocks for the uninitiated. Provided that methods are of
 a non final class and are non final (this excludes structs alas) they can be injected.
-In this example the "sharedInstance" variable is declared "static" rather than "class" to make
+In this example the `sharedInstance` variable is declared `static` rather than "class" to make
 sure it is not injected to ensure there is only ever one singleton. For the "injected"
-methods to work your class must inherit from NSObject.
+methods to work your class _must_ inherit from NSObject.
 
 More problematic is the more common use of variables or functions outside a class which are
 referred to across the files of a bundle. Swift 1.2+ takes the view these "internal" scope
@@ -77,71 +114,47 @@ with obscure dynamic loading errors.
 
 The simplest solution is to make these variables and functions public though, for a framework,
 this may be unsatisfactory. The alternative is to patch the object files of the project to remove the
-private extern flag and relink the bundle. In order to do this a script ~/bin/unhide.sh
+private extern flag and relink the bundle. In order to do this a script `~/bin/unhide.sh`
 is created by the plugin build which should be called as an additional "Run Script"
 build phase after linking your app to perform this patch and relink. 
 
-### Use with AppCode 
+## Use with AppCode 
 
-Injection can be used from inside AppCode provided the application has been patched and
+Injection can be used from inside AppCode provided the application [has been patched](documentation/patching_injection.md) and
 you have previously injected that project from inside Xcode to set up a link to the 
-build logs. To use, copy the jar file “InjectionPluginAppCode/Injection.jar” to
-"~/Library/Application Support/AppCode33". You’ll need to re-patch the project
+build logs. 
+
+To install, copy the jar file `InjectionPluginAppCode/Injection.jar` from this repo 
+to `~/Library/Application Support/AppCode3*`. You’ll need to re-patch the project
 from inside AppCode as it uses a different port number to connect.
 
-### Storyboard injection and "Inject and Reset"
+## Limitations of Injection
 
-Provided you are running with patched injection and have selected "Inject Strybds" in
-the "Product/Injection Plugin/Tunable App Parameters" panel you may be able to inject
-storyboards to some extent. It will recompile the storyboard being edited and reload
-the currently loaded view controller and call the following:
+There are limitations of course, largely centering around static variables, static or global
+functions and their Swift equivalents. Consider the following Objective-C code.
 
-    [vc.view setNeedsLayout];
-    [vc.view layoutIfNeeded];
+![Icon](http://injectionforxcode.johnholdsworth.com/injection1.png)
 
-    [vc viewDidLoad];
-    [vc viewWillAppear:NO];
-    [vc viewDidAppear:NO];
+* One potential problem is when the new version of the class is loaded, it comes with it's own
+versions of static variables such as `sharedInstance` and the `once` token.  After injection 
+has occurred, this would generate a new singleton instance. 
 
-Another more speculative mode that can be used is "Product/Injection Plugin/Inject and Reset".
-The intention is that this should return your application to it's main screen and 
-executes the following code after injection:
+  To prevent this, class methods with the prefix "shared" are not swizzled on injection to 
+support this common idiom.
 
-    if ( injectAndReset ) {
-        UIApplication *app = UIApplication.sharedApplication;
-        UIViewController *vc = [app.windows[0] rootViewController];
-        UIViewController *newVc = vc.storyboard.instantiateInitialViewController;
-        if ( !newVc )
-            newVc = [[[vc class] alloc] initWithNibName:vc.nibName bundle:nil];
-        if ( [newVc respondsToSelector:@selector(setDelegate:)] )
-            [(id)newVc setDelegate:vc.delegate];
-        [app.windows[0] setRootViewController:newVc];
-        if ( [app.delegate respondsToSelector:@selector(setViewController:)] )
-            [(NSObject *)app.delegate setViewController:newVc];
-        //[app.delegate application:app didFinishLaunchingWithOptions:nil];
-        injectAndReset = NO;
-    }
+* It can be tough to look through all of the memory of a running application. In order to determine the classes and instances to call the `injected` callbacks on, Injection performs a "sweep" to find all objects in memory. Roughly, this involves looking at an object, then recursively looking through objects which it refers to. For example, the object's instance variables and properties.
 
-### Tunable Parameters
+  This process is seeded using the application's delegate and all windows. Once all the in-memory reference are collected, Injection will then filter these references to ones that it has compiled and injected. Then sending them the messages referenced in the [callbacks section](##user-content-callbacks-in-your-code).
+  
+  If no references are found, Injection will look through all objects that are referred to via `sharedInstance`. If that fails, well, Injection couldn't find your instance. This is one way in which
+  you may miss callbacks in your app.
 
-![Icon](http://injectionforxcode.johnholdsworth.com/params2.png)
+* The function `dispatch_on_main` does not inject, as it has been statically linked into
+the application. It does however, inject by proxy in the case shown via the `doSomething`
+method. `dispatch_on_main` will have been linked locally to a version in the object file being injected.
 
-Tunable parameters can be useful for tuning physics but used to be a good deal easier to use than
-now as projects seldom include *-Prefix.pch files as before. To use you need to include the
-following code in your class using tunable parameters or your project's bridging header for Swift.
 
-    #ifdef DEBUG
-    #define INJECTION_ENABLED
-
-    #import "/tmp/injectionforxcode/BundleInterface.h"
-    #endif
-
-This will define two arrays INParameters and INColors which can be "tuned" directly
-from inside Xcode using the "Product/Injection Plugin/Tunable App Parameters" panel.
-There are delegate methods for when a parameter changes, consult this header file
-for details.
-
-### "Nagware" License
+## "Nagware" License
 
 This source code is provided on github on the understanding it will not be redistributed.
 License is granted to use this software during development for any purpose for two weeks
@@ -151,7 +164,7 @@ as suggested by code included in the software.
 
 If you find (m)any issues in the code, get in contact using the email: support (at) injectionforxcode.com
 
-### Please note:
+## Please note:
 
 The above copyright notice and this permission notice shall be
 included in all copies or substantial portions of the Software.
