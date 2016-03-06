@@ -7,7 +7,7 @@ Copyright (c) John Holdsworth 2012-16
 Injection for Xcode is an Xcode plugin (available via [Alcatraz](http://alcatraz.io/)) or [AppCode](#user-content-use-with-appcode) that 
 dynamically inserts new Swift / Objective-C code into a running app in order to speed up your build process. It does this without making _any_ changes to your project.
 
-![Injection Example](documentation/images/injection.gif)
+![Injection Example](documentation/images/injected.gif)
 
 Announcements of major additions to the project will be made on twitter [@Injection4Xcode](https://twitter.com/#!/@Injection4Xcode).
 
