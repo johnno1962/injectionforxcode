@@ -70,8 +70,8 @@ of a class's method without having to restart the application.
 
 It performs this by parsing the build logs of the application to determine how a source file was 
 last compiled. With this it wraps the result of re-compiling into a bundle which is injected into 
-the application as a separate bundle. At this point there are two versions of a class in the app,
-the original and a new modified version from the bundle. At this point the modified version is swizzled
+the application using the dynamic loader. At this point there are two versions of a class in the app,
+the original and a new modified version from the bundle. The modified version is then "swizzled"
 onto the original class so changes take effect.
 
 This swizzling takes advantage of the fact that Objective-C binds method invocations to
