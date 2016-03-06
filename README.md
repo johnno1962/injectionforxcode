@@ -91,6 +91,8 @@ patching the class' "vtable". This excludes the injection of methods of structs.
 project (either `iOSInjectionProject` or `OSXInjectionProject`.) This is the xcode project base
 for the changes which are injected into your project, it is recommended to add this to your `.gitignore`.
 
+* The injection key command can be customised from <kbd>ctrl</kbd>+<kbd>=</kbd> in the "Tunable App Parameters" panel.
+
 ### What Happens with Swift?
 
 ![Icon](http://injectionforxcode.johnholdsworth.com/injection2.png)

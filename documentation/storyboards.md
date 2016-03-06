@@ -42,4 +42,4 @@ if ( injectAndReset ) {
 }
 ```
 
-This approximately the booting process of a Storyboard based application.
+This approximates the booting process of a Storyboard based application.

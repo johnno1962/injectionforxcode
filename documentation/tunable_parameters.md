@@ -8,18 +8,20 @@ Tunable parameters can be useful for tuning specific parts of your application f
 
 To use tunable parameteres, you need to include the following code in the class using tunable parameters or your project's bridging header for Swift.
 
-    #ifdef DEBUG
-    #define INJECTION_ENABLED
+``` objc
+#ifdef DEBUG
+#define INJECTION_ENABLED
 
-    #import "/tmp/injectionforxcode/BundleInterface.h"
-    #endif
+#import "/tmp/injectionforxcode/BundleInterface.h"
+#endif
+```
 
-This expose two arrays `INParameters` and `INColors` which can be "tuned" directly
+This exposes two arrays `INParameters` and `INColors` which can be "tuned" directly
 from inside Xcode using the "Product/Injection Plugin/Tunable App Parameters" panel. 
 
 In this case, you shouldn't rely on the `injection` class/instance methods, but work to this API:
 
-```objc
+``` objc
 @interface NSObject(INParameters)
 + (INColor * INJECTION_STRONG *)inColors;
 + (INColor *)inColor:(int)tag;
@@ -63,10 +65,7 @@ class NewViewController: UIViewController {
     }
 
     override func inParameter(tag: Int32, hasChanged value: Float) {
-        // This can be called on any thread
-        dispatch_async(dispatch_get_main_queue()) {
-            self.lorem.text = "\(value)"
-        }
+        self.lorem.text = "\(value)"
     }
 }
 ```
