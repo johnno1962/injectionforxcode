@@ -43,3 +43,8 @@ if ( injectAndReset ) {
 ```
 
 This approximates the booting process of a Storyboard based application.
+
+Storyboard injection will not update image resources that are referenced from your Storyboard.
+If you explicitly load images in `viewDidLoad` using `[UIImage imageNamed:@"hatstand"]` (which
+will reference the main bundle), images should continue to work after the storyboard is updated
+and the view is reloaded.
