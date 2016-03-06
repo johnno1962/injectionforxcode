@@ -3,7 +3,7 @@
 Copyright (c) John Holdsworth 2012-16
 
 injectionforxcode is an extension to the Xcode IDE that allows you to patch the implementation
-of a class method without having to restart the application. It preforms this by parsing the
+of a class' method without having to restart the application. It preforms this by parsing the
 build logs of the application to determine how a source file was last compiled then wraps
 the result of re-compiling into a bundle which is loaded into the application. At this stage
 there are two version of the class available to the app, one with the modified versions of
@@ -52,7 +52,7 @@ class. In order to determine this injection performs a "sweep" or all instances 
 and instances those instances point to etc which is then filtered by the injecting class.
 This process is seeded using the application delegate and all windows. This list is
 supplemented by the values returned by method "sharedInstance" of all application classes
-if required.
+if required. You can also subscribe to "INJECTION_BUNDLE_NOTIFICATION" notifications.
 
 The function dispatch_on_main does of course not inject as it has been statically linked into
 the application. It does however inject by proxy in the case shown in the "doSomething"
