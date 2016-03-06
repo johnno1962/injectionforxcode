@@ -2,24 +2,24 @@
 
 Copyright (c) John Holdsworth 2012-16
 
-## TLDR:
+# TLDR:
 
 Injection for Xcode is an Xcode plugin (available via [Alcatraz](http://alcatraz.io/)) or [AppCode](#user-content-use-with-appcode) that 
 dynamically inserts new Swift / Objective-C code into a running app in order to speed up your build process. It does this without making _any_ changes to your project.
 
 ![Injection Example](documentation/images/injected.gif)
 
-Announcements of major additions to the project will be made on twitter [@Injection4Xcode](https://twitter.com/#!/@Injection4Xcode).
+Announcements of major additions to the project will be made on twitter [@Injection4Xcode](https://twitter.com/@Injection4Xcode).
 
-### How to Use Injection for Xcode
+## How to Use Injection for Xcode
 
-For installation and usage for AppCode [see below](#user-content-use-with-appcode).
+For installation and usage for AppCode [see below](#user-content-use-with-appcode). If you're a visual learner, you may appreciate [this video post](http://artsy.github.io/blog/2016/03/05/iOS-Code-Injection/) from [@Orta](https://twitter.com/@orta) covering the basics.
 
 With Xcode, either install via Alcatraz, or install by cloning this repo and build `InjectionPluginLite/InjectionPlugin.xcodeproj`. 
 
 The plugin can be removed either via Alcatraz, or by running: `rm -rf ~/Library/Application\ Support/Developer/Shared/Xcode/Plug-ins/InjectionPlugin.xcplugin`
 
-#### Simple Proof of Concept Once Installed
+### Simple Proof of Concept Once Installed
 
 Once it is installed, compile and run a project as normal. From here you should take any class that would exist when your 
 app is loaded, add a new function `- injection`  and add a breakpoint on that line.
@@ -39,7 +39,7 @@ func injected() {
 
 Then press <kbd>ctrl</kbd>+<kbd>=</kbd>, and you'll see Xcode stop at the breakpoint. You've just injected new code into a running app. **Awesome right?**
 
-#### Callbacks in Your Code
+### Callbacks in Your Code
 
 You can build on top of Injection from three callbacks:
 
@@ -79,7 +79,7 @@ implementations at run time. This can also be performed on Swift classes provide
 the method or class is not final or private (i.e. the method can be overridden) by
 patching the class' "vtable". This excludes the injection of methods of structs.
 
-### What Else Does This Plugin Do?
+## What Else Does This Plugin Do?
 
 * There is support for working specifically with [Storyboard-based iOS projects](documentation/storyboards.md).
 
@@ -93,7 +93,9 @@ for the changes which are injected into your project, it is recommended to add t
 
 * The injection key command can be customised from <kbd>ctrl</kbd>+<kbd>=</kbd> in the "Tunable App Parameters" panel.
 
-### What Happens with Swift?
+* Works on a device, if you apply a [patch to your project.](documentation/patching_injection.md).
+
+## What Happens with Swift?
 
 ![Icon](http://injectionforxcode.johnholdsworth.com/injection2.png)
 
@@ -116,7 +118,7 @@ private extern flag and relink the bundle. In order to do this a script `~/bin/u
 is created by the plugin build which should be called as an additional "Run Script"
 build phase after linking your app to perform this patch and relink. 
 
-### Use with AppCode 
+## Use with AppCode 
 
 Injection can be used from inside AppCode provided the application [has been patched](documentation/patching_injection.md) and
 you have previously injected that project from inside Xcode to set up a link to the 
@@ -126,7 +128,33 @@ To install, copy the jar file `InjectionPluginAppCode/Injection.jar` from this r
 to `~/Library/Application Support/AppCode3*`. You’ll need to re-patch the project
 from inside AppCode as it uses a different port number to connect.
 
-### "Nagware" License
+## Limitations of Injection
+
+There are limitations of course, largely centering around static variables, static or global
+functions and their Swift equivalents. Consider the following Objective-C code.
+
+![Icon](http://injectionforxcode.johnholdsworth.com/injection1.png)
+
+* One potential problem is when the new version of the class is loaded, it comes with it's own
+versions of static variables such as `sharedInstance` and the `once` token.  After injection 
+has occurred, this would generate a new singleton instance. 
+
+  To prevent this, class methods with the prefix "shared" are not swizzled on injection to 
+support this common idiom.
+
+* It can be tough to look through all of the memory of a running application. In order to determine the classes and instances to call the `injected` callbacks on, Injection performs a "sweep" to find all objects in memory. Roughly, this involves looking at an object, then recursively looking through objects which it refers to. For example, the object's instance variables and properties.
+
+  This process is seeded using the application's delegate and all windows. Once all the in-memory reference are collected, Injection will then filter these references to ones that it has compiled and injected. Then sending them the messages referenced in the [callbacks section](##user-content-callbacks-in-your-code).
+  
+  If no references are found, Injection will look through all objects that are referred to via `sharedInstance`. If that fails, well, Injection couldn't find your instance. This is one way in which
+  you may miss callbacks in your app.
+
+* The function `dispatch_on_main` does not inject, as it has been statically linked into
+the application. It does however, inject by proxy in the case shown via the `doSomething`
+method. `dispatch_on_main` will have been linked locally to a version in the object file being injected.
+
+
+## "Nagware" License
 
 This source code is provided on github on the understanding it will not be redistributed.
 License is granted to use this software during development for any purpose for two weeks
@@ -136,7 +164,7 @@ as suggested by code included in the software.
 
 If you find (m)any issues in the code, get in contact using the email: support (at) injectionforxcode.com
 
-### Please note:
+## Please note:
 
 The above copyright notice and this permission notice shall be
 included in all copies or substantial portions of the Software.
