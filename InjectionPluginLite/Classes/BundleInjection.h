@@ -573,7 +573,9 @@ static const char **addrPtr, *connectedAddress;
                                 INParameters[tag] = atof( file );
                                 if ( logValue )
                                     INLog( @"Param #%d -> %f", tag, INParameters[tag] );
-                                [INDelegates[tag] inParameter:tag hasChanged:INParameters[tag]];
+                                dispatch_async( dispatch_get_main_queue(), ^{
+                                    [INDelegates[tag] inParameter:tag hasChanged:INParameters[tag]];
+                                } );
                             }
                             else if ( (tag -= 5) < 5 ) {
                                 float r, g, b, a;

@@ -474,7 +474,9 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     NSTextField *val = [vals viewWithTag:tag];
     [val setStringValue:[NSString stringWithFormat:@"%.3f", sender.floatValue]];
     NSString *file = [NSString stringWithFormat:@"%d%@", tag, [val stringValue]];
-    [BundleInjection writeBytes:INJECTION_MAGIC withPath:[file UTF8String] from:0 to:clientSocket];
+    dispatch_async( dispatch_get_main_queue(), ^{
+        [BundleInjection writeBytes:INJECTION_MAGIC withPath:[file UTF8String] from:0 to:clientSocket];
+    } );
 }
 
 - (IBAction)maxChanged:(NSTextField *)sender {
@@ -485,7 +487,9 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     if ( !clientSocket ) return;
     NSString *col = [self formatColor:sender.color], *file = [NSString stringWithFormat:@"%d%@", (int)[sender tag], col];
     colorLabel.stringValue = [NSString stringWithFormat:@"Color changed: rgba = {%@}", col];
-    [BundleInjection writeBytes:INJECTION_MAGIC withPath:[file UTF8String] from:0 to:clientSocket];
+    dispatch_async( dispatch_get_main_queue(), ^{
+        [BundleInjection writeBytes:INJECTION_MAGIC withPath:[file UTF8String] from:0 to:clientSocket];
+    } );
 }
 
 - (IBAction)imageChanged:(NSImageView *)sender {
