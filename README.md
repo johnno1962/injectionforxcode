@@ -4,8 +4,8 @@ Copyright (c) John Holdsworth 2012-16
 
 ## TLDR:
 
-Injection for Xcode is an Xcode plugin (available via [Alcatraz](http://alcatraz.io/)) or [AppCode](#use-with-appcode) that 
-dynamically re-inserts new Swift / Objective-C code into a running app in order to speed up your build process. It does this without making _any_ changes to your project.
+Injection for Xcode is an Xcode plugin (available via [Alcatraz](http://alcatraz.io/)) or [AppCode](#user-content-use-with-appcode) that 
+dynamically inserts new Swift / Objective-C code into a running app in order to speed up your build process. It does this without making _any_ changes to your project.
 
 ![Injection Example](documentation/images/injection.gif)
 
@@ -13,12 +13,13 @@ Announcements of major additions to the project will be made on twitter [@Inject
 
 ### How to Use Injection for Xcode
 
-For installation and usage for AppCode [see below](#use-with-appcode).
+For installation and usage for AppCode [see below](#user-content-use-with-appcode).
 
-With Xcode, either install via Alcatraz, or install by cloning this repo and build `InjectionPluginLite/InjectionPlugin.xcodeproj`. The plugin 
-can be removed either via Alcatraz, or by running: `rm -rf ~/Library/Application\ Support/Developer/Shared/Xcode/Plug-ins/InjectionPlugin.xcplugin`
+With Xcode, either install via Alcatraz, or install by cloning this repo and build `InjectionPluginLite/InjectionPlugin.xcodeproj`. 
 
-##### Simple Proof of Concept Once Installed
+The plugin can be removed either via Alcatraz, or by running: `rm -rf ~/Library/Application\ Support/Developer/Shared/Xcode/Plug-ins/InjectionPlugin.xcplugin`
+
+#### Simple Proof of Concept Once Installed
 
 Once it is installed, compile and run a project as normal. From here you should take any class that would exist when your 
 app is loaded, add a new function `- injection`  and add a breakpoint on that line.
@@ -38,15 +39,15 @@ func injected() {
 
 Then press <kbd>ctrl</kbd>+<kbd>=</kbd>, and you'll see Xcode stop at the breakpoint. You've just injected new code into a running app. 
 
-Amazing right?
+**Awesome right?**
 
-##### Callbacks in Your Code
+#### Callbacks in Your Code
 
 You can build on top of Injection from three callbacks:
 
-* `- injected` as an instance method, which gives you the chance to re-update an object with new contexts.
-* `+ injected` as a class method, making it possible to update globals with new information
-* Listening for the `INJECTION_BUNDLE_NOTIFICATION`, allowing other classes to listen out for injection calls, this is useful for providing [app level changes](https://github.com/artsy/eigen/pull/1236).
+* `- (void)injected` as an instance method, which gives you the chance to re-update an object with new contexts.
+* `+ (void)injected` as a class method, making it possible to update globals with new information
+* Listening for `INJECTION_BUNDLE_NOTIFICATION`, allowing other classes to listen out for injection calls, this is useful for providing [app level changes](https://github.com/artsy/eigen/pull/1236).
 
 If you are interested in diving even deeper into callbacks, check out [Tunable Parameters](documentation/tunable_parameters.md).
 
@@ -61,8 +62,8 @@ However, there are a number of cases where re-injection won't work elegantly wit
  * Changing `func` or `class`es that are marked as `final`.
  * Global `func` or variables that are not constrained into a class.
  
- In day-to-day development against Cocoa/UIKit, it's rare, but possible to hit these cases, for more information
- see [What Happens With Swift?](#what-happens-with-swift)
+In day-to-day development against Cocoa/UIKit, it's rare, but possible to hit these cases, 
+for more information see [What Happens With Swift?](#what-happens-with-swift)
 
 ## How it Works
 
