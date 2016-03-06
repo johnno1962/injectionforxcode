@@ -37,9 +37,7 @@ func injected() {
 }
 ```
 
-Then press <kbd>ctrl</kbd>+<kbd>=</kbd>, and you'll see Xcode stop at the breakpoint. You've just injected new code into a running app. 
-
-**Awesome right?**
+Then press <kbd>ctrl</kbd>+<kbd>=</kbd>, and you'll see Xcode stop at the breakpoint. You've just injected new code into a running app. **Awesome right?**
 
 #### Callbacks in Your Code
 
