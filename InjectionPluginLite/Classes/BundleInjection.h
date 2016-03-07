@@ -582,8 +582,8 @@ static const char **addrPtr, *connectedAddress;
                                 sscanf( file, "%f,%f,%f,%f", &r, &g, &b, &a );
                                 if ( logValue )
                                     INLog( @"Color #%d -> %f,%f,%f,%f", tag, r, g, b, a );
-                                if ( path[0] == '9' )
-                                    logValue = TRUE;
+//                                if ( path[0] == '9' )
+//                                    logValue = TRUE;
 #ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
                                 UIColor *col = [UIColor colorWithRed:r green:g
                                                                 blue:b alpha:a];
