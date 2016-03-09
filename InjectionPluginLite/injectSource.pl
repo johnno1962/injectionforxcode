@@ -117,7 +117,7 @@ if ( !$bundleProjectSource ) {
 # the code signing identity for when we are injecting to a device.
 #
 
-my $xcodebuild = $xcodeApp ? "$xcodeApp/Contents/Developer/usr/bin/xcodebuild" : "xcodebuild";
+my $xcodebuild = $xcodeApp ? "\"$xcodeApp/Contents/Developer/usr/bin/xcodebuild\"" : "xcodebuild";
 
 mkdir my $archDir = "$InjectionBundle/$arch";
 my $config = " -configuration Debug -arch $arch";
