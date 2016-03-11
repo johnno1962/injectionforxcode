@@ -91,6 +91,8 @@ patching the class' "vtable". This excludes the injection of methods of structs.
 project (either `iOSInjectionProject` or `OSXInjectionProject`.) This is the xcode project base
 for the changes which are injected into your project, it is recommended to add this to your `.gitignore`.
 
+* Each time a project is injected, `injectionCount.txt` in the injection project's directory (above) is incremented. This can give you a sense of how much time you save (number of injections * amount saved per injection = a happier you).
+
 * The injection key command can be customised from <kbd>ctrl</kbd>+<kbd>=</kbd> in the "Tunable App Parameters" panel.
 
 * Works on a device, if you apply a [patch to your project.](documentation/patching_injection.md).
