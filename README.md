@@ -59,6 +59,7 @@ However, there are a number of cases where re-injection won't work elegantly wit
  * Making changes to Structs.
  * Changing `func` or `class`es that are marked as `final`.
  * Global `func` or variables that are not constrained into a class.
+ * Compiler optimisations can stop injection working. If so, build DEBUG.
  
 In day-to-day development against Cocoa/UIKit, it's rare, but possible to hit these cases, 
 for more information see [What Happens With Swift?](#what-happens-with-swift)
