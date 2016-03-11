@@ -513,3 +513,15 @@ if ( $isDevice ) {
 
 print "Loading Bundle...\n";
 print "!$bundlePath\n";
+
+############################################################################
+#
+# Finally, increment the integer stored in injectionCount.txt to keep a
+# record of how many injections we've performed, to give a sense of how much
+# time we have saved the programmer.
+#
+
+my $injectionCountFileName = "${InjectionBundle}/injectionCount.txt";
+system "touch $injectionCountFileName";
+my $injectionCount = loadFile( $injectionCountFileName ) + 1;
+saveFile( $injectionCountFileName, $injectionCount );
