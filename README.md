@@ -22,7 +22,7 @@ The plugin can be removed either via Alcatraz, or by running: `rm -rf ~/Library/
 ### Simple Proof of Concept Once Installed
 
 Once it is installed, compile and run a project as normal. From here you should take any class that would exist when your 
-app is loaded, add a new function `- injection`  and add a breakpoint on that line.
+app is loaded, add a new function `- injected`  and add a breakpoint on that line.
 
 ``` objc
 - (void)injected
