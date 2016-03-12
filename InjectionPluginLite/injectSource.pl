@@ -525,3 +525,4 @@ my $injectionCountFileName = "${InjectionBundle}/injectionCount.txt";
 system "touch $injectionCountFileName";
 my $injectionCount = loadFile( $injectionCountFileName ) + 1;
 saveFile( $injectionCountFileName, $injectionCount );
+print "!!$injectionCount injections performed so far.\n";
