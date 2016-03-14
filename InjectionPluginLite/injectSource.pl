@@ -349,7 +349,7 @@ if ( $learnt ) {
     error "Learnt compile failed" if $?;
 
     #if ( $isSwift ) {
-        my ($toolchain) = $learnt =~ m@(/Applications/Xcode.*?/XcodeDefault.xctoolchain)/@;
+        my ($toolchain) = $learnt =~ m#(@{[$xcodeApp||'/Applications/Xcode']}.*?/XcodeDefault.xctoolchain)/#;
         my $sdk = ($config =~ /-sdk (\w+)/)[0] || 'macosx';
         $obj .= "\", \"-L'$toolchain'/usr/lib/swift/$sdk";
         $obj .= "\", \"-F$buildRoot/Products/Debug-$sdk" if $buildRoot;
