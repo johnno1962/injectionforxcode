@@ -10,7 +10,7 @@ The code looks like:
 
 ```objc
 #ifdef DEBUG
-static char _inMainFilePath[] = __FILE__;pa
+static char _inMainFilePath[] = __FILE__;
 static const char *_inIPAddresses[] = {"10.12.1.67", "127.0.0.1", 0};
 
 #define INJECTION_ENABLED
