@@ -86,9 +86,11 @@ static INPluginMenuController *injectionPlugin;
         dispatch_once( &onceToken, ^{
             injectionPlugin = [[self alloc] init];
             //NSLog( @"Preparing Injection: %@", injectionPlugin );
-            dispatch_async( dispatch_get_main_queue(), ^{
-                [injectionPlugin applicationDidFinishLaunching:nil];
-            } );
+            [[NSNotificationCenter defaultCenter]
+             addObserver:injectionPlugin
+             selector:@selector(applicationDidFinishLaunching:)
+             name:NSApplicationDidFinishLaunchingNotification
+             object:nil];
         } );
     }
 }
