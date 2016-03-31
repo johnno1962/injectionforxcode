@@ -122,11 +122,16 @@ static INPluginMenuController *injectionPlugin;
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
+    NSMenu *productMenu = [[[NSApp mainMenu] itemWithTitle:@"Product"] submenu];
+    if ( !productMenu ) {
+        [self performSelector:@selector(applicationDidFinishLaunching:) withObject:notification afterDelay:1.0];
+        return;
+    }
+
     IDEWorkspaceWindowController = NSClassFromString(@"IDEWorkspaceWindowController");
     IDEWorkspaceDocument = NSClassFromString(@"IDEWorkspaceDocument");
     DVTSourceTextView = NSClassFromString(@"DVTSourceTextView");
     IDEConsoleTextView = NSClassFromString(@"IDEConsoleTextView");
-
 
     if ( ![NSBundle loadNibNamed:@"INPluginMenuController" owner:self] )
         if ( [[NSAlert alertWithMessageText:@"Injection Plugin:"
@@ -144,34 +149,29 @@ static INPluginMenuController *injectionPlugin;
     if ( [self.defaults valueForKey:kINFileWatch] )
         watchButton.state = [self.defaults boolForKey:kINFileWatch];
 
-	NSMenu *productMenu = [[[NSApp mainMenu] itemWithTitle:@"Product"] submenu];
-	if (productMenu) {
-		[productMenu addItem:[NSMenuItem separatorItem]];
+    [productMenu addItem:[NSMenuItem separatorItem]];
 
-        struct { const char *item,  *key; SEL action; } items[] = {
-            {"Injection Plugin", "", NULL},
-            {"Inject Source", [currentShortcut UTF8String], @selector(injectSource:)}
-        };
+    struct { const char *item,  *key; SEL action; } items[] = {
+        {"Injection Plugin", "", NULL},
+        {"Inject Source", [currentShortcut UTF8String], @selector(injectSource:)}
+    };
 
-        for ( int i=0 ; i<sizeof items/sizeof items[0] ; i++ ) {
-            menuItem = [[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:items[i].item]
-                                                  action:items[i].action
-                                           keyEquivalent:[NSString stringWithUTF8String:items[i].key]];
-            [menuItem setKeyEquivalentModifierMask:NSControlKeyMask];
-            if ( i==0 )
-                [subMenuItem = menuItem setSubmenu:self.subMenu];
-            else
-                [menuItem setTarget:self];
-            [productMenu addItem:menuItem];
-        }
+    for ( int i=0 ; i<sizeof items/sizeof items[0] ; i++ ) {
+        menuItem = [[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:items[i].item]
+                                              action:items[i].action
+                                       keyEquivalent:[NSString stringWithUTF8String:items[i].key]];
+        [menuItem setKeyEquivalentModifierMask:NSControlKeyMask];
+        if ( i==0 )
+            [subMenuItem = menuItem setSubmenu:self.subMenu];
+        else
+            [menuItem setTarget:self];
+        [productMenu addItem:menuItem];
+    }
 
-        introItem.title = [NSString stringWithFormat:@"Injection v%s Intro", INJECTION_VERSION];
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(workspaceDidChange:)
-                                                     name:NSWindowDidBecomeKeyNotification object:nil];
-	}
-    else
-        [self error:@"InInjectionPlugin: Could not locate Product Menu."];
+    introItem.title = [NSString stringWithFormat:@"Injection v%s Intro", INJECTION_VERSION];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(workspaceDidChange:)
+                                                 name:NSWindowDidBecomeKeyNotification object:nil];
 
     [injectAndReset setKeyEquivalent:currentShortcut];
 
