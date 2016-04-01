@@ -136,6 +136,7 @@ $localBundle =~ s@^.*/Build/@$buildRoot/@ if $buildRoot;
 (my $localBinary = $localBundle) =~ s@([^./]+).app@$1.app/$1@;
 
 unlink $infoFile if $buildRoot && !-d $localBundle;
+system( "rm -rf \"$localBundle/Frameworks/IDEBundleInjection.framework\"");
 
 if ( $localBinary && $bundleProjectSource =~ s/(BUNDLE_LOADER = )([^;]+;)/$1"$localBinary";/g ) {
     print "Patching bundle project to app path: $localBinary\n";
