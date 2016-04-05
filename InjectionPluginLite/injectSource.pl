@@ -136,7 +136,7 @@ $localBundle =~ s@^.*/Build/@$buildRoot/@ if $buildRoot;
 (my $localBinary = $localBundle) =~ s@([^./]+).app@$1.app/$1@;
 
 unlink $infoFile if $buildRoot && !-d $localBundle;
-system( "rm -rf \"$localBundle/Frameworks/IDEBundleInjection.framework\"");
+system "rm -rf \"$localBundle/Frameworks/IDEBundleInjection.framework\"";
 
 if ( $localBinary && $bundleProjectSource =~ s/(BUNDLE_LOADER = )([^;]+;)/$1"$localBinary";/g ) {
     print "Patching bundle project to app path: $localBinary\n";
@@ -353,13 +353,13 @@ if ( $learnt ) {
         my ($toolchain) = $learnt =~ m#(@{[$xcodeApp||'/Applications/Xcode']}.*?/XcodeDefault.xctoolchain)/#;
         my $sdk = ($config =~ /-sdk (\w+)/)[0] || 'macosx';
         $obj .= "\", \"-L'$toolchain'/usr/lib/swift/$sdk";
-        $obj .= "\", \"-F$buildRoot/Products/Debug-$sdk" if $buildRoot;
+        $obj .= "\", \"-F'$buildRoot'/Products/Debug-$sdk" if $buildRoot;
     #}
 }
 
 if ( -d (my $frameworkDir = "$localBundle/Frameworks") ) {
     my @frameworks = `cd '$frameworkDir'; ls -d *.framework` =~ /(\S+)\.framework/g;
-    $obj .= join "", "\", \"-F$frameworkDir", map "\", \"-framework\", \"$_", @frameworks;
+    $obj .= join "", "\", \"-F'$frameworkDir'", map "\", \"-framework\", \"$_", @frameworks;
 }
 
 $bundleProjectSource =~ s/(OTHER_LDFLAGS = \().*?("-undefined)/$1"$obj", $2/sg;
@@ -524,6 +524,6 @@ print "!$bundlePath\n";
 
 my $injectionCountFileName = "${InjectionBundle}/injectionCount.txt";
 system "touch $injectionCountFileName";
-my $injectionCount = loadFile( $injectionCountFileName ) + 1;
+my $injectionCount = (loadFile( $injectionCountFileName )||0) + 1;
 saveFile( $injectionCountFileName, $injectionCount );
 print "!!$injectionCount injections performed so far.\n";
