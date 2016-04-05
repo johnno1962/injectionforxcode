@@ -64,7 +64,7 @@ if ( !$executable ) {
 if ( !$bundleProjectSource ) {
     print "Copying $template into project.\n";
 
-    0 == system "cp -rf \"$FindBin::Bin/$template\" $InjectionBundle && chmod -R og+w $InjectionBundle"
+    0 == system "rm -rf $InjectionBundle; cp -rf \"$FindBin::Bin/$template\" $InjectionBundle && chmod -R og+w $InjectionBundle"
         or error "Could not copy injection bundle.";
 
     # try to use main project's precompilation header
