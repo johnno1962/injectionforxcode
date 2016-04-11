@@ -362,7 +362,10 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 
     DBGLLDBSession *session = [self session];
     //NSLog( @"injectSource: %@ %@", sender, session );
-    if ( !session ) {
+    if ( !session && !sender ) {
+        return;
+    }
+    else if ( !session ) {
         [self.client alert:@"No project is running."];
         return;
     }
