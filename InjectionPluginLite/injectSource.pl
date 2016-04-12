@@ -351,7 +351,11 @@ if ( $learnt ) {
 
     #if ( $isSwift ) {
         my ($toolchain) = $learnt =~ m#(@{[$xcodeApp||'/Applications/Xcode']}.*?/XcodeDefault.xctoolchain)/#;
+        if ( $learnt =~ /-(appletvsimulator)\// ) {
+            $config =~ s/iphone/appletv/
+        }
         my $sdk = ($config =~ /-sdk (\w+)/)[0] || 'macosx';
+        $bundleProjectSource =~ s/\bFRAMEWORK_SEARCH_PATHS = [^;]*;/FRAMEWORK_SEARCH_PATHS = "$buildRoot\/Products\/Debug-$sdk\/\*\*";/g;
         $obj .= "\", \"-L'$toolchain'/usr/lib/swift/$sdk";
         $obj .= "\", \"-F'$buildRoot'/Products/Debug-$sdk" if $buildRoot;
     #}
