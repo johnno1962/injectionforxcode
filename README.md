@@ -15,7 +15,7 @@ Announcements of major additions to the project will be made on twitter [@Inject
 
 For installation and usage for AppCode [see below](#user-content-use-with-appcode). If you're a visual learner, you may appreciate [this video post](http://artsy.github.io/blog/2016/03/05/iOS-Code-Injection/) from [@Orta](https://twitter.com/@orta) covering the basics.
 
-With Xcode, either install via Alcatraz, or install by cloning this repo and build `InjectionPluginLite/InjectionPlugin.xcodeproj`. 
+With Xcode, either install via Alcatraz, or install by cloning this repo and build `InjectionPluginLite/InjectionPlugin.xcodeproj`. If installing by cloning this repo and buliding, then restart XCode to load the plugin, after the build. (A popup might appear asking to confirm loading a plugin not signed by Apple - confirm the loading on this page.) 
 
 The plugin can be removed either via Alcatraz, or by running: `rm -rf ~/Library/Application\ Support/Developer/Shared/Xcode/Plug-ins/InjectionPlugin.xcplugin`
 
