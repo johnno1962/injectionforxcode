@@ -114,11 +114,13 @@ struct _in_header { int pathLength, dataLength; };
 - (NSArray *)inInstantiateWithOwner:(id)ownerOrNil options:(NSMutableDictionary *)optionsOrNil;
 @end
 #endif
+#if !TARGET_OS_TV
 @implementation UIAlertView(Injection)
 - (void)injectionDismiss {
     [self dismissWithClickedButtonIndex:0 animated:YES];
 }
 @end
+#endif
 //#else
 //#import <Cocoa/Cocoa.h>
 #endif
@@ -859,6 +861,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
     [self dumpIvars:oldClass];
     [self dumpIvars:newClass];
 #endif
+#if !TARGET_OS_TV
 #ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
     if ( notify & INJECTION_NOTSILENT ) {
         NSString *msg = [[NSString alloc] initWithFormat:@"Class '%@' injected.",
@@ -872,6 +875,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 #ifndef INJECTION_ISARC
         [alert release];
         [msg release];
+#endif
 #endif
     }
 #else
