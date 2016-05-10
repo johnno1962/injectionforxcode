@@ -355,7 +355,7 @@ if ( $learnt ) {
             $config =~ s/iphone/appletv/
         }
         my $sdk = ($config =~ /-sdk (\w+)/)[0] || 'macosx';
-        $bundleProjectSource =~ s/\bFRAMEWORK_SEARCH_PATHS = [^;]*;/FRAMEWORK_SEARCH_PATHS = "$buildRoot\/Products\/Debug-$sdk\/\*\*";/g;
+#        $bundleProjectSource =~ s/\bFRAMEWORK_SEARCH_PATHS = [^;]*;/FRAMEWORK_SEARCH_PATHS = "$buildRoot\/Products\/Debug-$sdk\/\*\*";/g;
         $obj .= "\", \"-L'$toolchain'/usr/lib/swift/$sdk";
         $obj .= "\", \"-F'$buildRoot'/Products/Debug-$sdk" if $buildRoot;
     #}
