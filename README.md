@@ -127,9 +127,10 @@ Injection can be used from inside AppCode provided the application [has been pat
 you have previously injected that project from inside Xcode to set up a link to the 
 build logs. 
 
-To install, copy the jar file `InjectionPluginAppCode/Injection.jar` from this repo 
-to `~/Library/Application Support/AppCode3*`. You’ll need to re-patch the project
-from inside AppCode as it uses a different port number to connect.
+To install, download the jar file `InjectionPluginAppCode/Injection.jar` from this repo 
+and go to AppCode preferences, choose "Install plugin from disk" and locate the .jar.
+Then restart the IDE. Now you will get new menu options under the Run menu.
+You’ll need to re-patch the project from inside AppCode as it uses a different port number to connect.
 
 ## Limitations of Injection
 
