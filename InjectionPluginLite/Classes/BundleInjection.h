@@ -876,8 +876,8 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
         [alert release];
         [msg release];
 #endif
-#endif
     }
+#endif
 #else
     //INLog( @" ...ignore any warning, Injection has swizzled class '%s'", className );
 #endif
