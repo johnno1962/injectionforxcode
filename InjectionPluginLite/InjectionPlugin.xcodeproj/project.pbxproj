@@ -323,7 +323,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd InjectionLoader && xcodebuild -sdk iphonesimulator -config Debug && cd - &&\nchmod +x \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"/*.pl &&\ncp -rf Classes/Xtrace.* InjectionLoader/build/*-iphonesimulator/InjectionLoader.bundle \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"";
+			shellScript = "cd InjectionLoader && xcodebuild -sdk iphonesimulator -config Debug && cd - &&\nchmod +x \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"/*.pl &&\ncp -rf Classes/Xtrace.* InjectionLoader/build/*-iphonesimulator/InjectionLoader.bundle \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\n/usr/bin/codesign --force --sign \"iPhone Developer\" --timestamp=none \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"/InjectionLoader.bundle";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */

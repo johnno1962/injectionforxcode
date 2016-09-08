@@ -237,7 +237,7 @@ if ( !$learnt ) {
             else {
                 while ( my $line = <LOG> ) {
                     if ( index( $line, $filename ) != -1 && index( $line, " $arch" ) != -1 &&
-                        $line =~ m!@{[$xcodeApp||""]}/Contents/Developer/Toolchains/XcodeDefault\.xctoolchain.+?@{[
+                        $line =~ m!@{[$xcodeApp||""]}/Contents/Developer/Toolchains/.*?\.xctoolchain.+?@{[
                                 $isSwift ? " -primary-file ": " -c "
                             ]}("$selectedFile"|\Q$escaped\E)! ) {
                         $learnt .= ($learnt?';;':'').$line;
@@ -350,7 +350,7 @@ if ( $learnt ) {
     error "Learnt compile failed" if $?;
 
     #if ( $isSwift ) {
-        my ($toolchain) = $learnt =~ m#(@{[$xcodeApp||'/Applications/Xcode']}.*?/XcodeDefault.xctoolchain)/#;
+        my ($toolchain) = $learnt =~ m#(@{[$xcodeApp||'/Applications/Xcode']}.*?\.xctoolchain)/#;
         if ( $learnt =~ /-(appletvsimulator)\// ) {
             $config =~ s/iphone/appletv/
         }
@@ -507,11 +507,14 @@ if ( $flags & $INJECTION_STORYBOARD ) {
     close NIBS;
 }
 
-if ( $isDevice ) {
+if ( $identity ) {
     print "Codesigning with identity '$identity' for iOS device\n";
 
     0 == system "codesign -s '$identity' \"$bundlePath\""
         or error "Could not codesign as '$identity': $bundlePath";
+}
+
+if ( $isDevice ) {
 
     $bundlePath = copyToDevice( $bundlePath, "$deviceRoot/tmp/$productName.bundle" );
 }

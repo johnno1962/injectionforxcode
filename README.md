@@ -11,6 +11,15 @@ dynamically inserts new Swift / Objective-C code into a running app in order to 
 
 Announcements of major additions to the project will be made on twitter [@Injection4Xcode](https://twitter.com/@Injection4Xcode).
 
+### Stop Press
+
+If you know the trick which I won't detail here plugins still load in Xcode 8 GM and injection has been
+updated for it and Swift 3. Patched injection works fine and unpatched injection works if the
+"InjectionLoader" bundle is codesigned for the simulator. This is done in a "Run Script" build phase in this
+project if you need to update the code signing identity to dis-ambiguate it. Please raise issues 
+with any problems. One thing I have noticed is you can no longer add methods using injection
+which was proably never a particularly good idea in Swift.
+
 ## How to Use Injection for Xcode
 
 For installation and usage for AppCode [see below](#user-content-use-with-appcode). If you're a visual learner, you may appreciate [this video post](http://artsy.github.io/blog/2016/03/05/iOS-Code-Injection/) from [@Orta](https://twitter.com/@orta) covering the basics.
