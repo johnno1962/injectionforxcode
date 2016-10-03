@@ -17,8 +17,9 @@ If you know the trick which I won't detail here plugins still load in Xcode 8 GM
 updated for it and Swift 3. Patched injection works fine and unpatched injection works if the
 "InjectionLoader" bundle is codesigned for the simulator. This is done in a "Run Script" build phase in this
 project if you need to update the code signing identity to dis-ambiguate it. Please raise issues 
-with any problems. One thing I have noticed is you can no longer add methods using injection
-which was proably never a particularly good idea in Swift.
+with any problems or look at [this blog](https://johntmcintosh.com/blog/2016/10/03/code-injection-ios).
+One thing I have noticed is you can no longer add methods using injection which was proably never a
+particularly good idea in Swift.
 
 ## How to Use Injection for Xcode
 
