@@ -12,6 +12,7 @@
 use strict;
 use FindBin;
 use lib $FindBin::Bin;
+use JSON::PP;
 use common;
 
 my $compileHighlight = "{\\colortbl;\\red0\\green0\\blue0;\\red160\\green255\\blue160;}\\cb2\\i1";
@@ -241,6 +242,18 @@ if ( !$learnt ) {
                                 $isSwift ? " -primary-file ": " -c "
                             ]}("$selectedFile"|\Q$escaped\E)! ) {
                         $learnt .= ($learnt?';;':'').$line;
+                        if ( $learnt =~ / -filelist / ) {
+                            while ( my $line = <LOG> ) {
+                                if ( my($filemap) = $line =~ / -output-file-map (\S+) / ) {
+                                    my $json_text = join'', IO::File->new( "< $filemap" )->getlines();
+                                    my $json_map = decode_json( $json_text, { utf8  => 1 } );
+                                    my $filelist = "/tmp/filelist.txt";
+                                    IO::File->new( "> $filelist" )->print( join "\n", keys %$json_map );
+                                    $learnt =~ s/( -filelist )(\S+)( )/$1$filelist$3/;
+                                    last FOUND;
+                                }
+                            }
+                        }
                         last FOUND;
                     }
                 }
