@@ -245,14 +245,18 @@ if ( !$learnt ) {
                         if ( $learnt =~ / -filelist / ) {
                             while ( my $line = <LOG> ) {
                                 if ( my($filemap) = $line =~ / -output-file-map (\S+) / ) {
-                                    my $json_text = join'', IO::File->new( "< $filemap" )->getlines();
+                                    my $file_handle = IO::File->new( "< $filemap" )
+                                        || error "Could not open filemap '$filemap'";
+                                    my $json_text = join'', $file_handle->getlines();
                                     my $json_map = decode_json( $json_text, { utf8  => 1 } );
-                                    my $filelist = "/tmp/filelist.txt";
-                                    IO::File->new( "> $filelist" )->print( join "\n", keys %$json_map );
+                                    my $filelist = "$projRoot$InjectionBundle/filelist.txt";
+                                    my $swift_sources = join "\n", keys %$json_map;
+                                    IO::File->new( "> $filelist" )->print( $swift_sources );
                                     $learnt =~ s/( -filelist )(\S+)( )/$1$filelist$3/;
                                     last FOUND;
                                 }
                             }
+                            error "Could not locate filemap";
                         }
                         last FOUND;
                     }

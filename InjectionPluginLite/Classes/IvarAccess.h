@@ -93,6 +93,12 @@ static BOOL isCFType( const char *type ) {
     return type && strncmp( type, "^{__CF", 6 ) == 0;
 }
 
+static BOOL isNewRefType( const char *type ) {
+    return type && (xstrncmp( type, "{RetainPtr" ) == 0 ||
+                    xstrncmp( type, "{WeakObjCPtr" ) == 0/* ||
+                    xstrncmp( type, "{LazyInitialized" ) == 0*/);
+}
+
 static BOOL isSwiftObject( const char *type ) {
     return (type[-1] == 'S' && (type[0] == 'a' || type[0] == 'S')) || xstrncmp( type, "{Dictionary}" ) == 0;
 }
@@ -204,10 +210,10 @@ struct _swift_field3 {
 //    struct _swift_field *optional;
 };
 
-// Swift4 pointers to some metadata is relative
+// Swift3 pointers to some metadata are relative
 static const char *swift3Relative( void *ptrPtr ) {
-    intptr_t offset = *(intptr_t *)ptrPtr;
-    return offset < 0x100000000 ? (const char *)((intptr_t)ptrPtr + offset) : (const char *)offset;
+    intptr_t offset = *(int *)ptrPtr;
+    return offset < 0 ? (const char *)((intptr_t)ptrPtr + offset) : (const char *)offset;
 }
 
 const char *ivar_getTypeEncodingSwift3( Ivar ivar, Class aClass ) {
@@ -498,7 +504,9 @@ id xvalueForPointer( id self, const char *name, void *iptr, const char *type ) {
             return [NSValue valueWithPointer:*(void **)iptr];
 
         case '{': case '(': @try {
-            if ( xstrncmp( type+1, "Int8" ) == 0 )
+            if ( isNewRefType( type ) )
+                return *(const id *)iptr;
+            else if ( xstrncmp( type+1, "Int8" ) == 0 )
                 return @(*(char *)iptr);
             else if ( xstrncmp( type+1, "Int16" ) == 0 )
                 return @(*(short *)iptr);
