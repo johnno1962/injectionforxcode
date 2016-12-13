@@ -785,7 +785,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
 + (void)dumpIvars:(Class)aClass {
     unsigned i, ic = 0;
     Ivar *vars = class_copyIvarList(aClass, &ic);
-    NSLog( @"0x%p[%u]", vars, ic );
+    NSLog( @"0x%p[%u]", (void *)vars, ic );
     for ( i=0; i<ic ; i++ )
         NSLog( @"%s %s %d", ivar_getName(vars[i]), ivar_getTypeEncoding(vars[i]), (int)ivar_getOffset(vars[i]));
 }
@@ -1002,7 +1002,8 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
                     [newClass class];
 #endif
                     Class oldClass = [self loadedClass:newClass notify:notify];
-                    NSLog( @"Ignore any warning, Swizzled %@ %p -> %p", className, newClass, oldClass );
+                    NSLog( @"Ignore any warning, Swizzled %@ %p -> %p", className,
+                          INJECTION_BRIDGE(void *)newClass, INJECTION_BRIDGE(void *)oldClass );
                     [injectedClasses addObject:oldClass];
                 }
             }

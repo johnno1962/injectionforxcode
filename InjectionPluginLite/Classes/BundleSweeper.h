@@ -295,7 +295,7 @@ static NSMutableArray *liveInstances;
                 if ( strncmp( info.dli_fname, userClass, sizeof userClass-1 ) == 0 &&
                     strstr( info.dli_fname, "/InjectionBundle" ) == 0 ) {
                     id (*imp)( Class, SEL ) = (id (*)( Class, SEL ))method_getImplementation( m );
-                    NSLog( @"BundleSweeper: +[%@ sharedInstance] == %p()", classes[i], imp );
+                    NSLog( @"BundleSweeper: +[%@ sharedInstance] == %p()", classes[i], (void *)imp );
                     [sharedInstances addObject:imp( classes[i], @selector(sharedInstance))];
                 }
             }

@@ -128,7 +128,11 @@ static Class xloadXprobeSwift( const char *ivarName ) {
 
 #pragma mark ivar_getTypeEncoding() for swift
 
+//
 // From Jay Freeman's https://www.youtube.com/watch?v=Ii-02vhsdVk
+//
+// Actual structure is https://github.com/apple/swift/blob/master/include/swift/Runtime/Metadata.h#L1552
+//
 
 struct _swift_data {
     unsigned long flags;
