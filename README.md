@@ -92,6 +92,8 @@ patching the class' "vtable". This excludes the injection of methods of structs.
 
 ## What Else Does This Plugin Do?
 
+* It has file watcher that can inject when a file is saved from whichever editor you use. Enable this in the preferences pane accessed on menu item "Product/Injection Plugin/Tunable Parameters": "File Watcher".
+
 * There is support for working specifically with [Storyboard-based iOS projects](documentation/storyboards.md).
 
 * The plugin offers a way to quickly change a [collection of tunable parameters](documentation/tunable_parameters.md)
