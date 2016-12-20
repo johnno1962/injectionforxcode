@@ -527,7 +527,7 @@ if ( $flags & $INJECTION_STORYBOARD ) {
 if ( $identity ) {
     print "Codesigning with identity '$identity' for iOS device\n";
 
-    0 == system "codesign -s '$identity' \"$bundlePath\""
+    0 == system "codesign --force -s '$identity' \"$bundlePath\""
         or error "Could not codesign as '$identity': $bundlePath";
 }
 
