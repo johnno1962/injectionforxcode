@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.johnholdsworth.InjectionPlugin</string>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -18,14 +18,6 @@
 	<string>6.4</string>
 	<key>CFBundleVersion</key>
 	<string>6.4</string>
-	<key>NSPrincipalClass</key>
-	<string>INPluginMenuController</string>
-	<key>XCGCReady</key>
-	<true/>
-	<key>XCPluginHasUI</key>
-	<false/>
-	<key>XC4Compatible</key>
-	<true/>
 	<key>DVTPlugInCompatibilityUUIDs</key>
 	<array>
 		<string>C4A681B0-4A26-480E-93EC-1218098B9AA0</string>
@@ -56,5 +48,13 @@
 		<string>256D6169-AAB8-4535-A8E7-7401EA704432</string>
 		<string>E0A62D1F-3C18-4D74-BFE5-A4167D643966</string>
 	</array>
+	<key>NSPrincipalClass</key>
+	<string>INPluginMenuController</string>
+	<key>XC4Compatible</key>
+	<true/>
+	<key>XCGCReady</key>
+	<true/>
+	<key>XCPluginHasUI</key>
+	<false/>
 </dict>
 </plist>

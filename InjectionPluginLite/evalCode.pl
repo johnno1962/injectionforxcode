@@ -77,11 +77,13 @@ $additionsTag
 
 extension @{[$swiftClass||$className]} {
 
-    func xprintln(str:String) {
-        if let xprobe: AnyClass = NSClassFromString("Xprobe") {
-            dispatch_after(DISPATCH_TIME_NOW, dispatch_get_main_queue(), {
-                NSThread.detachNewThreadSelector(Selector("xlog:"), toTarget:xprobe, withObject:str as NSString)
-            })
+    func xprint<T>(_ str: T) {
+        if let xprobe = NSClassFromString("Xprobe") {
+            #if swift(>=3.0)
+            Thread.detachNewThreadSelector(Selector(("xlog:")), toTarget:xprobe, with:"\\(str)" as NSString)
+            #else
+            NSThread.detachNewThreadSelector(Selector("xlog:"), toTarget:xprobe, withObject:"\\(str)" as NSString)
+            #endif
         }
     }
 
@@ -110,7 +112,7 @@ static void XLog( NSString *format, ... ) {
     [NSClassFromString(@"Xprobe") xlog:[[NSString alloc] initWithFormat:format arguments:argp]];
 }
 
-static void xprintln( const char *msg ) {
+static void xprint( const char *msg ) {
     XLog( \@"Swift language used for Objective-C injection: %s", msg );
 }
 #pragma clang diagnostic pop
@@ -125,6 +127,8 @@ static void xprintln( const char *msg ) {
 
 #endif
 ENDCODE
+
+print "!#$className $selectedFile\n";
 
 open SOURCE, "> $selectedFile" or die "Could not write to source: $selectedFile";
 print SOURCE $source;

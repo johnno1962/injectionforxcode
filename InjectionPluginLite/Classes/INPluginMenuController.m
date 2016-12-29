@@ -23,7 +23,12 @@
 
 #import "INPluginMenuController.h"
 #import "INPluginClientController.h"
+
+#import "BundleInjection.h"
 #import "FileWatcher.h"
+
+#include <sys/ioctl.h>
+#include <net/if.h>
 
 #define MIN_CHANGE_INTERVAL 1.5
 
@@ -36,13 +41,12 @@ static NSString *kINShortcut = @"INShortcut", *kINFileWatch = @"INFileWatch";
 - (void)executeConsoleCommand:(id)a0 threadID:(unsigned long)a1 stackFrameID:(unsigned long)a2 ;
 @end
 
-static INPluginMenuController *injectionPlugin;
+INPluginMenuController *injectionPlugin;
 
 @interface INPluginMenuController()  <NSNetServiceDelegate> {
 
     IBOutlet NSTextField *urlLabel, *shortcut;
     IBOutlet NSMenuItem *subMenuItem, *introItem, *injectAndReset;
-    IBOutlet NSButton *watchButton;
     IBOutlet WebView *webView;
     NSMenuItem *menuItem;
 
@@ -61,16 +65,15 @@ static INPluginMenuController *injectionPlugin;
 }
 
 @property (nonatomic,retain) IBOutlet NSProgressIndicator *progressIndicator;
-@property (nonatomic,retain) IBOutlet INPluginClientController *client;
 @property (nonatomic,retain) IBOutlet NSPanel *webPanel;
 @property (nonatomic,retain) IBOutlet NSMenu *subMenu;
 @property (nonatomic,retain) NSUserDefaults *defaults;
 @property (nonatomic,retain) NSMutableString *mac;
 @property (nonatomic,retain) NSString *bonjourName;
+@property (nonatomic,retain) NSDockTile *docTile;
 
 @property (nonatomic,retain) NSWindow *lastKeyWindow;
 @property (nonatomic,retain) FileWatcher *fileWatcher;
-@property (nonatomic,retain) NSString *lastFile;
 @property (nonatomic) BOOL hasSaved;
 @property (nonatomic) int continues;
 
@@ -109,6 +112,14 @@ static INPluginMenuController *injectionPlugin;
         return NO;
 }
 
++ (NSString *)sourceForClass:(NSString *)className {
+    return injectionPlugin.client.sourceFiles[className];
+}
+
++ (void)showParams {
+    [injectionPlugin.client.paramsPanel makeKeyAndOrderFront:self];
+}
+
 + (BOOL)loadRemote:(NSString *)resourcePath {
     return [self loadXprobe:resourcePath];
 }
@@ -123,7 +134,7 @@ static INPluginMenuController *injectionPlugin;
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
     NSMenu *productMenu = [[[NSApp mainMenu] itemWithTitle:@"Product"] submenu];
-    if ( !productMenu ) {
+    if ( !productMenu && notification == nil ) {
         [self performSelector:@selector(applicationDidFinishLaunching:) withObject:notification afterDelay:1.0];
         return;
     }
@@ -141,13 +152,15 @@ static INPluginMenuController *injectionPlugin;
                "This will install the plugin."] runModal] == NSAlertAlternateReturn )
             [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"https://github.com/johnno1962/injectionforxcode"]];
 
+    self.lastInjected = [NSMutableDictionary new];
     self.defaults = [NSUserDefaults standardUserDefaults];
+    self.docTile = [NSApplication sharedApplication].dockTile;
 
     NSString *currentShortcut = [self.defaults valueForKey:kINShortcut] ?: shortcut.stringValue;
     [shortcut setStringValue:currentShortcut];
 
     if ( [self.defaults valueForKey:kINFileWatch] )
-        watchButton.state = [self.defaults boolForKey:kINFileWatch];
+        self.watchButton.state = [self.defaults boolForKey:kINFileWatch];
 
     [productMenu addItem:[NSMenuItem separatorItem]];
 
@@ -189,7 +202,7 @@ static INPluginMenuController *injectionPlugin;
 }
 
 - (IBAction)watchChanged:sender {
-    [self.defaults setBool:watchButton.state forKey:kINFileWatch];
+    [self.defaults setBool:self.watchButton.state forKey:kINFileWatch];
     [self.defaults synchronize];
     if ( self.client.connected )
         [self enableFileWatcher:YES];
@@ -268,6 +281,10 @@ static INPluginMenuController *injectionPlugin;
 
 - (NSString *)logDirectory {
     return [self.lastController valueForKeyPath:@"workspace.executionEnvironment.logStore.rootDirectoryPath"];
+}
+
+-  (NSString *)xcodeApp {
+    return [NSBundle mainBundle].bundlePath;
 }
 
 - (NSString *)workspacePath {
@@ -399,6 +416,7 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
     }
     else {
         [self.client runScript:@"injectSource.pl" withArg:self.lastFile];
+        self.lastInjected[self.lastFile] = [NSDate new];
         self.lastFile = nil;
         [self enableFileWatcher:YES];
     }
@@ -423,7 +441,11 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
 }
 
 - (void)enableFileWatcher:(BOOL)enabled {
-    if ( enabled && watchButton.state ) {
+    [self.docTile
+     performSelectorOnMainThread:@selector(setBadgeLabel:)
+     withObject:enabled?@"1":nil waitUntilDone:NO];
+
+    if ( enabled && self.watchButton.state ) {
         if ( !self.fileWatcher ) {
             static NSRegularExpression *regexp;
             if ( !regexp )
@@ -434,15 +456,19 @@ static NSString *kAppHome = @"http://injection.johnholdsworth.com/",
                                                         range:NSMakeRange( 0, workspacePath.length )];
 
             NSString *projectRoot = [[workspacePath substringWithRange:range] stringByDeletingLastPathComponent];
-            [self.fileWatcher = [[FileWatcher alloc] initWithRoot:projectRoot plugin:^( NSArray *filesChanged ) {
+            INJECTION_RELEASE( self.fileWatcher = [[FileWatcher alloc] initWithRoot:projectRoot plugin:^( NSArray *filesChanged ) {
+                NSString *filePath = filesChanged[0];
                 NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
-                if ( --skipLastSaved < 0 && now - lastChanged > MIN_CHANGE_INTERVAL ) {
-                    self.lastFile = filesChanged[0];
+                NSTimeInterval timeSinceLifeLastInjected = self.lastInjected[filePath] ?
+                    now - self.lastInjected[filePath].timeIntervalSinceReferenceDate : 1000.;
+                if ( --skipLastSaved < 0 && now - lastChanged > MIN_CHANGE_INTERVAL &&
+                    timeSinceLifeLastInjected > MIN_CHANGE_INTERVAL ) {
+                    self.lastFile = filePath;
                     self.hasSaved = YES;
                     [self injectSource:self];
                     lastChanged = now;
                 }
-            }] release];
+            }] );
         }
     }
     else
@@ -509,14 +535,15 @@ static CFDataRef copy_mac_address(void)
     return _bonjourName;
 }
 
-#include <sys/ioctl.h>
-#include <net/if.h>
-
 - (void)startServer {
     struct sockaddr_in serverAddr;
 
+#ifndef INJECTION_ADDR
+#define INJECTION_ADDR INADDR_ANY
+#endif
+
     serverAddr.sin_family = AF_INET;
-    serverAddr.sin_addr.s_addr = INADDR_ANY;
+    serverAddr.sin_addr.s_addr = htonl(INJECTION_ADDR);
     serverAddr.sin_port = htons(INJECTION_PORT);
 
     int optval = 1;
@@ -576,7 +603,7 @@ static CFDataRef copy_mac_address(void)
     else
         for ( char *ptr = buffer; ptr < buffer + ifc.ifc_len; ) {
             struct ifreq *ifr = (struct ifreq *)ptr;
-            int len = MAX(sizeof(struct sockaddr), ifr->ifr_addr.sa_len);
+            int len = (int)MAX(sizeof(struct sockaddr), ifr->ifr_addr.sa_len);
             ptr += sizeof(ifr->ifr_name) + len;	// for next one in buffer
 
             if (ifr->ifr_addr.sa_family != AF_INET)
@@ -607,7 +634,8 @@ static CFDataRef copy_mac_address(void)
 
 - (void)setupLicensing {
     struct stat tstat;
-    if ( refkey || stat( "/Applications/Objective-C++.app/Contents/Resources/InjectionPluginLite", &tstat ) == 0 )
+    if ( refkey || [[NSBundle mainBundle].bundlePath hasSuffix:@"/Injection.app"] ||
+        stat( "/Applications/Objective-C++.app/Contents/Resources/InjectionPluginLite", &tstat ) == 0 )
         return;
     time_t now = time(NULL);
     installed = [self.defaults integerForKey:kInstalled];
@@ -618,7 +646,7 @@ static CFDataRef copy_mac_address(void)
     }
 
     NSData *addr = INJECTION_BRIDGE(NSData *)copy_mac_address();
-    int skip = 2, len = [addr length]-skip;
+    int skip = 2, len = (int)[addr length]-skip;
     unsigned char *bytes = (unsigned char *)[addr bytes]+skip;
 
     self.mac = [NSMutableString string];
@@ -629,7 +657,7 @@ static CFDataRef copy_mac_address(void)
     }
     CFRelease( INJECTION_BRIDGE(CFDataRef)addr );
 
-    licensed =  [self.defaults integerForKey:kLicensed];
+    licensed =  (int)[self.defaults integerForKey:kLicensed];
     if ( licensed != refkey ) {
         // was 17 day eval period
         if ( now < installed + 17*24*60*60+60 )

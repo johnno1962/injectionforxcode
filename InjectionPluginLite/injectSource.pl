@@ -196,7 +196,7 @@ if ( !$logDir ) {
     @logs = ($memory)
 }
 else {
-    @logs = split "\n", `ls -t "$logDir"/*.xcactivitylog`;
+    @logs = split "\n", `ls -t "$logDir"/*.xcactivitylog "$logDir"/../Debug/*.xcactivitylog`;
 }
 
 #
@@ -314,9 +314,7 @@ extern
 };
 #endif
 
-\@interface $productName : NSObject
-\@end
-\@implementation $productName
+\@implementation NSObject($productName)
 
 + (void)load {
     Class bundleInjection = NSClassFromString(@"BundleInjection");
@@ -327,7 +325,7 @@ extern
 
 int injectionHook() {
     NSLog( \@"injectionHook():" );
-    [$productName load];
+    [NSObject load];
     return YES;
 }
 
@@ -383,6 +381,11 @@ if ( -d (my $frameworkDir = "$localBundle/Frameworks") ) {
     $obj .= join "", "\", \"-F'$frameworkDir'", map "\", \"-framework\", \"$_", @frameworks;
 }
 
+(my $appPackage = $executable) =~ s#(?:(/Contents)/MacOS)?/[^/]*$#$1||''#e;
+$ENV{BUNDLE_FRAMEWORKS} = "$appPackage/Frameworks";
+$obj .= "\", \"-F'\$BUNDLE_FRAMEWORKS'";
+#$obj .= "\", \"-F'$appPackage'/Frameworks";
+
 $bundleProjectSource =~ s/(OTHER_LDFLAGS = \().*?("-undefined)/$1"$obj", $2/sg;
 saveFile( $bundleProjectFile, $bundleProjectSource );
 
@@ -429,6 +432,8 @@ while ( my $line = <BUILD> ) {
         if ( $cmd =~ /BundleContents\.m/ ) {
             $cmd = "if [[ ! -f $dotdot$builtfile ]]; then $cmd && touch $dotdot$builtfile; fi";
         }
+        (my $bundle_frameworks = $ENV{BUNDLE_FRAMEWORKS}) =~ s/ /\\\\ /g;
+        $cmd =~ s/$bundle_frameworks/"\$BUNDLE_FRAMEWORKS"/g;
         $recording->print( "echo \"$cmd\"; time $cmd 2>&1 &&\n" );
         $recorded++;
     }
@@ -525,6 +530,7 @@ if ( $flags & $INJECTION_STORYBOARD ) {
 }
 
 if ( $identity ) {
+    $identity = "-";
     print "Codesigning with identity '$identity' for iOS device\n";
 
     0 == system "codesign --force -s '$identity' \"$bundlePath\""

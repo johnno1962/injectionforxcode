@@ -400,7 +400,7 @@ static const char **addrPtr, *connectedAddress;
         size_t alen = strlen(arch)+1;
 
         int i;
-        for ( i = 0 ; i < 5 ; i++ ) {
+        for ( i = 0 ; i < 3 ; i++ ) {
             int loaderSocket = 0;
 
             for ( addrPtr = addrSwitch ; *addrPtr;  addrPtr++ )
@@ -472,6 +472,26 @@ static const char **addrPtr, *connectedAddress;
                             NSLog( @"*** Bundle has failed to load. If this is due to symbols not found, this may be due to symbols being hidden from dynamic libraries. ***");
                         write( loaderSocket, &status, sizeof status );
                         break;
+
+                    case '@': // load dylib
+                        status = NO;
+                        if ( header.dataLength == INJECTION_MAGIC )
+                            [self performSelectorOnMainThread:@selector(loadDylib)
+                                                   withObject:nil waitUntilDone:YES];
+                        else
+                            NSLog( @"Synchronization error." );
+                        if ( !status )
+                            NSLog( @"*** Bundle has failed to load. If this is due to symbols not found, this may be due to symbols being hidden from dynamic libraries. ***");
+                        write( loaderSocket, &status, sizeof status );
+                        break;
+
+#ifdef XTRACE_EXCLUSIONS
+                    case '+': { // load Xtrace
+                        [Xprobe connectTo:NULL retainObjects:NO];
+                        [Xprobe search:@""];
+                        break;
+                    }
+#endif
 
                     case '>': // open file/directory to write/create
                         if ( header.dataLength == INJECTION_NOFILE ) {
@@ -651,6 +671,13 @@ static const char **addrPtr, *connectedAddress;
         NSLog( @"Bundle Load Error" );
 }
 
++ (void)loadDylib {
+    if ( !dlopen( path+1, RTLD_NOW ) )
+        NSLog( @"Could not initalise dylib at \"%s\"", path+1 );
+    else
+        ;//INLog( @"Injecting Bundle: %s", path );
+}
+
 // a little inside knowledge of Objective-C data structures for the new version of the class ...
 struct _in_objc_ivars { int twenty, count; struct { long *offsetPtr; char *name, *type; int align, size; } ivars[1]; };
 struct _in_objc_ronly { int z1, offsetStart; long offsetEnd, z2; char *className; void *methods; long z3; struct _in_objc_ivars *ivars; };
@@ -823,7 +850,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
         const char *type = method_getTypeEncoding(methods[i]);
 
         //NSLog( @"Swizzling: %c[%s %s] %s to: %p", which, className, sel_getName(sel), type, newIMPL );
-#ifdef XTRACE_EXCLUSIONS
+#ifdef APPEND_TYPE
         if ( originals.find(oldClass) != originals.end() &&
             originals[oldClass].find(sel) != originals[oldClass].end() )
             originals[oldClass][sel].original = (XTRACE_VIMP)newIMPL;
@@ -995,7 +1022,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
                 Class newClass = classReferences[i];
                 NSString *className = NSStringFromClass(newClass);
 
-                if ( !seenInjectionClass )
+                if ( !seenInjectionClass && 0 )
                     seenInjectionClass = [className hasPrefix:@"InjectionBundle"];
                 else {
 #ifndef INJECTION_LEGACY32BITOSX
@@ -1037,6 +1064,8 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
                     if ( [oldClass respondsToSelector:@selector(injected)] )
                         [oldClass injected];
 
+                    [self injectedClass:oldClass];
+
                     // implementation of -injected
                     if ( [oldClass respondsToSelector:@selector(instancesRespondToSelector:)] &&
                         [oldClass instancesRespondToSelector:@selector(injected)] ) {
@@ -1059,8 +1088,6 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
                             if ( ![obj isProxy] && [obj isKindOfClass:oldClass] )
                                 [obj injected];
                     }
-
-                    [self injectedClass:oldClass];
                 }
 
                 [[NSNotificationCenter defaultCenter] postNotificationName:kINNotification
@@ -1068,7 +1095,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
             });
         });
     else
-        NSLog( @"Injection Error: Could not locate referencesSection" );
+        NSLog( @"Injection Error: Could not locate referencesSection, are there any classes being injected?" );
 
     status = referencesSection != NULL;
 #endif

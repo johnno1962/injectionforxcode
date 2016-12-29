@@ -22,18 +22,22 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "Xtrace.h"
 
 @class INPluginMenuController;
 
 @interface INPluginClientController : NSObject
 
+@property (nonatomic,retain) IBOutlet NSPanel *consolePanel;
+@property (nonatomic,retain) IBOutlet NSPanel *paramsPanel;
+
+@property (nonatomic,retain) NSMutableDictionary *sourceFiles;
 @property (nonatomic,retain) NSString *scriptPath;
 @property (nonatomic) BOOL withReset;
 
 - (void)alert:(NSString *)msg;
 - (void)setConnection:(int)clientConnection;
 - (void)runScript:(NSString *)script withArg:(NSString *)selectedFile;
+- (void)writeString:(NSString *)string;
 - (BOOL)connected;
 
 @end

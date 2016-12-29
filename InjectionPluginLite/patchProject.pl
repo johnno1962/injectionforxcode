@@ -57,12 +57,12 @@ CODE
     } );
 }
 
-$ifdef .= "\n#define INJECTION_PORT $selectedFile" if $isAppCode;
+$ifdef .= "\n#define INJECTION_PORT $selectedFile" if $isAppCode || $ENV{IS_INJECTION_APP};
 
 ###################################################################################################
 # patch normal Xcode projects
 if ( !-d "$projRoot$projName.approj" ) {
-    patchAll( "main.(m|mm)", sub {
+    patchAll( "\./main.(m|mm)", sub {
         $_[0] =~ s/\n*($key.*)?$/<<CODE/es;
 
 
@@ -111,8 +111,8 @@ CODE
 
 ###################################################################################################
 # ensure symbols exported
-my $dontHideSymbols = "GCC_SYMBOLS_PRIVATE_EXTERN = NO;";
-patchAll( "project.pbxproj", sub {
-    $_[0] =~ s@(/\* Debug \*/ = \{[^{]*buildSettings = \{(\s*)[^}]*)(};)@$1$dontHideSymbols$2$3@g
-        if $_[0] !~ /$dontHideSymbols/;
-} );
+#my $dontHideSymbols = "GCC_SYMBOLS_PRIVATE_EXTERN = NO;";
+#patchAll( "project.pbxproj", sub {
+#    $_[0] =~ s@(/\* Debug \*/ = \{[^{]*buildSettings = \{(\s*)[^}]*)(};)@$1$dontHideSymbols$2$3@g
+#        if $_[0] !~ /$dontHideSymbols/;
+#} );

@@ -7,7 +7,7 @@
 //
 //  Repo: https://github.com/johnno1962/Xtrace
 //
-//  $Id: //depot/Xtrace/Xray/Xtrace.h#39 $
+//  $Id: //depot/Xtrace/Xray/Xtrace.h#40 $
 //
 //  Class to intercept messages sent to a class or object.
 //  Swizzles generic logging implemntation in place of the
@@ -74,7 +74,7 @@
 #define XTRACE_BLUE  XTRACE_FG"0,0,255;"
 
 // internal information
-#define XTRACE_ARGS_SUPPORTED 10
+#define XTRACE_ARGS_SUPPORTED 16
 
 typedef void (*XTRACE_VIMP)( XTRACE_UNSAFE id obj, SEL sel, ... );
 typedef void (^XTRACE_BIMP)( XTRACE_UNSAFE id obj, SEL sel, ... );
@@ -130,6 +130,11 @@ struct _xtrace_info {
 
 @end
 
+// logging delegate
+@protocol XtraceDelegate
+- (void)xtrace:(NSString *)trace forInstance:(void *)obj indent:(int)indent;
+@end
+
 // implementing class
 @interface Xtrace : NSObject {
 @public
@@ -174,6 +179,9 @@ struct _xtrace_info {
 
 // don't trace this class e.g. [UIView notrace]
 + (void)dontTrace:(Class)aClass;
+
+// trace classes in Bundle
++ (void)traceBundle:(NSBundle *)theBundle;
 
 // trace class down to NSObject
 + (void)traceClass:(Class)aClass;

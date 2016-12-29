@@ -37,11 +37,15 @@
 
 #ifdef INJECTION_ISARC
 #define INJECTION_BRIDGE(_type) (__bridge _type)
+#define INJECTION_RELEASE(_var) _var
+#define INJECTION_DEALLOC(_var)
 #define INJECTION_UNSAFE __unsafe_unretained
 #define INJECTION_STRONG __strong
 #define INJECTION_WEAK __weak
 #else
 #define INJECTION_BRIDGE(_type) (_type)
+#define INJECTION_RELEASE(_var) [_var release]
+#define INJECTION_DEALLOC(_var) [_var dealloc]
 #define INJECTION_UNSAFE
 #define INJECTION_STRONG
 #define INJECTION_WEAK

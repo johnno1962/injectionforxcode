@@ -64,7 +64,12 @@ static void fileCallback( ConstFSEventStreamRef streamRef,
     FSEventStreamStop( fileEvents );
     FSEventStreamInvalidate( fileEvents );
     FSEventStreamRelease( fileEvents );
+#ifdef __clang__
+#if __has_feature(objc_arc)
+#else
     [super dealloc];
+#endif
+#endif
 }
 
 @end

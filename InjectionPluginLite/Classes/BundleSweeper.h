@@ -225,9 +225,6 @@ static NSMutableArray *sharedInstances;
 
 @end
 
-@interface NSBlock : NSObject
-@end
-
 @implementation NSBlock(BundleSweeper)
 
 - (void)bsweep {
@@ -239,17 +236,17 @@ static NSMutableArray *sharedInstances;
 + (id)sharedInstance;
 @end
 
-static NSMutableDictionary *instancesSeen;
+static NSMutableDictionary *instancesDict;
 static NSMutableArray *liveInstances;
 
 @implementation BundleInjection(Sweeper)
 
 + (NSMutableDictionary *)instancesSeen {
-    return instancesSeen;
+    return instancesDict;
 }
 
 + (void)setInstancesSeen:(NSMutableDictionary *)dictionary {
-    instancesSeen = dictionary;
+    instancesDict = dictionary;
 }
 
 + (NSMutableArray *)liveInstances {

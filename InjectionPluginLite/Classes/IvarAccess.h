@@ -55,6 +55,9 @@
 #ifndef _IvarAccess_h
 #define _IvarAccess_h
 
+@interface NSBlock : NSObject
+@end
+
 #import <Foundation/Foundation.h>
 
 #if TARGET_OS_IPHONE
@@ -109,9 +112,13 @@ static BOOL isSwiftObject( const char *type ) {
 + (NSString *)array:(void *)arrayPtr;
 + (NSString *)arrayOpt:(void *)arrayPtr;
 + (NSString *)demangle:(NSString *)name;
++ (void)dumpMethods:(Class)aClass into:(NSMutableString *)into;
++ (void)traceBundle:(NSBundle *)bundle;
++ (void)traceClass:(Class)aClass;
++ (void)traceInstance:(id)instance;
 @end
 
-static Class xloadXprobeSwift( const char *ivarName ) {
+Class xloadXprobeSwift( const char *ivarName ) {
     static Class xprobeSwift;
     static int triedLoad;
     if ( !xprobeSwift && !(xprobeSwift = objc_getClass("XprobeSwift")) && !triedLoad++ ) {

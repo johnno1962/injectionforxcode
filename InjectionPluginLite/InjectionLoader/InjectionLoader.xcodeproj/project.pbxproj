@@ -7,11 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BB356BE91E0C8CDB0056B10F /* Xtrace.mm in Sources */ = {isa = PBXBuildFile; fileRef = BB356BE81E0C8CDB0056B10F /* Xtrace.mm */; };
 		BBC7A4A216A57FCB00B90868 /* BundleContents.m in Sources */ = {isa = PBXBuildFile; fileRef = BBC7A4A116A57FCB00B90868 /* BundleContents.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		BB2B840417DD31CD0061BBB6 /* BundleContents.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BundleContents.h; sourceTree = SOURCE_ROOT; };
+		BB356BE71E0C8CDB0056B10F /* Xtrace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Xtrace.h; path = ../Classes/Xtrace.h; sourceTree = "<group>"; };
+		BB356BE81E0C8CDB0056B10F /* Xtrace.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = Xtrace.mm; path = ../Classes/Xtrace.mm; sourceTree = "<group>"; };
 		BBC55D8A14C4ED1500C41CA1 /* InjectionLoader.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = InjectionLoader.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		BBC55D9514C4ED1500C41CA1 /* InjectionBundle-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "InjectionBundle-Info.plist"; sourceTree = "<group>"; };
 		BBC55D9914C4ED1500C41CA1 /* InjectionBundle-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "InjectionBundle-Prefix.pch"; sourceTree = "<group>"; };
@@ -64,6 +67,8 @@
 		BBC55D9314C4ED1500C41CA1 /* InjectionBundle */ = {
 			isa = PBXGroup;
 			children = (
+				BB356BE71E0C8CDB0056B10F /* Xtrace.h */,
+				BB356BE81E0C8CDB0056B10F /* Xtrace.mm */,
 				BB2B840417DD31CD0061BBB6 /* BundleContents.h */,
 				BBC7A4A116A57FCB00B90868 /* BundleContents.m */,
 				BBC55D9414C4ED1500C41CA1 /* Supporting Files */,
@@ -140,6 +145,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BB356BE91E0C8CDB0056B10F /* Xtrace.mm in Sources */,
 				BBC7A4A216A57FCB00B90868 /* BundleContents.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
