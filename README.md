@@ -21,9 +21,9 @@ with any problems or look at [this blog](https://johntmcintosh.com/blog/2016/10/
 One thing I have noticed is you can no longer add methods using injection which was proably never a
 particularly good idea in Swift.
 
-### Stop Press
+### Stop Stop Press
 
-Injection is now available as a standalone app rather than have to build the plugin. See [here](https://github.com/johnno1962/InjectionApp).
+Injection is now available as a standalone app rather than have to build the plugin which you can download [here](http://johnholdsworth.com/injection.html).
 
 ## How to Use Injection for Xcode
 

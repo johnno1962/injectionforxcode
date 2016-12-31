@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/InjectionPluginLite/Classes/BundleInterface.h#25 $
+//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/BundleInterface.h#1 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.

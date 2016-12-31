@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/evalCode.pl#9 $
+#  $Id: //depot/injectionforxcode/InjectionPluginLite/evalCode.pl#2 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -86,6 +86,21 @@ extension @{[$swiftClass||$className]} {
             #endif
         }
     }
+
+    #if swift(>=3.0)
+    struct XprobeOutputStream: TextOutputStream {
+        var out = ""
+        mutating func write(_ string: String) {
+            out += string
+        }
+    }
+
+    func xdump<T>(_ arg: T) {
+        var stream = XprobeOutputStream()
+        dump(arg, to: &stream)
+        xprint(stream.out)
+    }
+    #endif
 
     \@objc func onXprobeEval() {
         $code

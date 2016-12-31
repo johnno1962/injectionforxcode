@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/InjectionPluginLite/injectStoryboard.pl#1 $
+#  $Id: //depot/injectionforxcode/InjectionPluginLite/injectStoryboard.pl#1 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
