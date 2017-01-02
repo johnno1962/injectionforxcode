@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/BundleInjection.h#1 $
+//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/BundleInjection.h#4 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -143,6 +143,11 @@ struct _in_header { int pathLength, dataLength; };
 
 @interface NSObject(UINibDecoder)
 - (id)inDecodeObjectForKey:(id)key;
+@end
+
+@interface NSObject(XprobeInit)
++ (void)connectTo:(const char *)ipAddress retainObjects:(BOOL)shouldRetain;
++ (void)search:(NSString *)classNamePattern;
 @end
 
 @implementation BundleInjection
@@ -485,21 +490,22 @@ static const char **addrPtr, *connectedAddress;
                         write( loaderSocket, &status, sizeof status );
                         break;
 
-#ifdef XTRACE_EXCLUSIONS
-                    case '+': { // load Xtrace
-                        [Xprobe connectTo:NULL retainObjects:NO];
-                        [Xprobe search:@""];
+                    case '+': { // load Xprobe
+                        Class xprobe = objc_getClass("Xprobe");
+                        [xprobe connectTo:NULL retainObjects:NO];
+                        [xprobe search:@""];
                         break;
                     }
-#endif
 
                     case '>': // open file/directory to write/create
                         if ( header.dataLength == INJECTION_NOFILE ) {
                             if ( (fdout = open( file, O_CREAT|O_TRUNC|O_WRONLY, 0755 )) < 0 )
                                 NSLog( @"Could not open \"%s\" for copy as: %s", file, strerror(errno) );
                         }
-                        else if ( header.dataLength == INJECTION_MKDIR )
-                            mkdir( file, 0777 );
+                        else if ( header.dataLength == INJECTION_MKDIR ) {
+                            if ( mkdir( file, 0777 ) && errno != EEXIST )
+                                NSLog( @"Could not mkdir \"%s\" for copy as: %s", file, strerror(errno) );
+                        }
                         else {
                             if ( (fdout = open( file, O_CREAT|O_TRUNC|O_WRONLY, 0755 )) < 0 )
                                 NSLog( @"Could not open \"%s\" for download as: %s", file, strerror(errno) );

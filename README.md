@@ -23,7 +23,7 @@ particularly good idea in Swift.
 
 ### Stop Stop Press
 
-Injection is now available as a standalone app rather than have to build the plugin which you can download [here](http://johnholdsworth.com/injection.html).
+Injection is now available as a standalone app rather than have to build the plugin which you can download [here](http://johnholdsworth.com/injection.html). As injection no longer works on the deivce due to sandboxing in iOS10 this is the recommended route going forward.
 
 ## How to Use Injection for Xcode
 

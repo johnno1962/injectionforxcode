@@ -4,7 +4,7 @@
 //
 //  Generic access to get/set ivars - functions so they work with Swift.
 //
-//  $Id: //depot/XprobePlugin/Classes/IvarAccess.h#42 $
+//  $Id: //depot/XprobePlugin/Classes/IvarAccess.h#43 $
 //
 //  Source Repo:
 //  https://github.com/johnno1962/Xprobe/blob/master/Classes/IvarAccess.h
@@ -55,9 +55,6 @@
 #ifndef _IvarAccess_h
 #define _IvarAccess_h
 
-@interface NSBlock : NSObject
-@end
-
 #import <Foundation/Foundation.h>
 
 #if TARGET_OS_IPHONE
@@ -65,6 +62,9 @@
 #else
 #import <Cocoa/Cocoa.h>
 #endif
+
+@interface NSBlock : NSObject
+@end
 
 extern const char *ivar_getTypeEncodingSwift( Ivar ivar, Class aClass );
 extern id xvalueForPointer( id self, const char *name, void *iptr, const char *type );
@@ -112,10 +112,7 @@ static BOOL isSwiftObject( const char *type ) {
 + (NSString *)array:(void *)arrayPtr;
 + (NSString *)arrayOpt:(void *)arrayPtr;
 + (NSString *)demangle:(NSString *)name;
-+ (void)dumpMethods:(Class)aClass into:(NSMutableString *)into;
-+ (void)traceBundle:(NSBundle *)bundle;
-+ (void)traceClass:(Class)aClass;
-+ (void)traceInstance:(id)instance;
++ (void)dumpIvars:(id)instance forClass:(Class)aClass into:(NSMutableString *)into;
 @end
 
 Class xloadXprobeSwift( const char *ivarName ) {
@@ -176,7 +173,7 @@ struct _swift_field {
     struct _swift_field *optional;
 };
 
-static struct _swift_class *isSwift( Class aClass ) {
+struct _swift_class *isSwift( Class aClass ) {
     struct _swift_class *swiftClass = (__bridge struct _swift_class *)aClass;
     return (uintptr_t)swiftClass->pdata & 0x1 ? swiftClass : NULL;
 }
@@ -249,6 +246,9 @@ const char *ivar_getTypeEncodingSwift3( Ivar ivar, Class aClass ) {
     struct _swift_field3 *typeInfo = (struct _swift_field3 *)swift3Relative( &field->typeInfo );
     char optionals[100] = "", *optr = optionals;
 
+    if ( field->flags == 0x2 )
+        return "e";
+
     // unwrap any optionals
     while ( field->flags == 0x2 || field->flags == 0x3 ) {
         if ( field->optional && field->optional->flags != 0x3 ) {
@@ -282,8 +282,8 @@ const char *ivar_getTypeEncodingSwift3( Ivar ivar, Class aClass ) {
         return typeInfoForClass( field->objcClass, optionals );
     else if ( field->flags == 0x10 ) // pointer
         return strfmt( @"^{%@}%s", utf8String( skipSwift( field->typeIdent ?: "??" ) ), optionals );
-    else if ( (field->flags & 0xff) == 0x55 || (field->flags & 0xffff) == 0x8948 ) // enum?
-        return strfmt( @"e%s", optionals );
+//    else if ( (field->flags & 0xff) == 0x55 || (field->flags & 0xffff) == 0x8948 ) // enum?
+//        return strfmt( @"e%s", optionals );
     else if ( field->flags < 0x100 || field->flags & 0x3 ) // unknown/bad isa
         return strfmt( @"?FLAGS#%lx(%p)%s", field->flags, (void *)field, optionals );
     else // swift class
@@ -445,7 +445,7 @@ id xvalueForPointer( id self, const char *name, void *iptr, const char *type ) {
             return [NSString stringWithFormat:@"0x%x", *(unsigned short *)iptr];
 
         case 'O':
-        case 'e': return @(*(int *)iptr);
+        case 'e': return @(*(unsigned *)iptr);
 
         case 'f': return @(*(float *)iptr);
         case 'd': return @(*(double *)iptr);

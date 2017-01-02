@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/injectionforxcode/InjectionPluginLite/evalCode.pl#2 $
+#  $Id: //depot/injectionforxcode/InjectionPluginLite/evalCode.pl#3 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -16,6 +16,7 @@ use URI::Escape;
 use common;
 
 my ($pathID, $className, $isSwift, $code) = split /\^/, $selectedFile;
+$className =~ s/^\w+\.//;
 
 print "Searching logs in $logDir\n";
 

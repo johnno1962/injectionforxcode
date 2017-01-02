@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BB356BE91E0C8CDB0056B10F /* Xtrace.mm in Sources */ = {isa = PBXBuildFile; fileRef = BB356BE81E0C8CDB0056B10F /* Xtrace.mm */; };
 		BBC7A4A216A57FCB00B90868 /* BundleContents.m in Sources */ = {isa = PBXBuildFile; fileRef = BBC7A4A116A57FCB00B90868 /* BundleContents.m */; };
 /* End PBXBuildFile section */
 
@@ -145,7 +144,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BB356BE91E0C8CDB0056B10F /* Xtrace.mm in Sources */,
 				BBC7A4A216A57FCB00B90868 /* BundleContents.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

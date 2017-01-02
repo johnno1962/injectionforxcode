@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/INPluginClientController.m#1 $
+//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/INPluginClientController.m#2 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -119,9 +119,8 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     [[NSAlert alertWithMessageText:@"Injection Plugin:"
                      defaultButton:@"OK" alternateButton:nil otherButton:nil
          informativeTextWithFormat:@"%@", msg] runModal];
-    return;
-    msgField.stringValue = msg;
-    [self.alertPanel orderFront:self];
+//    msgField.stringValue = msg;
+//    [self.alertPanel orderFront:self];
 }
 
 #pragma mark - Misc

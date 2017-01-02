@@ -1,5 +1,5 @@
 #
-#  $Id: //depot/injectionforxcode/InjectionPluginLite/common.pm#1 $
+#  $Id: //depot/injectionforxcode/InjectionPluginLite/common.pm#2 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -33,9 +33,9 @@ $INJECTION_DEVICEIOS8 = 1<<5; # iOS 8 splits data from app
 
 $productName = "InjectionBundle$patchNumber";
 
-$isDevice = $executable =~ m@^(/private)?/var/mobile/@;
-$isSimulator = $executable =~ m@/(iPhone |Core)Simulator/@;
-$isAndroid = $executable =~ m@^/data/app/@;
+$isDevice = $deviceRoot =~ m@^(/private)?/var/mobile/@;
+$isSimulator = $deviceRoot =~ m@/(iPhone |Core)Simulator/@;
+$isAndroid = $deviceRoot =~ m@^/data/app/@;
 
 $isAppCode = $flags & $INJECTION_ISAPPCODE;
 $deviceRoot = $executable if $isAppCode;

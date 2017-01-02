@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/injectionforxcode/InjectionPluginLite/injectSource.pl#1 $
+#  $Id: //depot/injectionforxcode/InjectionPluginLite/injectSource.pl#2 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -530,7 +530,7 @@ if ( $flags & $INJECTION_STORYBOARD ) {
 }
 
 if ( $identity ) {
-    $identity = "-";
+    $identity = "-" if !$isDevice;
     print "Codesigning with identity '$identity' for iOS device\n";
 
     0 == system "codesign --force -s '$identity' \"$bundlePath\""
@@ -538,7 +538,7 @@ if ( $identity ) {
 }
 
 if ( $isDevice ) {
-
+    (my $execRoot = $executable) =~ s@/[^/]+$@@;
     $bundlePath = copyToDevice( $bundlePath, "$deviceRoot/tmp/$productName.bundle" );
 }
 

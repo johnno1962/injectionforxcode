@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/injectionforxcode/InjectionPluginLite/patchProject.pl#1 $
+#  $Id: //depot/injectionforxcode/InjectionPluginLite/patchProject.pl#2 $
 #  Injection
 #
 #  Created by John Holdsworth on 15/01/2013.
@@ -41,23 +41,23 @@ print "\\b Patching project contained in: $projRoot\n";
 
 ###################################################################################################
 # patch project .pch files (if not using AppCode)
-if ( !$isAppCode ) {
-    patchAll( "refix.pch|Bridging-Header-Not.h", sub {
-    $_[0] =~ s/\n*($key.*)?$/<<CODE/es;
+#if ( !$isAppCode ) {
+#    patchAll( "refix.pch|Bridging-Header-Not.h", sub {
+#    $_[0] =~ s/\n*($key.*)?$/<<CODE/es;
+#
+#
+#$key
+#
+##ifdef $ifdef
+##define INJECTION_ENABLED
+#
+##import "$resources/BundleInterface.h"
+##endif
+#CODE
+#    } );
+#}
 
-
-$key
-
-#ifdef $ifdef
-#define INJECTION_ENABLED
-
-#import "$resources/BundleInterface.h"
-#endif
-CODE
-    } );
-}
-
-$ifdef .= "\n#define INJECTION_PORT $selectedFile" if $isAppCode || $ENV{IS_INJECTION_APP};
+$ifdef .= "\n#define INJECTION_PORT $selectedFile" if $isAppCode || $selectedFile;
 
 ###################################################################################################
 # patch normal Xcode projects
