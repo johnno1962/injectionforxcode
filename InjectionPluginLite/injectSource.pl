@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/injectionforxcode/InjectionPluginLite/injectSource.pl#2 $
+#  $Id: //depot/injectionforxcode/InjectionPluginLite/injectSource.pl#5 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -385,6 +385,13 @@ if ( -d (my $frameworkDir = "$localBundle/Frameworks") ) {
 $ENV{BUNDLE_FRAMEWORKS} = "$appPackage/Frameworks";
 $obj .= "\", \"-F'\$BUNDLE_FRAMEWORKS'";
 #$obj .= "\", \"-F'$appPackage'/Frameworks";
+
+if ( -d "Pods" ) {
+    foreach my $dir (reverse split /\n/, `find Pods -name '*.framework'`) {
+        $dir =~ s@/[^/]+$@@;
+        $obj .= "\", \"-F'$projRoot/$dir'";
+    }
+}
 
 $bundleProjectSource =~ s/(OTHER_LDFLAGS = \().*?("-undefined)/$1"$obj", $2/sg;
 saveFile( $bundleProjectFile, $bundleProjectSource );
