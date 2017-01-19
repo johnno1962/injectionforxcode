@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/INPluginClientController.m#2 $
+//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/INPluginClientController.m#6 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -48,6 +48,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     char buffer[1024*1024];
     FILE *scriptOutput;
     BOOL autoOpened;
+    NSTask *task;
 }
 
 @property (nonatomic,retain) IBOutlet NSPanel *alertPanel;
@@ -327,19 +328,17 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
         flags |= INJECTION_FLAGCHANGE;
     lastFlags = flags & ~INJECTION_FLAGCHANGE;
 
-    NSString *command = [NSString stringWithFormat:@"\"%@/%@\" "
-                         "\"%@\" \"%@\" \"%@\" \"%@\" \"%@\" %d %d \"%@\" \"%@\" \"%@\" \"%@\" \"%@\" \"%@\" 2>&1",
-                         self.scriptPath, script, self.resourcePath, menuController.workspacePath,
-                         self.deviceRoot, //self.mainFilePath ? self.mainFilePath : @"",
-                         self.executablePath ? self.executablePath : @"", self.arch, ++patchNumber, flags,
-                         [unlockField.stringValue stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""],
-                         [[menuController serverAddresses] componentsJoinedByString:@" "],
-                         selectedFile, menuController.xcodeApp,
-                         [menuController buildDirectory] ?: @"", [menuController logDirectory]];
-    [self exec:command];
+    [self exec:[self.scriptPath stringByAppendingPathComponent:script]
+          args:@[self.resourcePath, menuController.workspacePath,
+                 self.deviceRoot, //self.mainFilePath ? self.mainFilePath : @"",
+                 self.executablePath ?: @"", self.arch,
+                 @(++patchNumber).stringValue, @(flags).stringValue, unlockField.stringValue,
+                 [[menuController serverAddresses] componentsJoinedByString:@" "],
+                 selectedFile, menuController.xcodeApp,
+                 [menuController buildDirectory] ?: @"", [menuController logDirectory]]];
 }
 
-- (void)exec:(NSString *)command {
+- (void)exec:(NSString *)command args:(NSArray *)args {
     NSUInteger length = consoleTextView.string.length;
     if ( length > 100000 )
         [self clearConsole:nil];
@@ -354,7 +353,17 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 
     lines = 0, status = 0;
     scriptOutput = (FILE *)1;
-    if ( (scriptOutput = popen( [command UTF8String], "r")) == NULL )
+
+    task = [NSTask new];
+    task.launchPath = command;
+    task.arguments = args;
+    NSPipe *pipe = [NSPipe pipe];
+    task.standardOutput = pipe;
+    task.standardError = pipe;
+    [task launch];
+
+    NSFileHandle *standardOutput = [[task standardOutput] fileHandleForReading];
+    if ( (scriptOutput = fdopen( [standardOutput fileDescriptor], "r" )) == NULL )
         [menuController error:@"Could not run script: %@", command];
     else
         [self performSelectorInBackground:@selector(monitorScript) withObject:nil];
@@ -454,7 +463,12 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     [menuController performSelectorOnMainThread:@selector(setProgress:)
                             withObject:[NSNumber numberWithFloat:-1.] waitUntilDone:NO];
 
-    status = pclose( scriptOutput )>>8;
+    fclose( scriptOutput );
+    [task waitUntilExit];
+    status = task.terminationStatus;
+    INJECTION_RELEASE( task );
+    task = nil;
+
     if ( status )
         NSLog( @"Status: %d", status );
     //[NSThread sleepForTimeInterval:.5];

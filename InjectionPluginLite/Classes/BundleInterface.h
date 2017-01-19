@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/BundleInterface.h#1 $
+//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/BundleInterface.h#3 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -37,7 +37,7 @@
 
 #ifdef INJECTION_ISARC
 #define INJECTION_BRIDGE(_type) (__bridge _type)
-#define INJECTION_RELEASE(_var) _var
+#define INJECTION_RELEASE(_var) (void)(_var)
 #define INJECTION_DEALLOC(_var)
 #define INJECTION_UNSAFE __unsafe_unretained
 #define INJECTION_STRONG __strong

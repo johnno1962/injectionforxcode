@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/injectionforxcode/InjectionPluginLite/injectSource.pl#6 $
+#  $Id: //depot/injectionforxcode/InjectionPluginLite/injectSource.pl#10 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -128,6 +128,7 @@ $config .= " -sdk iphoneos" if $isDevice;
 my $infoFile = "$archDir/identity.txt";
 
 if ( !-f $infoFile ) {
+    print "!!Extracting project parameters...\n";
     my %VARS = `$xcodebuild -showBuildSettings $config` =~ /    (\w+) = (.*)\n/g;
     IO::File->new( "> $infoFile" )->print( "$VARS{CODESIGNING_FOLDER_PATH}\n$VARS{CODE_SIGN_IDENTITY}\n");
 }
@@ -346,6 +347,7 @@ $changesSource->close();
 #
 
 my $obj = '';
+my $sdk = ($config =~ /-sdk (\w+)/)[0] || 'macosx';
 
 if ( $learnt ) {
 
@@ -370,11 +372,11 @@ if ( $learnt ) {
         if ( $learnt =~ /-(appletvsimulator)\// ) {
             $config =~ s/iphone/appletv/
         }
-        my $sdk = ($config =~ /-sdk (\w+)/)[0] || 'macosx';
 #        $bundleProjectSource =~ s/\bFRAMEWORK_SEARCH_PATHS = [^;]*;/FRAMEWORK_SEARCH_PATHS = "$buildRoot\/Products\/Debug-$sdk\/\*\*";/g;
         $obj .= "\", \"-L'$toolchain'/usr/lib/swift/$sdk";
         $obj .= "\", \"-F'$buildRoot'/Products/Debug-$sdk" if $buildRoot;
     #}
+    $obj .= "\", \"-rpath\", \"'$toolchain'/usr/lib/swift/$sdk";
 }
 
 if ( -d (my $frameworkDir = "$localBundle/Frameworks") ) {
@@ -388,9 +390,9 @@ $obj .= "\", \"-F'\$BUNDLE_FRAMEWORKS'";
 #$obj .= "\", \"-F'$appPackage'/Frameworks";
 
 if ( -d "Pods" ) {
-    foreach my $dir (reverse split /\n/, `find Pods -name '*.framework'`) {
+    foreach my $dir (reverse split /\n/, `find '$projRoot'/Pods '$buildRoot'/Products/Debug-$sdk -name '*.framework'`) {
         $dir =~ s@/[^/]+$@@;
-        $obj .= "\", \"-F'$projRoot/$dir'";
+        $obj .= "\", \"-F'$dir'\", \"-rpath\", \"'$dir'";
     }
 }
 
@@ -537,10 +539,9 @@ if ( $flags & $INJECTION_STORYBOARD ) {
     close NIBS;
 }
 
+$identity = "-" if !$isDevice;
 if ( $identity ) {
-    $identity = "-" if !$isDevice;
     print "Codesigning with identity '$identity' for iOS device\n";
-
     0 == system "codesign --force -s '$identity' \"$bundlePath\""
         or error "Could not codesign as '$identity': $bundlePath";
 }

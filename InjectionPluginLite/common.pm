@@ -1,5 +1,5 @@
 #
-#  $Id: //depot/injectionforxcode/InjectionPluginLite/common.pm#2 $
+#  $Id: //depot/injectionforxcode/InjectionPluginLite/common.pm#3 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -51,7 +51,7 @@ $flags &= ~$INJECTION_NOTSILENT if $isAppCode;
 
 ($InjectionBundle = $template) =~ s/BundleTemplate/InjectionProject/;
 if ( $ENV{IS_INJECTION_APP} ) {
-    $xcodeApp = "/Applications/Xcode.app" if !-d $xcodeApp;
+    $xcodeApp = "" if !-d $xcodeApp;
     $InjectionBundle = "$logDir/../$InjectionBundle" if !$isAppCode && $logDir;
 }
 

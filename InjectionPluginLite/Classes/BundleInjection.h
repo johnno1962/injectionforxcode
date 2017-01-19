@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/BundleInjection.h#4 $
+//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/BundleInjection.h#7 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -148,6 +148,21 @@ struct _in_header { int pathLength, dataLength; };
 @interface NSObject(XprobeInit)
 + (void)connectTo:(const char *)ipAddress retainObjects:(BOOL)shouldRetain;
 + (void)search:(NSString *)classNamePattern;
+@end
+
+@interface NSObject(XCTestSuite)
++ testSuiteForTestCaseClass:(Class)testCaseClass;
+- initWithName:(NSString *)name;
+- addTest:test;
+- performTest:tr;
+@end
+
+@interface NSObject(XCTestSuiteRun)
++ testRunWithTest:test;
+@end
+
+@interface NSObject(XCTestCase)
+- initWithSelector:(SEL)sel;
 @end
 
 @implementation BundleInjection
@@ -1038,6 +1053,14 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
                     NSLog( @"Ignore any warning, Swizzled %@ %p -> %p", className,
                           INJECTION_BRIDGE(void *)newClass, INJECTION_BRIDGE(void *)oldClass );
                     [injectedClasses addObject:oldClass];
+                }
+
+                if ( [newClass isSubclassOfClass:objc_getClass("XCTestCase")] ) {
+                    id suite0 = [[objc_getClass("XCTestSuite") alloc] initWithName:@"Injected"];
+                    id suite = [objc_getClass("XCTestSuite") testSuiteForTestCaseClass:newClass];
+                    id tr = [objc_getClass("XCTestSuiteRun") testRunWithTest:suite];
+                    [suite0 addTest:suite];
+                    [suite0 performTest:tr];
                 }
             }
 
