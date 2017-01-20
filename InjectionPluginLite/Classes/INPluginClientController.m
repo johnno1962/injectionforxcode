@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/INPluginClientController.m#6 $
+//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/INPluginClientController.m#7 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -330,8 +330,8 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 
     [self exec:[self.scriptPath stringByAppendingPathComponent:script]
           args:@[self.resourcePath, menuController.workspacePath,
-                 self.deviceRoot, //self.mainFilePath ? self.mainFilePath : @"",
-                 self.executablePath ?: @"", self.arch,
+                 self.deviceRoot ?: @"", //self.mainFilePath ? self.mainFilePath : @"",
+                 self.executablePath ?: @"", self.arch ?: @"",
                  @(++patchNumber).stringValue, @(flags).stringValue, unlockField.stringValue,
                  [[menuController serverAddresses] componentsJoinedByString:@" "],
                  selectedFile, menuController.xcodeApp,
