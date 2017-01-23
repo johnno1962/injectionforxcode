@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/injectionforxcode/InjectionPluginLite/injectSource.pl#10 $
+#  $Id: //depot/injectionforxcode/InjectionPluginLite/injectSource.pl#12 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -22,6 +22,9 @@ my $bundleProjectFile = "$InjectionBundle/InjectionBundle.xcodeproj/project.pbxp
 my $bundleProjectSource = -f $bundleProjectFile && loadFile( $bundleProjectFile );
 my $mainProjectFile = "$projName.xcodeproj/project.pbxproj";
 my $isSwift = $selectedFile =~ /\.swift$/;
+
+use utf8;
+utf8::upgrade($selectedFile);
 
 if ( !$isAppCode ) {
     print "buidRoot: $buildRoot\n";
@@ -128,16 +131,29 @@ $config .= " -sdk iphoneos" if $isDevice;
 my $infoFile = "$archDir/identity.txt";
 
 if ( !-f $infoFile ) {
-    print "!!Extracting project parameters...\n";
-    my %VARS = `$xcodebuild -showBuildSettings $config` =~ /    (\w+) = (.*)\n/g;
-    IO::File->new( "> $infoFile" )->print( "$VARS{CODESIGNING_FOLDER_PATH}\n$VARS{CODE_SIGN_IDENTITY}\n");
+    print "!!Extracting project parameters into $infoFile ...\n";
+    my $cpid = open VARFH, "$xcodebuild -showBuildSettings $config |" or die;
+    $SIG{ALRM} = sub { print "!!xcodebuild timeout\n"; kill 9, $cpid; };
+    alarm 10;
+
+    my %VARS;
+    while ( my $line = <VARFH> ) {
+        if ( $line =~ /    (\w+) = (.*)\n/ ) {
+            $VARS{$1} = $2;
+        }
+    }
+
+    alarm 0;
+    close VARFH;
+    $SIG{ALRM} = undef;
+    IO::File->new( "> $infoFile" )->print( "$VARS{CODESIGNING_FOLDER_PATH}\n$VARS{CODE_SIGN_IDENTITY}\n" );
 }
 
 my ($localBundle, $identity) = loadFile( $infoFile );
 $localBundle =~ s@^.*/Build/@$buildRoot/@ if $buildRoot;
 (my $localBinary = $localBundle) =~ s@([^./]+).app@$1.app/$1@;
 
-unlink $infoFile if $buildRoot && !-d $localBundle;
+#unlink $infoFile if $buildRoot && !-d $localBundle;
 system "rm -rf \"$localBundle/Frameworks/IDEBundleInjection.framework\"";
 
 if ( $localBinary && $bundleProjectSource =~ s/(BUNDLE_LOADER = )([^;]+;)/$1"$localBinary";/g ) {

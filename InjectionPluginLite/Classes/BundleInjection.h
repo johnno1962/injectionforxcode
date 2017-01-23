@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/BundleInjection.h#9 $
+//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/BundleInjection.h#10 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -163,6 +163,11 @@ struct _in_header { int pathLength, dataLength; };
 
 @interface NSObject(XCTestCase)
 - initWithSelector:(SEL)sel;
+@end
+
+@interface NSObject(QuickWorld)
++ sharedWorld;
+- (void)setCurrentExampleMetadata:data;
 @end
 
 @implementation BundleInjection
@@ -1061,6 +1066,9 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
                     id tr = [objc_getClass("XCTestSuiteRun") testRunWithTest:suite];
                     [suite0 addTest:suite];
                     [suite0 performTest:tr];
+                    if ( [newClass isSubclassOfClass:objc_getClass("QuickSpec")] )
+                        [[objc_getClass("_TtC5Quick5World") sharedWorld]
+                         setCurrentExampleMetadata:nil];
                 }
             }
 
