@@ -113,6 +113,8 @@ static BOOL isSwiftObject( const char *type ) {
 + (NSString *)arrayOpt:(void *)arrayPtr;
 + (NSString *)demangle:(NSString *)name;
 + (void)dumpIvars:(id)instance forClass:(Class)aClass into:(NSMutableString *)into;
++ (void)injectionSweep:(id)instance forClass:(Class)aClass;
++ (void)xprobeSweep:(id)instance forClass:(Class)aClass;
 @end
 
 Class xloadXprobeSwift( const char *ivarName ) {

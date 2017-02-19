@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/injectionforxcode/InjectionPluginLite/injectSource.pl#12 $
+#  $Id: //depot/injectionforxcode/InjectionPluginLite/injectSource.pl#15 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -229,6 +229,10 @@ if ( !$learnt ) {
         (my $escaped = $selectedFile) =~ s/([' ])/\\$1/g;
         my ($filename) = $selectedFile =~ /\/([^\/]+)$/;
         my $isInterface = $selectedFile =~ /\.(storyboard|xib)$/;
+
+        if ( time() - mtime($selectedFile) > 5 ) {
+            print("!!\n!!** File not recently modified. Did you save it? **\n");
+        }
 
         local $/ = "\r";
     FOUND:

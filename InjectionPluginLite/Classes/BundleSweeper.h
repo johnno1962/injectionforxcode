@@ -126,6 +126,12 @@ static NSMutableArray *sharedInstances;
     //printf("BundleSweeper sweep <%s %p>\n", [className UTF8String], self);
 
     for ( ; aClass && aClass != [NSObject class] ; aClass = class_getSuperclass(aClass) ) {
+        Class xprobeSwift;
+        if ( isSwift( aClass ) && (xprobeSwift = xloadXprobeSwift("Xprobe")) ) {
+            [xprobeSwift injectionSweep:self forClass:aClass];
+            continue;
+        }
+
         unsigned ic;
         Ivar *ivars = class_copyIvarList(aClass, &ic);
         const char *currentClassName = class_getName(aClass), firstChar = currentClassName[0];
@@ -258,6 +264,19 @@ static NSMutableArray *liveInstances;
 }
 
 + (NSArray *)sweepForLiveObjects {
+    static int setup;
+    if ( !setup++ ) {
+        // add bsweep method to SwiftObject class!
+        Class swiftRoot = objc_getClass( "SwiftObject" );
+        SEL methodSEL = @selector(bsweep);
+        Method method = class_getInstanceMethod([NSObject class], methodSEL);
+        if ( !class_addMethod( swiftRoot, methodSEL,
+                              method_getImplementation( method ),
+                              method_getTypeEncoding( method ) ) )
+            NSLog( @"BundleSweeper: Could not add SwiftObject method: %s %p %s", sel_getName(methodSEL),
+                  (void *)method_getImplementation( method ), method_getTypeEncoding( method ) );
+    }
+
     Class bundleInjection = objc_getClass("BundleInjection");
     bundleInjection.instancesSeen = [NSMutableDictionary new];
     bundleInjection.liveInstances = [NSMutableArray new];
