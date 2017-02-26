@@ -126,8 +126,8 @@ static NSMutableArray *sharedInstances;
     //printf("BundleSweeper sweep <%s %p>\n", [className UTF8String], self);
 
     for ( ; aClass && aClass != [NSObject class] ; aClass = class_getSuperclass(aClass) ) {
-        Class xprobeSwift;
-        if ( isSwift( aClass ) && (xprobeSwift = xloadXprobeSwift("Xprobe")) ) {
+        static Class xprobeSwift;
+        if ( isSwift( aClass ) && (xprobeSwift = xprobeSwift ?: xloadXprobeSwift("Xprobe")) ) {
             [xprobeSwift injectionSweep:self forClass:aClass];
             continue;
         }
@@ -158,7 +158,8 @@ static NSMutableArray *sharedInstances;
     if ( [self respondsToSelector:@selector(document)] )
         [[self document] bsweep];
 
-    if ( [self respondsToSelector:@selector(contentView)] )
+    if ( [self respondsToSelector:@selector(contentView)] &&
+        [[self contentView] respondsToSelector:@selector(superview)] )
         [[[self contentView] superview] bsweep];
     if ( [self respondsToSelector:@selector(subviews)] )
         [[self subviews] bsweep];

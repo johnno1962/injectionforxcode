@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/injectionforxcode/InjectionPluginLite/injectSource.pl#15 $
+#  $Id: //depot/injectionforxcode/InjectionPluginLite/injectSource.pl#17 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -288,7 +288,7 @@ if ( !$learnt ) {
 
         close LOG;
 
-        error "Could not locate compile command for $escaped\nIf you have switched xcode versions, please cmd-shift-k to clean then rebuild the project so there is a complete build history logged and try again.\n@logs" if $isSwift && !$learnt;
+        error "Could not locate compile command for $escaped\nInjection doesn't work when using whole module optimisation.\nIf you have switched xcode versions, please cmd-shift-k to clean then rebuild the project so there is a complete build history logged and try again.\n@logs" if $isSwift && !$learnt;
     }
 }
 
@@ -410,9 +410,12 @@ $obj .= "\", \"-F'\$BUNDLE_FRAMEWORKS'";
 #$obj .= "\", \"-F'$appPackage'/Frameworks";
 
 if ( -d "Pods" ) {
+    my %already;
     foreach my $dir (reverse split /\n/, `find '$projRoot'/Pods '$buildRoot'/Products/Debug-$sdk -name '*.framework'`) {
         $dir =~ s@/[^/]+$@@;
-        $obj .= "\", \"-F'$dir'\", \"-rpath\", \"'$dir'";
+        if ( !$already{$dir}++ ) {
+            $obj .= "\", \"-F'$dir'\", \"-rpath\", \"'$dir'";
+        }
     }
 }
 
