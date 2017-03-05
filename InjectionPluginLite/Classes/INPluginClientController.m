@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/INPluginClientController.m#7 $
+//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/INPluginClientController.m#8 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -266,7 +266,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
     [self scriptText:[@"Disconnected from: " stringByAppendingString:self.executablePath]];
     close( clientSocket );
     clientSocket = 0;
-    patchNumber = 1;
+//    patchNumber = 1;
 
     [menuController enableFileWatcher:NO];
 }

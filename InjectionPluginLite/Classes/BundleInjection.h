@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/BundleInjection.h#10 $
+//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/BundleInjection.h#11 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -224,6 +224,9 @@ static char path[100000], *file = &path[1];
 static int status, sbInjection;
 static int multicastSocket;
 static BOOL injectAndReset;
+
+static NSMutableArray *previousInjections;
+static NSString *kPreviousInjections = @"INPreviousInjections";
 
 #ifndef ANDROID
 static NSNetServiceBrowser *browser;
@@ -474,6 +477,11 @@ static const char **addrPtr, *connectedAddress;
             INLog( @"Connected to \"%s\" plugin, ready to load %s code.", INJECTION_APPNAME, arch );
             connectedAddress = *addrPtr;
 
+            BOOL isPatchedInjection = [NSBundle bundleForClass:self] == [NSBundle mainBundle];
+            if ( isPatchedInjection )
+                [self performSelectorOnMainThread:@selector(applyPreviousInjections)
+                                       withObject:nil waitUntilDone:NO];
+
             int fdout = 0;
             struct _in_header header;
             while ( [self readHeader:&header forPath:path from:loaderSocket] ) {
@@ -495,6 +503,11 @@ static const char **addrPtr, *connectedAddress;
                             NSLog( @"Synchronization error." );
                         if ( !status )
                             NSLog( @"*** Bundle has failed to load. If this is due to symbols not found, this may be due to symbols being hidden from dynamic libraries. ***");
+                        else if ( isPatchedInjection ) {
+                            [previousInjections addObject:[NSString stringWithUTF8String:path]];
+                            [[NSUserDefaults standardUserDefaults]
+                             setValue:previousInjections forKey:kPreviousInjections];
+                        }
                         write( loaderSocket, &status, sizeof status );
                         break;
 
@@ -684,6 +697,34 @@ static const char **addrPtr, *connectedAddress;
 #else
     }
 #endif
+}
+
+static time_t buildTime( NSString *path ) {
+    struct stat st;
+    return stat([path UTF8String], &st) == 0 ? st.st_mtime : 0;
+}
+
+static time_t bundleTime( NSString *path ) {
+    return buildTime( [path stringByAppendingPathComponent:@"InjectionBundle"] );
+}
+
++ (void)applyPreviousInjections {
+    previousInjections = [[[NSUserDefaults standardUserDefaults]
+                           valueForKey:kPreviousInjections] mutableCopy] ?: [NSMutableArray new];
+
+    [previousInjections sortUsingComparator:^NSComparisonResult(id path1, id path2) {
+        return bundleTime( path1 ) < bundleTime( path2 ) ? NSOrderedAscending : NSOrderedDescending;
+    }];
+
+    time_t lastBuilt = buildTime( [[NSBundle mainBundle] executablePath] );
+
+    while ( [previousInjections count] && lastBuilt > buildTime( [previousInjections firstObject] ) )
+        [previousInjections removeObjectAtIndex:0];
+
+    for ( NSString *bundle in previousInjections ) {
+        strcpy( path, [bundle UTF8String] );
+        [self loadBundle];
+    }
 }
 
 #ifndef ANDROID
