@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/BundleInjection.h#11 $
+//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/BundleInjection.h#15 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -480,7 +480,7 @@ static const char **addrPtr, *connectedAddress;
             BOOL isPatchedInjection = [NSBundle bundleForClass:self] == [NSBundle mainBundle];
             if ( isPatchedInjection )
                 [self performSelectorOnMainThread:@selector(applyPreviousInjections)
-                                       withObject:nil waitUntilDone:NO];
+                                       withObject:nil waitUntilDone:YES];
 
             int fdout = 0;
             struct _in_header header;
@@ -503,10 +503,10 @@ static const char **addrPtr, *connectedAddress;
                             NSLog( @"Synchronization error." );
                         if ( !status )
                             NSLog( @"*** Bundle has failed to load. If this is due to symbols not found, this may be due to symbols being hidden from dynamic libraries. ***");
-                        else if ( isPatchedInjection ) {
+                        else if ( previousInjections ) {
                             [previousInjections addObject:[NSString stringWithUTF8String:path]];
                             [[NSUserDefaults standardUserDefaults]
-                             setValue:previousInjections forKey:kPreviousInjections];
+                             setObject:previousInjections forKey:kPreviousInjections];
                         }
                         write( loaderSocket, &status, sizeof status );
                         break;
@@ -525,6 +525,8 @@ static const char **addrPtr, *connectedAddress;
 
                     case '+': { // load Xprobe
                         Class xprobe = objc_getClass("Xprobe");
+                        if ( !xprobe )
+                            NSLog( @"*** Xprobe does not work with patched injection ***");
                         [xprobe connectTo:NULL retainObjects:NO];
                         [xprobe search:@""];
                         break;
@@ -704,7 +706,7 @@ static time_t buildTime( NSString *path ) {
     return stat([path UTF8String], &st) == 0 ? st.st_mtime : 0;
 }
 
-static time_t bundleTime( NSString *path ) {
+static time_t bundleBuildTime( NSString *path ) {
     return buildTime( [path stringByAppendingPathComponent:@"InjectionBundle"] );
 }
 
@@ -713,12 +715,12 @@ static time_t bundleTime( NSString *path ) {
                            valueForKey:kPreviousInjections] mutableCopy] ?: [NSMutableArray new];
 
     [previousInjections sortUsingComparator:^NSComparisonResult(id path1, id path2) {
-        return bundleTime( path1 ) < bundleTime( path2 ) ? NSOrderedAscending : NSOrderedDescending;
+        return bundleBuildTime( path1 ) < bundleBuildTime( path2 ) ? NSOrderedAscending : NSOrderedDescending;
     }];
 
     time_t lastBuilt = buildTime( [[NSBundle mainBundle] executablePath] );
 
-    while ( [previousInjections count] && lastBuilt > buildTime( [previousInjections firstObject] ) )
+    while ( [previousInjections count] && lastBuilt > bundleBuildTime( [previousInjections firstObject] ) )
         [previousInjections removeObjectAtIndex:0];
 
     for ( NSString *bundle in previousInjections ) {
