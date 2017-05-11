@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/BundleInjection.h#15 $
+//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/BundleInjection.h#16 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -723,6 +723,10 @@ static time_t bundleBuildTime( NSString *path ) {
     while ( [previousInjections count] && lastBuilt > bundleBuildTime( [previousInjections firstObject] ) )
         [previousInjections removeObjectAtIndex:0];
 
+    if ( ![previousInjections count] )
+        return;
+
+    INLog( @"%s: re-applying injections more recent than app binary", INJECTION_APPNAME );
     for ( NSString *bundle in previousInjections ) {
         strcpy( path, [bundle UTF8String] );
         [self loadBundle];

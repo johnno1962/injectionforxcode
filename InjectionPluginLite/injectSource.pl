@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#  $Id: //depot/injectionforxcode/InjectionPluginLite/injectSource.pl#17 $
+#  $Id: //depot/injectionforxcode/InjectionPluginLite/injectSource.pl#18 $
 #  Injection
 #
 #  Created by John Holdsworth on 16/01/2012.
@@ -265,7 +265,8 @@ if ( !$learnt ) {
                         $learnt .= ($learnt?';;':'').$line;
                         if ( $learnt =~ / -filelist / ) {
                             while ( my $line = <LOG> ) {
-                                if ( my($filemap) = $line =~ / -output-file-map (\S+) / ) {
+                                if ( my($filemap) = $line =~ / -output-file-map ([^ \\]+(?:\\ [^ \\]+)*) / ) {
+                                    $filemap =~ s/\\//g;
                                     my $file_handle = IO::File->new( "< $filemap" )
                                         || error "Could not open filemap '$filemap'";
                                     my $json_text = join'', $file_handle->getlines();
