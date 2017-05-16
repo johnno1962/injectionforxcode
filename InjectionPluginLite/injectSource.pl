@@ -377,7 +377,7 @@ if ( $learnt ) {
         or die "Could not locate object file in: $learnt";
     ###$learnt =~ s/( -DDEBUG\S* )/$1-DINJECTION_BUNDLE /;
 
-    $learnt =~ s/([()])/\\$1/g;
+    $learnt =~ s/([()&])/\\$1/g;
     rtfEscape( my $lout = $learnt );
     print "Learnt compile: $compileHighlight $lout\n";
 
