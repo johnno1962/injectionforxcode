@@ -213,7 +213,9 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
         return;
     }
 
-    status = (storyButton.state ? INJECTION_STORYBOARD : 1) | INJECTION_DEVICEIOS8;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        status = (storyButton.state ? INJECTION_STORYBOARD : 1) | INJECTION_DEVICEIOS8;
+    });
     write( appConnection, &status, sizeof status );
 
     [BundleInjection readHeader:&header forPath:path from:appConnection];
@@ -235,12 +237,13 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
 
     clientSocket = appConnection;
 
-    for ( NSSlider *slider in [sliders subviews] )
-        [self slid:slider];
-    for ( NSColorWell *well in [wells subviews] )
-        [self colorChanged:well];
-
-    [menuController enableFileWatcher:YES];
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        for ( NSSlider *slider in [sliders subviews] )
+            [self slid:slider];
+        for ( NSColorWell *well in [wells subviews] )
+            [self colorChanged:well];
+        [menuController enableFileWatcher:YES];
+    });
 
     [self performSelectorInBackground:@selector(connectionMonitor) withObject:nil];
 }
