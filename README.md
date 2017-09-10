@@ -173,27 +173,3 @@ support this common idiom.
 the application. It does however, inject by proxy in the case shown via the `doSomething`
 method. `dispatch_on_main` will have been linked locally to a version in the object file being injected.
 
-
-## "Nagware" License
-
-This source code is provided on github on the understanding it will not be redistributed.
-License is granted to use this software during development for any purpose for two weeks
-(it should never be included in a released application!) After two weeks you
-will be invited to make a donation $10 (or $25 in a commercial environment)
-as suggested by code included in the software.
-
-If you find (m)any issues in the code, get in contact using the email: support (at) injectionforxcode.com
-
-## Please note:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
