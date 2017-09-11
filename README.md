@@ -114,6 +114,8 @@ for the changes which are injected into your project, it is recommended to add t
 
 * Works on a device, if you apply a [patch to your project.](documentation/patching_injection.md).
 
+* Perform unit tests that cover your Swift class/struct/enum. For details see [TDD with Injection for Xcode](documentation/tdd.md)
+
 ## What Happens with Swift?
 
 ![Icon](http://injectionforxcode.johnholdsworth.com/injection2.png)

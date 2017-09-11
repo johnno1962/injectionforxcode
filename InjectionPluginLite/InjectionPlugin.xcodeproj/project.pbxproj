@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		10225D4F1F77E209008C907D /* InjectUnitTests.pm in Resources */ = {isa = PBXBuildFile; fileRef = 10225D4E1F77E209008C907D /* InjectUnitTests.pm */; };
 		7F2EB89C145057F200E97A87 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F2EB899145057EA00E97A87 /* AppKit.framework */; };
 		BB020F6E16B3CC2D00126E33 /* injectStoryboard.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB020F6D16B3CC2D00126E33 /* injectStoryboard.pl */; };
 		BB2526481F65CF7300898347 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = BB2526471F65CF7300898347 /* LICENSE */; };
@@ -61,6 +62,7 @@
 
 /* Begin PBXFileReference section */
 		089C1672FE841209C02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		10225D4E1F77E209008C907D /* InjectUnitTests.pm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = InjectUnitTests.pm; sourceTree = "<group>"; };
 		7F2EB899145057EA00E97A87 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		8D5B49B6048680CD000E48DA /* InjectionPlugin.xcplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = InjectionPlugin.xcplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -187,6 +189,7 @@
 				BB8D68AA17F1BB64009E02EE /* listDevice.pl */,
 				BBEADCF516B12EAE003EF366 /* projectBuilt.pl */,
 				BB020F6D16B3CC2D00126E33 /* injectStoryboard.pl */,
+				10225D4E1F77E209008C907D /* InjectUnitTests.pm */,
 			);
 			name = Scripts;
 			sourceTree = "<group>";
@@ -299,6 +302,7 @@
 				BB3EFFCF16A535C6001F0065 /* iOSBundleTemplate in Resources */,
 				BB3EFFD016A535C6001F0065 /* OSXBundleTemplate in Resources */,
 				BB5DEF9716A55D2A00E97DD4 /* common.pm in Resources */,
+				10225D4F1F77E209008C907D /* InjectUnitTests.pm in Resources */,
 				BBEC640216A756F700DC5E08 /* patchProject.pl in Resources */,
 				BBCDA04819FD229F009AC8C5 /* evalCode.pl in Resources */,
 				BBEC640316A756F700DC5E08 /* revertProject.pl in Resources */,
