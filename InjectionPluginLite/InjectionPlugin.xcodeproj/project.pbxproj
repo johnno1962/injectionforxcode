@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		7F2EB89C145057F200E97A87 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F2EB899145057EA00E97A87 /* AppKit.framework */; };
 		BB020F6E16B3CC2D00126E33 /* injectStoryboard.pl in Resources */ = {isa = PBXBuildFile; fileRef = BB020F6D16B3CC2D00126E33 /* injectStoryboard.pl */; };
+		BB2526481F65CF7300898347 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = BB2526471F65CF7300898347 /* LICENSE */; };
 		BB2923FE1B45B96700F52DEA /* BundleSweeper.h in Resources */ = {isa = PBXBuildFile; fileRef = BBF225B81B20D2CA00E1B001 /* BundleSweeper.h */; };
 		BB2924001B45B97800F52DEA /* IvarAccess.h in Resources */ = {isa = PBXBuildFile; fileRef = BBF225B91B20D2CA00E1B001 /* IvarAccess.h */; };
 		BB3EFFB116A4B815001F0065 /* INPluginClientController.m in Sources */ = {isa = PBXBuildFile; fileRef = BB3EFFAD16A4B815001F0065 /* INPluginClientController.m */; };
@@ -65,6 +66,7 @@
 		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BB020F6D16B3CC2D00126E33 /* injectStoryboard.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = injectStoryboard.pl; sourceTree = "<group>"; };
 		BB117D2619FD20BD00A9400F /* evalCode.pl */ = {isa = PBXFileReference; lastKnownFileType = text.script.perl; path = evalCode.pl; sourceTree = "<group>"; };
+		BB2526471F65CF7300898347 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		BB33DC7D1B86BD1D003B8481 /* unhide.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = unhide.xcodeproj; path = unhide/unhide.xcodeproj; sourceTree = "<group>"; };
 		BB360C021B0E5C0100C39245 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		BB3EFFAC16A4B815001F0065 /* INPluginClientController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INPluginClientController.h; sourceTree = "<group>"; };
@@ -111,6 +113,7 @@
 		089C166AFE841209C02AAC07 /* QuietXcode */ = {
 			isa = PBXGroup;
 			children = (
+				BB2526471F65CF7300898347 /* LICENSE */,
 				BB360C021B0E5C0100C39245 /* README.md */,
 				BBC2900018CA6F46003436A9 /* InjectionLoader.xcodeproj */,
 				7F411B0C15FABAC6002F77B6 /* Classes */,
@@ -301,6 +304,7 @@
 				BBEC640316A756F700DC5E08 /* revertProject.pl in Resources */,
 				BB5DEF9C16A55E1800E97DD4 /* injectSource.pl in Resources */,
 				BB8D68AB17F1BB64009E02EE /* listDevice.pl in Resources */,
+				BB2526481F65CF7300898347 /* LICENSE in Resources */,
 				BB5DEF9D16A55E1800E97DD4 /* openBundle.pl in Resources */,
 				BBEADCF616B12EAE003EF366 /* projectBuilt.pl in Resources */,
 				BB020F6E16B3CC2D00126E33 /* injectStoryboard.pl in Resources */,
