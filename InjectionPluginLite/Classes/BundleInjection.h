@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/BundleInjection.h#16 $
+//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/BundleInjection.h#17 $
 //  Injection
 //
 //  Created by John Holdsworth on 16/01/2012.
@@ -67,7 +67,7 @@ static const char *_inIPAddresses[100] = {INJECTOR_IPADDRS};
 #endif
 
 #ifdef DEBUG
-#define INLog NSLog
+#define INLog( _fmt... ) printf( "> Injection: %s\n", [NSString stringWithFormat:_fmt].UTF8String )
 #else
 #define INLog while(0) NSLog
 #endif
@@ -373,7 +373,7 @@ static NSNetService *service;
     else if ( connect( loaderSocket, (struct sockaddr *)&loaderAddr, sizeof loaderAddr ) >= 0 )
         return loaderSocket;
 
-    INLog( @"%s: Could not connect: %s", INJECTION_APPNAME, strerror( errno ) );
+    INLog( @"%s could not connect: %s", INJECTION_APPNAME, strerror( errno ) );
     close( loaderSocket );
     return 0;
 }
@@ -735,13 +735,15 @@ static time_t bundleBuildTime( NSString *path ) {
 
 #ifndef ANDROID
 + (void)loadBundle {
+    INLog( @"Loading %s", path );
     NSBundle *bundle = [NSBundle bundleWithPath:[NSString stringWithUTF8String:path]];
     if ( !bundle )
         NSLog( @"Could not initalise bundle at \"%s\"", path );
     else
         ;//INLog( @"Injecting Bundle: %s", path );
-    if ( ![bundle load] )
-        NSLog( @"Bundle Load Error" );
+    NSError *err;
+    if ( ![bundle loadAndReturnError:&err] )
+        INLog( @"Bundle Load Error %@", err );
 }
 
 + (void)loadDylib {
@@ -1102,7 +1104,7 @@ struct _in_objc_class { Class meta, supr; void *cache, *vtable; struct _in_objc_
                     [newClass class];
 #endif
                     Class oldClass = [self loadedClass:newClass notify:notify];
-                    NSLog( @"Ignore any warning, Swizzled %@ %p -> %p", className,
+                    INLog( @"Ignore any warning, Swizzled %@ %p -> %p", className,
                           INJECTION_BRIDGE(void *)newClass, INJECTION_BRIDGE(void *)oldClass );
                     [injectedClasses addObject:oldClass];
                 }

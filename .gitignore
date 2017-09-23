@@ -1,5 +1,7 @@
 # Xcode
-build/*
+InjectionPluginLite/build/*
+InjectionPluginLite/InjectionLoader/build/*
+InjectionPluginAppCode/out/*
 *.pbxuser
 !default.pbxuser
 *.mode1v3
