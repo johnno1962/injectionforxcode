@@ -43,6 +43,13 @@
 			remoteGlobalIDString = BBB499A11B03B11000FF5818;
 			remoteInfo = unhide;
 		};
+		BB63644A1F77F1E7002FEF86 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BB6364451F77F1E2002FEF86 /* XprobeSwift.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = BBA9D48E1AE91028009EC34E;
+			remoteInfo = XprobeSwift;
+		};
 		BB82D7A91B86C0F3008E76CA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = BB33DC7D1B86BD1D003B8481 /* unhide.xcodeproj */;
@@ -82,6 +89,7 @@
 		BB5DEF9616A55D2A00E97DD4 /* common.pm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = common.pm; sourceTree = "<group>"; };
 		BB5DEF9816A55E1800E97DD4 /* injectSource.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = injectSource.pl; sourceTree = "<group>"; };
 		BB5DEF9916A55E1800E97DD4 /* openBundle.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = openBundle.pl; sourceTree = "<group>"; };
+		BB6364451F77F1E2002FEF86 /* XprobeSwift.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = XprobeSwift.xcodeproj; path = XprobeSwift/XprobeSwift.xcodeproj; sourceTree = "<group>"; };
 		BB63E0F8160CA89800E95F5D /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		BB66FF901C469277008634C5 /* FileWatcher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileWatcher.h; sourceTree = "<group>"; };
 		BB66FF911C469277008634C5 /* FileWatcher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileWatcher.m; sourceTree = "<group>"; };
@@ -116,6 +124,7 @@
 				BB2526471F65CF7300898347 /* LICENSE */,
 				BB360C021B0E5C0100C39245 /* README.md */,
 				BBC2900018CA6F46003436A9 /* InjectionLoader.xcodeproj */,
+				BB6364451F77F1E2002FEF86 /* XprobeSwift.xcodeproj */,
 				7F411B0C15FABAC6002F77B6 /* Classes */,
 				089C167CFE841241C02AAC07 /* Resources */,
 				BB26EB8D160DE85B00A62DFC /* Scripts */,
@@ -199,6 +208,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		BB6364461F77F1E2002FEF86 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BB63644B1F77F1E7002FEF86 /* XprobeSwift.loader */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		BBC2900118CA6F46003436A9 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -260,6 +277,10 @@
 					ProductGroup = BB33DC7E1B86BD1D003B8481 /* Products */;
 					ProjectRef = BB33DC7D1B86BD1D003B8481 /* unhide.xcodeproj */;
 				},
+				{
+					ProductGroup = BB6364461F77F1E2002FEF86 /* Products */;
+					ProjectRef = BB6364451F77F1E2002FEF86 /* XprobeSwift.xcodeproj */;
+				},
 			);
 			projectRoot = "";
 			targets = (
@@ -274,6 +295,13 @@
 			fileType = "compiled.mach-o.executable";
 			path = unhide;
 			remoteRef = BB33DC811B86BD1D003B8481 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BB63644B1F77F1E7002FEF86 /* XprobeSwift.loader */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = XprobeSwift.loader;
+			remoteRef = BB63644A1F77F1E7002FEF86 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		BBC2900B18CA703D003436A9 /* InjectionLoader.bundle */ = {
@@ -327,7 +355,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd InjectionLoader && xcodebuild -sdk iphonesimulator -config Debug && cd - &&\nchmod +x \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"/*.pl &&\ncp -rf Classes/Xtrace.* InjectionLoader/build/*-iphonesimulator/InjectionLoader.bundle \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\n/usr/bin/codesign --force --sign \"-\" --timestamp=none \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"/InjectionLoader.bundle";
+			shellScript = "cd InjectionLoader && xcodebuild -sdk iphonesimulator -config Debug && cd - &&\nchmod +x \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"/*.pl &&\ncp -rf Classes/Xtrace.* InjectionLoader/build/*-iphonesimulator/InjectionLoader.bundle \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\n/usr/bin/codesign --force --sign \"-\" --timestamp=none \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"/InjectionLoader.bundle &&\n\nSYMROOT=/tmp\ncd XprobeSwift && rm -rf build &&\n\n\"$DEVELOPER_BIN_DIR\"/xcodebuild SYMROOT=$SYMROOT -sdk iphonesimulator -arch x86_64 -config Debug &&\ncp -rf $SYMROOT/Debug-iphonesimulator/XprobeSwift.loader \"$INSTALL_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"/InjectionLoader.bundle";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */

@@ -117,17 +117,20 @@ static BOOL isSwiftObject( const char *type ) {
 + (void)xprobeSweep:(id)instance forClass:(Class)aClass;
 @end
 
+@interface ClassInThisBundle : NSObject
+@end
+@implementation ClassInThisBundle
+@end
+
 Class xloadXprobeSwift( const char *ivarName ) {
     static Class xprobeSwift;
     static int triedLoad;
     if ( !xprobeSwift && !(xprobeSwift = objc_getClass("XprobeSwift")) && !triedLoad++ ) {
-#ifdef XPROBE_MAGIC
-        NSBundle *thisBundle = [NSBundle bundleForClass:[Xprobe class]];
+        NSBundle *thisBundle = [NSBundle bundleForClass:[ClassInThisBundle class]];
         NSString *bundlePath = [[thisBundle bundlePath] stringByAppendingPathComponent:@"XprobeSwift.loader"];
         if ( ![[NSBundle bundleWithPath:bundlePath] load] )
             NSLog( @"Xprobe: Could not load XprobeSwift bundle for ivar '%s': %@", ivarName, bundlePath );
         xprobeSwift = objc_getClass("XprobeSwift");
-#endif
     }
     return xprobeSwift;
 }

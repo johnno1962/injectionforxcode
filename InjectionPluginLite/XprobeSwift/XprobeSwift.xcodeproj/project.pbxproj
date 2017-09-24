@@ -1,0 +1,319 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		BB356BEB1E0C913B0056B10F /* Internals.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB356BEA1E0C913B0056B10F /* Internals.swift */; };
+		BB6364641F780279002FEF86 /* GenericPointer.m in Sources */ = {isa = PBXBuildFile; fileRef = BB6364631F780279002FEF86 /* GenericPointer.m */; };
+		BBA9D4A11AE9108F009EC34E /* XprobeSwift.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBA9D4A01AE9108F009EC34E /* XprobeSwift.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		BB356BEA1E0C913B0056B10F /* Internals.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Internals.swift; sourceTree = "<group>"; };
+		BB356BF01E0C92F70056B10F /* XprobeSwift-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "XprobeSwift-Bridging-Header.h"; sourceTree = "<group>"; };
+		BB6364631F780279002FEF86 /* GenericPointer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GenericPointer.m; sourceTree = "<group>"; };
+		BBA9D48E1AE91028009EC34E /* XprobeSwift.loader */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = XprobeSwift.loader; sourceTree = BUILT_PRODUCTS_DIR; };
+		BBA9D4921AE91028009EC34E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BBA9D4A01AE9108F009EC34E /* XprobeSwift.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XprobeSwift.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		BBA9D48B1AE91028009EC34E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		BBA9D4851AE91027009EC34E = {
+			isa = PBXGroup;
+			children = (
+				BBA9D4901AE91028009EC34E /* XprobeSwift */,
+				BBA9D48F1AE91028009EC34E /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		BBA9D48F1AE91028009EC34E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BBA9D48E1AE91028009EC34E /* XprobeSwift.loader */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BBA9D4901AE91028009EC34E /* XprobeSwift */ = {
+			isa = PBXGroup;
+			children = (
+				BB356BF01E0C92F70056B10F /* XprobeSwift-Bridging-Header.h */,
+				BB6364631F780279002FEF86 /* GenericPointer.m */,
+				BBA9D4A01AE9108F009EC34E /* XprobeSwift.swift */,
+				BB356BEA1E0C913B0056B10F /* Internals.swift */,
+				BBA9D4911AE91028009EC34E /* Supporting Files */,
+			);
+			path = XprobeSwift;
+			sourceTree = "<group>";
+		};
+		BBA9D4911AE91028009EC34E /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				BBA9D4921AE91028009EC34E /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BBA9D48D1AE91028009EC34E /* XprobeSwift */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BBA9D4951AE91028009EC34E /* Build configuration list for PBXNativeTarget "XprobeSwift" */;
+			buildPhases = (
+				BBA9D48A1AE91028009EC34E /* Sources */,
+				BBA9D48B1AE91028009EC34E /* Frameworks */,
+				BBA9D48C1AE91028009EC34E /* Resources */,
+				BBBA6F8E1AE929540072E2B3 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = XprobeSwift;
+			productName = XprobeSwift;
+			productReference = BBA9D48E1AE91028009EC34E /* XprobeSwift.loader */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BBA9D4861AE91027009EC34E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0700;
+				LastUpgradeCheck = 0820;
+				ORGANIZATIONNAME = "John Holdsworth";
+				TargetAttributes = {
+					BBA9D48D1AE91028009EC34E = {
+						CreatedOnToolsVersion = 6.4;
+						LastSwiftMigration = 0820;
+					};
+				};
+			};
+			buildConfigurationList = BBA9D4891AE91027009EC34E /* Build configuration list for PBXProject "XprobeSwift" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = BBA9D4851AE91027009EC34E;
+			productRefGroup = BBA9D48F1AE91028009EC34E /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BBA9D48D1AE91028009EC34E /* XprobeSwift */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BBA9D48C1AE91028009EC34E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		BBBA6F8E1AE929540072E2B3 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [[ \"$PLATFORM_NAME\" == \"iphoneos\" || \"$PLATFORM_NAME\" == \"iphonesimulator\" ]];\nthen\n    /usr/bin/codesign --force --deep --sign \"-\" \"$CODESIGNING_FOLDER_PATH\" || echo \"Codesign skipped\"\nfi";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BBA9D48A1AE91028009EC34E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB6364641F780279002FEF86 /* GenericPointer.m in Sources */,
+				BBA9D4A11AE9108F009EC34E /* XprobeSwift.swift in Sources */,
+				BB356BEB1E0C913B0056B10F /* Internals.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		BBA9D4931AE91028009EC34E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_BITCODE = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+			};
+			name = Debug;
+		};
+		BBA9D4941AE91028009EC34E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_BITCODE = NO;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				ONLY_ACTIVE_ARCH = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+			};
+			name = Release;
+		};
+		BBA9D4961AE91028009EC34E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = XprobeSwift/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				OTHER_LDFLAGS = (
+					"-undefined",
+					dynamic_lookup,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.johnholdsworth.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "XprobeSwift/XprobeSwift-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
+				WRAPPER_EXTENSION = loader;
+			};
+			name = Debug;
+		};
+		BBA9D4971AE91028009EC34E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = XprobeSwift/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				OTHER_LDFLAGS = (
+					"-undefined",
+					dynamic_lookup,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.johnholdsworth.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "XprobeSwift/XprobeSwift-Bridging-Header.h";
+				SWIFT_VERSION = 3.0;
+				WRAPPER_EXTENSION = loader;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BBA9D4891AE91027009EC34E /* Build configuration list for PBXProject "XprobeSwift" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BBA9D4931AE91028009EC34E /* Debug */,
+				BBA9D4941AE91028009EC34E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BBA9D4951AE91028009EC34E /* Build configuration list for PBXNativeTarget "XprobeSwift" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BBA9D4961AE91028009EC34E /* Debug */,
+				BBA9D4971AE91028009EC34E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = BBA9D4861AE91027009EC34E /* Project object */;
+}
