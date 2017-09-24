@@ -25,6 +25,8 @@ particularly good idea in Swift.
 
 Injection is now available as a standalone app rather than have to build the plugin which you can download [here](http://johnholdsworth.com/injection.html). As injection no longer works on the deivce due to sandboxing in iOS10 this is the recommended route going forward. For more information consult the [FAQ](https://johnno1962.github.io/InjectionApp/injectionfaq.html).
 
+For TDD, there is a interesting fork of the injection plugin you can download [here](https://github.com/polac24/injectionforxcode/tree/tdd). It runs all tests covering a source file each time you inject. It's on the 'tdd' branch.
+
 ## How to Use Injection for Xcode
 
 For installation and usage for AppCode [see below](#user-content-use-with-appcode). If you're a visual learner, you may appreciate [this video post](http://artsy.github.io/blog/2016/03/05/iOS-Code-Injection/) from [@Orta](https://twitter.com/@orta) covering the basics.
