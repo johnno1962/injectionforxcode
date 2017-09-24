@@ -14,6 +14,7 @@ use FindBin;
 use lib $FindBin::Bin;
 use JSON::PP;
 use common;
+use InjectUnitTests;
 
 my $compileHighlight = "{\\colortbl;\\red0\\green0\\blue0;\\red160\\green255\\blue160;}\\cb2\\i1";
 my $errorHighlight = "{\\colortbl;\\red0\\green0\\blue0;\\red255\\green255\\blue130;}\\cb2";
@@ -22,6 +23,8 @@ my $bundleProjectFile = "$InjectionBundle/InjectionBundle.xcodeproj/project.pbxp
 my $bundleProjectSource = -f $bundleProjectFile && loadFile( $bundleProjectFile );
 my $mainProjectFile = "$projName.xcodeproj/project.pbxproj";
 my $isSwift = $selectedFile =~ /\.swift$/;
+my @unitTestLearnt = ();
+my @allResources = ();
 
 use utf8;
 utf8::upgrade($selectedFile);
@@ -236,7 +239,11 @@ if ( !$learnt ) {
 
         local $/ = "\r";
     FOUND:
-        foreach my $log (@logs) {
+        foreach my $log (@logs) {           
+            #
+            # Find build commands
+            #
+
             open LOG, "gunzip <'$log' 2>/dev/null |";
             if ( $isInterface ) {
                 while ( my $line = <LOG> ) {
@@ -257,33 +264,65 @@ if ( !$learnt ) {
                 }
             }
             else {
+                my $requiresFileList = 0;
+                my @swiftcCommands = ();
+                my @unitTestsClangCommands = ();
+                my %copySwiftModuleCommands = {};
+                my @resourcesToLink = ();
+
                 while ( my $line = <LOG> ) {
-                    if ( index( $line, $filename ) != -1 && index( $line, " $arch" ) != -1 &&
+                    if (!$learnt && index( $line, $filename ) != -1 && index( $line, " $arch" ) != -1 &&
                         $line =~ m!@{[$xcodeApp||""]}/Contents/Developer/Toolchains/.*?\.xctoolchain.+?@{[
                                 $isSwift ? " -primary-file ": " -c "
                             ]}("$selectedFile"|\Q$escaped\E)! ) {
                         $learnt .= ($learnt?';;':'').$line;
-                        if ( $learnt =~ / -filelist / ) {
-                            while ( my $line = <LOG> ) {
-                                if ( my($filemap) = $line =~ / -output-file-map ([^ \\]+(?:\\ [^ \\]+)*) / ) {
-                                    $filemap =~ s/\\//g;
-                                    my $file_handle = IO::File->new( "< $filemap" )
-                                        || error "Could not open filemap '$filemap'";
-                                    my $json_text = join'', $file_handle->getlines();
-                                    my $json_map = decode_json( $json_text, { utf8  => 1 } );
-                                    my $filelist = "$InjectionBundle/filelist.txt";
-                                    $filelist = "$projRoot/$filelist" if $filelist !~ m@^/@;
-                                    my $swift_sources = join "\n", keys %$json_map;
-                                    IO::File->new( "> $filelist" )->print( $swift_sources );
-                                    $learnt =~ s/( -filelist )(\S+)( )/$1$filelist$3/;
-                                    last FOUND;
-                                }
-                            }
-                            error "Could not locate filemap";
-                        }
-                        last FOUND;
+                        $requiresFileList = $learnt =~ / -filelist /;
+                    }
+                    if ($requiresFileList && (my($filemap) = $line =~ / -output-file-map ([^ \\]+(?:\\ [^ \\]+)*) / )) {
+                        $requiresFileList = 0;
+                        $filemap =~ s/\\//g;
+                        my $file_handle = IO::File->new( "< $filemap" )
+                            || error "Could not open filemap '$filemap'";
+                        my $json_text = join'', $file_handle->getlines();
+                        my $json_map = decode_json( $json_text, { utf8  => 1 } );
+                        my $filelist = "$InjectionBundle/filelist.txt";
+                        $filelist = "$projRoot/$filelist" if $filelist !~ m@^/@;
+                        my $swift_sources = join "\n", keys %$json_map;
+                        IO::File->new( "> $filelist" )->print( $swift_sources );
+                        $learnt =~ s/( -filelist )(\S+)( )/$1$filelist$3/;
+                    }
+
+                    if ( $line =~ /\/swiftc\s/ &&
+                        (my ($localModuleName) = $line =~ /-module-name\s(\S*)\s/) ){
+                            my $swiftCLine = $line;
+                            $swiftCLine =~ s/^\s+|\s+$//g;
+                            push (@swiftcCommands, $swiftCLine);
+                    }
+
+                    if (  index( $line, "/clang " ) != -1 && index( $line, " $arch" ) != -1 && index( $line, "-framework XCTest" ) != -1 ){
+                        push (@unitTestsClangCommands, $line);
+                    }
+
+                    if ($line =~ /ditto\s-rsrc.*\/([^\/]*)\.swiftmodule\/$arch.swiftmodule/ )  {
+                        $copySwiftModuleCommands{$1} = $line;
+                    }
+
+                    if ($line =~ /\"Copy\s([^\"]*)([^\"]*)\d*\"CpResource\s\2\s/ )  {
+                        push (@resourcesToLink, "$1$2");
                     }
                 }
+
+                # Unit tests procedure
+                if ($isSwift && (scalar @unitTestsClangCommands > 0)) {
+                    my $hashRef = InjectUnitTests::rebuild_project_and_find_unit_tests_commands($selectedFile, \@swiftcCommands, \@unitTestsClangCommands, \%copySwiftModuleCommands);
+                    $learnt = $hashRef->{implementationCommand} if !$learnt;
+                    
+                    @unitTestLearnt = @{$hashRef->{unitTestLearnt}} if $learnt;
+                    @allResources = @resourcesToLink if $learnt;
+                }
+
+                error "Could not locate filemap" if $requiresFileList && $learnt;
+                last FOUND if $learnt;
             }
         }
 
@@ -358,6 +397,7 @@ CODE
 
 $changesSource->close();
 
+
 ############################################################################
 #
 # This is where the learnt compilation is actually used. It's compiled into
@@ -377,6 +417,14 @@ if ( $learnt ) {
         or die "Could not locate object file in: $learnt";
     ###$learnt =~ s/( -DDEBUG\S* )/$1-DINJECTION_BUNDLE /;
 
+    # Disable Code coverage for injection file
+    # swift
+    $learnt =~ s/-profile-generate//g;
+    $learnt =~ s/-profile-coverage-mapping//g;
+    # objc
+    $learnt =~ s/-fprofile-instr-generate//g;
+    $learnt =~ s/-fcoverage-mapping//g;
+
     $learnt =~ s/([()])/\\$1/g;
     rtfEscape( my $lout = $learnt );
     print "Learnt compile: $compileHighlight $lout\n";
@@ -387,6 +435,8 @@ if ( $learnt ) {
         print rtfEscape( $out );
     }
     error "Learnt compile failed" if $?;
+
+    $obj .= InjectUnitTests::recompile_unit_tests(\@unitTestLearnt, "$arch/injecting_class", "$InjectionBundle/");
 
     #if ( $isSwift ) {
         my ($toolchain) = $learnt =~ m#(@{[$xcodeApp||'/Applications/Xcode']}.*?\.xctoolchain)/#;
@@ -561,6 +611,12 @@ if ( $flags & $INJECTION_STORYBOARD ) {
         }
     }
     close NIBS;
+}
+
+# Link all resources as symbolic link to a bundle 
+foreach my $resourceFullpath (@allResources) {
+    my $copyCommand = "ln -sf $resourceFullpath \"$bundlePath\" || true";
+    0 == system $copyCommand;
 }
 
 $identity = "-" if !$isDevice;
