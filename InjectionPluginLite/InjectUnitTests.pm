@@ -126,8 +126,8 @@ sub swiftc_command{
     my $report = {};
     while ( my $line = <SWIFTC> ) {
         if ($line =~ /\"(kind|name|command)\"\:/){
-            my ($myKey) = ($line =~ /\s*\"(\S*)\"\:/);
-            my ($myValue) = ($line =~ /\:\s*\"([^\"]*)\"/);
+            my ($myKey) = ($line =~ /\s*\"(.*[^\\])\"\:/);
+            my ($myValue) = ($line =~ /\:\s*\"(.*[^\\])\"/);
             $myValue =~ s/\\\//\//g;
             $report->{$myKey} = $myValue;
             $status = "";
@@ -137,11 +137,11 @@ sub swiftc_command{
             $status = "inputs";
             next;
         }
-        if ($line =~ /\"\S*\"\:/){
+        if ($line =~ /\".*[^\\]\"\:/){
             $status = "";
             next;
         }
-        if ($status eq "inputs" && $line =~ /\"(\S*)\"/){
+        if ($status eq "inputs" && $line =~ /\"(.*[^\\])\"/){
             my ($inputValue) = $1;
             $inputValue =~ s/\\\//\//g;
             my @empty = ();
@@ -211,7 +211,8 @@ sub rebuild_project_and_find_unit_tests_commands{
                     $learntInjection =~ s/-filelist\s\S*\s/ @{[join(" ", @{$value->{files}})]} /;
                     $implementationCommand = $learntInjection;
 
-                    @referencesUpdated = (get_swiftdeps($swiftDepsFile, "provides-nominal"), get_swiftdeps($swiftDepsFile, "provides-member"));
+                    push (@referencesUpdated, get_swiftdeps($swiftDepsFile, "provides-nominal"));
+                    push (@referencesUpdated, get_swiftdeps($swiftDepsFile, "provides-member"));
                     @referencesUpdated = uniq @referencesUpdated;
                     
                 }
@@ -276,6 +277,9 @@ sub recompile_unit_tests{
         my $generateStripped = $line =~ s/-profile-generate//g;
         my $converageStripped =$line =~ s/-profile-coverage-mapping//g;
 
+        my (@usedFrameworks) = $line =~ /(-F\s\S*)\s/g;
+        $obj .= "@usedFrameworks";
+        
         if ($generateStripped || $converageStripped){
             $line =~ s/([()])/\\$1/g;
 
