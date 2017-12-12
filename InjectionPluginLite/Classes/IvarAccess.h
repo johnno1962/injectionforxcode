@@ -106,16 +106,21 @@ static BOOL isSwiftObject( const char *type ) {
     return (type[-1] == 'S' && (type[0] == 'a' || type[0] == 'S')) || xstrncmp( type, "{Dictionary}" ) == 0;
 }
 
-@interface XprobeSwift : NSObject
+@interface XprobeSwift_ : NSObject
 + (NSString *)string:(void *)stringPtr;
 + (NSString *)stringOpt:(void *)stringPtr;
 + (NSString *)array:(void *)arrayPtr;
 + (NSString *)arrayOpt:(void *)arrayPtr;
 + (NSString *)demangle:(NSString *)name;
++ (NSArray<NSString *> *)listMembers:(id)instance;
 + (void)dumpIvars:(id)instance forClass:(Class)aClass into:(NSMutableString *)into;
 + (void)injectionSweep:(id)instance forClass:(Class)aClass;
 + (void)xprobeSweep:(id)instance forClass:(Class)aClass;
 @end
+
+#ifdef XPROBE_MAGIC
+#define ClassInThisBundle ClassInThisBundleX
+#endif
 
 @interface ClassInThisBundle : NSObject
 @end
@@ -125,12 +130,13 @@ static BOOL isSwiftObject( const char *type ) {
 Class xloadXprobeSwift( const char *ivarName ) {
     static Class xprobeSwift;
     static int triedLoad;
-    if ( !xprobeSwift && !(xprobeSwift = objc_getClass("XprobeSwift")) && !triedLoad++ ) {
-        NSBundle *thisBundle = [NSBundle bundleForClass:[ClassInThisBundle class]];
+    NSBundle *thisBundle = [NSBundle bundleForClass:[ClassInThisBundle class]];
+    if ( !xprobeSwift && !(xprobeSwift = [thisBundle classNamed:@"XprobeSwift"]) && !triedLoad++ ) {
         NSString *bundlePath = [[thisBundle bundlePath] stringByAppendingPathComponent:@"XprobeSwift.loader"];
-        if ( ![[NSBundle bundleWithPath:bundlePath] load] )
+        NSBundle *loaderBundle = [NSBundle bundleWithPath:bundlePath];
+        if ( ![loaderBundle load] )
             NSLog( @"Xprobe: Could not load XprobeSwift bundle for ivar '%s': %@", ivarName, bundlePath );
-        xprobeSwift = objc_getClass("XprobeSwift");
+        xprobeSwift = [loaderBundle classNamed:@"XprobeSwift"];
     }
     return xprobeSwift;
 }
@@ -148,7 +154,7 @@ struct _swift_data {
     const char *className;
     int fieldcount, flags2;
     const char *ivarNames;
-    struct _swift_field **(*get_field_data)();
+    struct _swift_field **(*get_field_data)(void);
 };
 
 struct _swift_class {
@@ -245,8 +251,8 @@ const char *ivar_getTypeEncodingSwift3( Ivar ivar, Class aClass ) {
     if ( ivarIndex >= swiftData->fieldcount )
         return NULL;
 
-    struct _swift_field **(*get_field_data)() =
-        (struct _swift_field **(*)())swift3Relative( &swiftData->get_field_data );
+    struct _swift_field **(*get_field_data)(void) =
+        (struct _swift_field **(*)(void))swift3Relative( &swiftData->get_field_data );
     struct _swift_field *field0 = get_field_data()[ivarIndex], *field = field0;
     struct _swift_field3 *typeInfo = (struct _swift_field3 *)swift3Relative( &field->typeInfo );
     char optionals[100] = "", *optr = optionals;
@@ -384,7 +390,7 @@ static void handler( int sig ) {
     longjmp( jmp_env, sig );
 }
 
-static int xprotect( void (^blockToProtect)() ) {
+static int xprotect( void (^blockToProtect)(void) ) {
     void (*savetrap)(int) = signal( SIGTRAP, handler );
     void (*savesegv)(int) = signal( SIGSEGV, handler );
     void (*savebus )(int) = signal( SIGBUS,  handler );

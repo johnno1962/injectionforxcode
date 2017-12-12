@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/INPluginMenuController.m#3 $
+//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/INPluginMenuController.m#5 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -90,6 +90,7 @@ INPluginMenuController *injectionPlugin;
             injectionPlugin = [[self alloc] init];
             //NSLog( @"Preparing Injection: %@", injectionPlugin );
             dispatch_async( dispatch_get_main_queue(), ^{
+                #pragma clang diagnostic ignored "-Wnonnull"
                 [injectionPlugin applicationDidFinishLaunching:nil];
             } );
         } );
@@ -539,7 +540,7 @@ static CFDataRef copy_mac_address(void)
     struct sockaddr_in serverAddr;
 
 #ifndef INJECTION_ADDR
-#define INJECTION_ADDR INADDR_ANY
+#define INJECTION_ADDR INADDR_LOOPBACK
 #endif
 
     serverAddr.sin_family = AF_INET;

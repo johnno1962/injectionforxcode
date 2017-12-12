@@ -118,7 +118,7 @@ static NSMutableArray *sharedInstances;
 
     Class aClass = object_getClass(self);
     NSString *className = NSStringFromClass(aClass);
-    if ( [className characterAtIndex:1] == '_' || [className hasPrefix:@"UITransition"] )
+    if ( (className.length > 1 && [className characterAtIndex:1] == '_') || [className hasPrefix:@"UITransition"] )
         return;
     else
         [[bundleInjection liveInstances] addObject:self];

@@ -1,5 +1,5 @@
 //
-//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/INPluginClientController.m#10 $
+//  $Id: //depot/injectionforxcode/InjectionPluginLite/Classes/INPluginClientController.m#11 $
 //  InjectionPluginLite
 //
 //  Created by John Holdsworth on 15/01/2013.
@@ -357,7 +357,7 @@ static NSString *kINUnlockCommand = @"INUnlockCommand", *kINSilent = @"INSilent"
         return;
     }
 
-    lines = 0, status = 0;
+    lines = 0; status = 0;
     scriptOutput = (FILE *)1;
 
     task = [NSTask new];
