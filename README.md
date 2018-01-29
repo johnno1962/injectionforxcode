@@ -50,7 +50,7 @@ app is loaded, add a new function `- injected`  and add a breakpoint on that lin
 ```
 or
 ``` swift
-func injected() {
+@objc func injected() {
     print("I've been injected: \(self)")
 }
 ```
