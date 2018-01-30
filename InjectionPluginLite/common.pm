@@ -33,12 +33,12 @@ $INJECTION_DEVICEIOS8 = 1<<5; # iOS 8 splits data from app
 
 $productName = "InjectionBundle$patchNumber";
 
+$isAppCode = $flags & $INJECTION_ISAPPCODE;
+$deviceRoot = $executable if $isAppCode;
+
 $isDevice = $deviceRoot =~ m@^(/private)?/var/mobile/@;
 $isSimulator = $deviceRoot =~ m@/(iPhone |Core)Simulator/@;
 $isAndroid = $deviceRoot =~ m@^/data/app/@;
-
-$isAppCode = $flags & $INJECTION_ISAPPCODE;
-$deviceRoot = $executable if $isAppCode;
 
 $isIOS = $isDevice || $isSimulator || $isAndroid;
 
