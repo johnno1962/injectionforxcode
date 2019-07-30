@@ -9,9 +9,9 @@ dynamically inserts new Swift / Objective-C code into a running app in order to 
 
 An up-to-date overview by Rob Norback of [how to incorporate it into your workflow is here](https://medium.com/@robnorback/the-secret-to-1-second-compile-times-in-xcode-9de4ec8345a1)
 
-![Injection Example](documentation/images/injected.gif)
-
 This repo is no longer maintained. The current version of Injection is InjectionIII in the Mac App Store.
+
+![Injection Example](documentation/images/injected.gif)
 
 Announcements of major additions to the project will be made on twitter [@Injection4Xcode](https://twitter.com/@Injection4Xcode).
 
