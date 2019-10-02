@@ -3,7 +3,7 @@
 Copyright (c) John Holdsworth 2012-19
 
 # TLDR:
-
+Xcode is an integrated development environment (IDE) for macOS containing a suite of software development tools developed by Apple for developing software for macOS, iOS, iPadOS, watchOS, and tvOS.
 Injection for Xcode is an Xcode plugin (available via [Alcatraz](http://alcatraz.io/)) or [AppCode](#user-content-use-with-appcode) that 
 dynamically inserts new Swift / Objective-C code into a running app in order to speed up your build process. It does this without making _any_ changes to your project.
 
